@@ -1,0 +1,45 @@
+{
+	"name": "magnoliawebapp",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-node": "^5.2.11",
+		"@sveltejs/kit": "^2.5.27",
+		"@sveltejs/vite-plugin-svelte": "^4.0.0",
+		"@tailwindcss/typography": "^0.5.14",
+		"autoprefixer": "^10.4.20",
+		"bits-ui": "^1.0.0-next.79",
+		"embla-carousel-svelte": "^8.3.1",
+		"lucide-svelte": "^0.456.0",
+		"mode-watcher": "^0.5.1",
+		"postcss": "^8.4.41",
+		"svelte": "^5.0.0",
+		"svelte-check": "^4.0.0",
+		"svelte-sonner": "^0.3.28",
+		"tailwindcss": "^3.4.10",
+		"tslib": "^2.4.1",
+		"typescript": "^5.5.0",
+		"vite": "^5.4.4"
+	},
+	"type": "module",
+	"dependencies": {
+		"@serialport/stream": "^12.0.0",
+		"class-variance-authority": "^0.7.0",
+		"clsx": "^2.1.1",
+		"embla-carousel-wheel-gestures": "^8.0.1",
+		"serialport": "^12.0.0",
+		"socket.io": "^4.8.1",
+		"tailwind-merge": "^2.5.4",
+		"tailwind-variants": "^0.2.1",
+		"tailwindcss-animate": "^1.0.7",
+		"ws": "^8.18.0"
+	}
+}

@@ -1,0 +1,21 @@
+<script lang="ts">
+    import { goto } from "$app/navigation";
+    import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler";
+</script>
+
+<div class="mx-10 flex flex-col justify-center">
+    <h1 class="text-center text-8xl mx-10 my-5">Your are Home</h1>
+    <hr class="my-10" />
+
+    
+    <div class="flex">
+        {#each layoutClientHandler.layouts.values() as layout}
+            <button
+                class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
+                onclick={() => goto(`/layouts/${layout.name}`)}
+            >
+                <p class="text-3xl text-center">{layout.name}</p>
+            </button>
+        {/each}
+    </div>
+</div>
