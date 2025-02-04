@@ -4,7 +4,5 @@
 </script>
 
 <div class="flex gap-4 h-[40rem] m-10">
-    <Button onclick={() => goto("/settings/trains")}>Edit Trains</Button>
-    <Button onclick={() => goto("/settings/accessories")}>Edit Accessories</Button>
     <Button onclick={() => goto("/settings/layouts")}>Edit Layouts</Button>
 </div>

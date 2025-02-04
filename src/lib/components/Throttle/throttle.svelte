@@ -7,7 +7,7 @@
     import type { Train } from "../../../services/train.svelte";
     import type {
         Connections,
-        CryptoUUID,
+        ConnectionUUID,
         LayoutClient,
     } from "$lib/LayoutClient.svelte";
     import ConnectionSelect from "./ConnectionSelect/connectionSelect.svelte";
@@ -18,7 +18,7 @@
     }
     let { curLayout, disabled }: Props = $props();
 
-    let curConnectionUUID: CryptoUUID | null = $state(null);
+    let curConnectionUUID: ConnectionUUID | null = $state(null);
     let curConnection: Connections | undefined = $derived.by(() => {
         if (curConnectionUUID) {
             return curLayout.connections.get(curConnectionUUID);

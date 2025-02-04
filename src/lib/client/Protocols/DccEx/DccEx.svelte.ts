@@ -1,22 +1,24 @@
-import type { CryptoUUID } from "$lib/LayoutClient.svelte";
+import type { ConnectionUUID } from "$lib/LayoutClient.svelte";
 import { Direction } from "../../../../routes/(app)/layouts/[id]/throttle/throttle";
 import { Train } from "../../../../services/train.svelte";
 import { ConnectionProtocols, type IProtocol } from "../protocols";
 
 export class DccEx implements IProtocol {
   public isConnected: boolean = $state(false);
-  public name: string | undefined = undefined;
+  public connName: string;
   public powerStatus: boolean = $state(false);
   public protocol: ConnectionProtocols = ConnectionProtocols.DCCEX;
   public trains: Map<number, Train> = new Map();
   public version: string | undefined = undefined;
   private layoutName: string;
-  private connUUID: CryptoUUID;
+  private connUUID: ConnectionUUID;
 
-  constructor(layoutName: string, connUUID: CryptoUUID) {
+  constructor(layoutName: string, connUUID: ConnectionUUID, connName: string) {
     this.layoutName = layoutName;
     this.connUUID = connUUID;
+    this.connName = connName;
   }
+
 
   processCommand(command: string) {
 
@@ -147,6 +149,6 @@ export class DccEx implements IProtocol {
   }
 
   addTrain(cab: number, name: string) {
-    this.trains.set(cab, new Train(cab, name));
+    this.trains.set(cab, new Train(cab, name, this.connUUID));
   }
 }

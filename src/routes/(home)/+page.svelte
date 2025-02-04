@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler";
+
 </script>
 
 <div class="mx-10 flex flex-col justify-center">
@@ -9,7 +10,7 @@
 
     
     <div class="flex">
-        {#each layoutClientHandler.layouts.values() as layout}
+        {#each layoutClientHandler.getLayouts() as layout}
             <button
                 class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
                 onclick={() => goto(`/layouts/${layout.name}`)}

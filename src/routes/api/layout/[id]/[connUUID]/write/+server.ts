@@ -4,7 +4,7 @@ export const GET = async ({ params, url }) => {
     let { id, connUUID } = params; // Extract the dynamic parameter
     let data = url.searchParams.get("data")
 
-    const layout = LayoutServerHandler.Layouts.get(id);
+    const layout = LayoutServerHandler.layouts.get(id);
 
     if (layout) {
         let connection = layout.connections.get(connUUID);

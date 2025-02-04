@@ -6,10 +6,10 @@
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import { cn } from "$lib/utils.js";
-    import type { CryptoUUID, LayoutClient } from "$lib/LayoutClient.svelte";
+    import type { ConnectionUUID, LayoutClient } from "$lib/LayoutClient.svelte";
 
     interface Props {
-        curConnectionUUID: CryptoUUID | null;
+        curConnectionUUID: ConnectionUUID | null;
         curLayout: LayoutClient;
         disabled?: boolean;
     }
@@ -19,7 +19,7 @@
     let open = $state(false);
     let curConnectionName: string | undefined = $derived.by(() => {
         if (curConnectionUUID) {
-            return curLayout.connections.get(curConnectionUUID)?.name;
+            return curLayout.connections.get(curConnectionUUID)?.connName;
         }
     });
     let triggerRef = $state<HTMLButtonElement>(null!);
@@ -61,7 +61,7 @@
                     {#each curLayout.connections as [connUUID, connection]}
                         <Command.Item
                             {disabled}
-                            value={connection.name}
+                            value={connection.connName}
                             onSelect={() => {
                                 curConnectionUUID = connUUID;
                                 closeAndFocusTrigger();
@@ -71,7 +71,7 @@
                                 : 'cursor-pointer'}"
                         >
                             <div class="flex flex-col">
-                                <p class="text-md">{connection.name}</p>
+                                <p class="text-md">{connection.connName}</p>
                                 <p class="text-[0.5rem] leading-[0.5rem]">
                                     UUID: {connUUID}
                                 </p>

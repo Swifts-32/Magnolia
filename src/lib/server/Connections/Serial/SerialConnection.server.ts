@@ -10,6 +10,7 @@ export class SerialConnection implements IConnection {
     public path: string;
     public baudRate: number;
     public protocol: ConnectionProtocols;
+    public connName: string;
 
     private _onDataReceived: ((data: string) => void) | null = null;
     public onDataReceived(callback: (data: string) => void) {
@@ -20,11 +21,13 @@ export class SerialConnection implements IConnection {
         return this.serialPort?.isOpen ?? false;
     };
 
-    constructor(protocol: ConnectionProtocols, path: string, baudRate: number) {
+    constructor(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string) {
         this.path = path;
         this.baudRate = baudRate;
         this.protocol = protocol
+        this.connName = connName;
     }
+
 
 
     async connect() {

@@ -7,14 +7,14 @@
   import type { LayoutData } from "../$types";
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import Input from "$lib/components/ui/input/input.svelte";
-  import type { CryptoUUID } from "$lib/LayoutClient.svelte";
+  import type { ConnectionUUID } from "$lib/LayoutClient.svelte";
 
   let { data }: { data: LayoutData } = $props();
   let debugValue = $state("");
   let debugTrainValue: number = $state(23);
 
-  let uuid: CryptoUUID | undefined = data.Layout.connections.keys().next()
-    .value as CryptoUUID;
+  let uuid: ConnectionUUID | undefined = data.Layout.connections.keys().next()
+    .value as ConnectionUUID;
 </script>
 
 {#if data.Layout}

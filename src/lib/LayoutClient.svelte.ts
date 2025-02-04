@@ -1,35 +1,37 @@
 import { toast } from "svelte-sonner";
 import { DccEx } from "./client/Protocols/DccEx/DccEx.svelte";
 import { ConnectionProtocols } from "./client/Protocols/protocols";
+import type { Train } from "../services/train.svelte";
 
 export type Connections = DccEx;
-export type CryptoUUID = `${string}-${string}-${string}-${string}-${string}`;
+export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
+export type LayoutUUID = string;
 
 export class LayoutClient {
 
   eventSource: EventSource | null = null;
-  public name: string;
-  public connections: Map<CryptoUUID, Connections> = new Map();
+  public name: LayoutUUID;
+  public connections: Map<ConnectionUUID, Connections> = new Map();
 
-  private constructor(name: string, connections: Map<CryptoUUID, Connections>) {
+  private constructor(name: string, connections: Map<ConnectionUUID, Connections>) {
     this.name = name;
     this.connections = connections;
   }
 
-  static async create(name: string, fetch: typeof globalThis.fetch) {
+  static async create(name: string, fetch: typeof globalThis.fetch): Promise<LayoutClient> {
     const res = await fetch(`/api/layout/${name}/connections`);
     const json = await res.json();
 
-    const serverConnections: { key: CryptoUUID, protocol: ConnectionProtocols }[] = Array.isArray(json.message) ? json.message : [];
+    const serverConnections: { key: ConnectionUUID, protocol: ConnectionProtocols, connName: string }[] = Array.isArray(json.message) ? json.message : [];
 
-    let connections: Map<CryptoUUID, Connections> = new Map();
+    let connections: Map<ConnectionUUID, Connections> = new Map();
 
     serverConnections.forEach((e) => {
       let conn: Connections | null = null;
 
       switch (e.protocol) {
         case ConnectionProtocols.DCCEX:
-          conn = new DccEx(name, e.key);
+          conn = new DccEx(name, e.key, e.connName);
           break;
         case ConnectionProtocols.LCC:
           console.log("No LCC connection availvle");
@@ -58,7 +60,7 @@ export class LayoutClient {
       this.eventSource?.close();
     }
     
-    console.log("Ready to recieve SSE");
+    console.log(`SSE for ${this.name} is ready to recieve data`);
   }
 
   // Logs data recieved from the server.
@@ -69,7 +71,7 @@ export class LayoutClient {
     const match = data.match(/^Cid:([^:]+)/);
 
     if (match) {
-      const connUUID: CryptoUUID = match[1] as CryptoUUID;
+      const connUUID: ConnectionUUID = match[1] as ConnectionUUID;
       let connection = this.connections.get(connUUID);
 
       if (connection) {
@@ -93,7 +95,7 @@ export class LayoutClient {
     }
   }
 
-  async connect(connUUID: CryptoUUID) {
+  async connect(connUUID: ConnectionUUID) {
     let connection = this.connections.get(connUUID);
 
     if (connection) {
@@ -111,7 +113,7 @@ export class LayoutClient {
   }
 
 
-  async disconnect(connUUID: CryptoUUID) {
+  async disconnect(connUUID: ConnectionUUID) {
     let connection = this.connections.get(connUUID);
 
     if (connection) {
@@ -130,7 +132,7 @@ export class LayoutClient {
   }
 
 
-  async write(connUUID: CryptoUUID, data: string) {
+  async write(connUUID: ConnectionUUID, data: string) {
     let connection = this.connections.get(connUUID);
 
     if (connection) {
@@ -142,6 +144,24 @@ export class LayoutClient {
       }
     }
   }
+
+  getTrains(): Train[] {
+    const trainList: Train[] = [];
+    
+    for (const connection of this.connections.values()) {
+      if (connection.trains) {
+        trainList.push(...Array.from(connection.trains.values()));
+      }
+    }
+
+    return trainList;
+  }
+
+  getConnections(): Map<ConnectionUUID, Connections> {
+    return this.connections;
+  }
+  
 }
+
 
 export let LayoutC: LayoutClient | null = null;

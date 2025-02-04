@@ -3,16 +3,20 @@ import type { IConnection } from "../connection";
 
 export class EmulatorConnection implements IConnection {
   public protocol: ConnectionProtocols;
+  public connName: string;
   public isConnected: boolean = false;
+
 
   private _onDataReceived: ((data: string) => void) | null = null;
   public onDataReceived(callback: (data: string) => void) {
     this._onDataReceived = callback;
   }
 
-  constructor(protocol: ConnectionProtocols) {
+  constructor(protocol: ConnectionProtocols, connName: string) {
     this.protocol = protocol;
+    this.connName = connName;
   }
+
 
   connect() {
     this.isConnected = true;

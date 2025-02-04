@@ -3,12 +3,13 @@ import { LayoutServerHandler } from '$lib/server/layoutHandler.server.svelte';
 export const GET = async ({ params }) => {
     let { id } = params; // Extract the dynamic parameter
 
-    const layout = LayoutServerHandler.Layouts.get(id);
+    const layout = LayoutServerHandler.layouts.get(id);
 
     if (layout) {
         const connections = [...layout.connections].map(([key, value]) => ({
             key,
-            protocol: value.protocol
+            protocol: value.protocol,
+            connName: value.connName,
         }));
 
         return new Response(JSON.stringify({ message: connections }), { status: 200 });

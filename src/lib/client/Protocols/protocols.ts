@@ -1,4 +1,4 @@
-import type { CryptoUUID } from "$lib/LayoutClient.svelte";
+import type { ConnectionUUID } from "$lib/LayoutClient.svelte";
 import type { Direction } from "../../../routes/(app)/layouts/[id]/throttle/throttle";
 import type { Train } from "../../../services/train.svelte";
 
@@ -17,7 +17,7 @@ export enum ConnectionProtocols {
 
 export interface IProtocol {
     isConnected: boolean;
-    name: string | undefined;
+    connName: string;
     powerStatus: boolean;
     protocol: ConnectionProtocols;
     trains: Map<number, Train>;

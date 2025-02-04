@@ -35,9 +35,10 @@ export class Layout {
    * @param path 
    * @param baudRate 
    */
-  createDccSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number) {
-    const connection = new SerialConnection(protocol, path, baudRate);
+  createDccSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string) {
+    const connection = new SerialConnection(protocol, path, baudRate, connName);
     const connUUID = crypto.randomUUID();
+
 
     connection.onDataReceived((data: string) => {
       const message = `data: Cid:${connUUID}: ${data}\n\n`;
@@ -50,9 +51,10 @@ export class Layout {
   /**
    * Creates an emulated DCC EX connection
    */
-  createDccEmulatorConnection(protocol: ConnectionProtocols) {
-    const connection = new EmulatorConnection(protocol);
+  createDccEmulatorConnection(protocol: ConnectionProtocols, connName: string) {
+    const connection = new EmulatorConnection(protocol, connName);
     const connUUID = crypto.randomUUID();
+
 
     connection.onDataReceived((data: string) => {
       // if (!this.streamController) return console.log(`Failed to send "${data}" to server - Stream controller is null.`);

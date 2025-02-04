@@ -6,6 +6,7 @@ export interface IConnection {
     connect: () => void,
     isConnected: boolean,
     protocol: ConnectionProtocols,
+    connName: string,
     disconnect: () => void,
     write: (data: string) => void,
     onDataReceived: (callback: (data: string) => void) => void,

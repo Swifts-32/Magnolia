@@ -3,7 +3,7 @@ import { LayoutServerHandler } from "../../../../../../lib/server/layoutHandler.
 export const GET = async ({ params }) => {
     let { id, connUUID } = params; // Extract the dynamic parameter
 
-    const layout = LayoutServerHandler.Layouts.get(id);
+    const layout = LayoutServerHandler.layouts.get(id);
 
     if (layout) {
         let connection = layout.connections.get(connUUID);
