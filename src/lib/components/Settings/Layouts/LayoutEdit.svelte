@@ -52,41 +52,43 @@
     </Dialog.Header>
 
     <div class="w-full">
-      <!-- Name -->
-      <div class="grid grid-cols-4 my-2 items-center gap-4">
-        <Label for="layoutName" class="text-right">Name</Label>
-        <Input id="layoutName" value={layout.name} class="col-span-3" />
-      </div>
+        <Accordion.Root type="single">
+            <Accordion.Item value="general">
+                <Accordion.Trigger>General</Accordion.Trigger>
+                <!-- Name -->
+                <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
 
-      <Accordion.Root type="single">
+                  <Label for="layoutName" class="text-right">Name</Label>
+                  <Input id="layoutName" value={layout.name} class="col-span-3" />
+                </div>
+            </Accordion.Item>
+
         <Accordion.Item value="connections">
           <Accordion.Trigger>Connections</Accordion.Trigger>
           <Accordion.Content>
             <!-- Add Buttons to go to dialog to edit each connection -->
             {#each layout.connections as [key, connection]}
               <button
-                class="border-primary border-2 flex p-3 rounded-md gap-3 w-full my-1 h-20 items-center select-none"
+                class="border-primary border-2 px-3 flex rounded-md gap-3 w-full my-2 h-14 items-center select-none"
                 onclick={() => (editMode = true)}
               >
-                <!-- TODO Align items vertically center -->
                 <p class="text-xl">{connection.connName}</p>
                 <div class="flex-col flex">
                   <p class="text-sm text-start text-gray-400">
-                    Protocol: {connection.protocol}
+                    Protocol: e.g. DCC Ex, LCC, etc.
                   </p>
                   <!-- TODO:Add the connection type e.g. Serial, Bluetooth, etc. -->
                   <p class="text-sm text-start text-gray-400">
-                    Type: {connection.version}
+                    Type: e.g. Serial, Bluetooth, etc.
                   </p>
-                  <p class="text-sm text-start text-gray-400">UID: {key}</p>
                 </div>
               </button>
             {/each}
 
             <button
-              class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-16 justify-center items-center select-none"
+              class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-14 justify-center items-center select-none"
             >
-              <Plus size={50} />
+              <Plus size={30} />
               <p class="text-xl">Add Connection</p>
             </button>
           </Accordion.Content>
