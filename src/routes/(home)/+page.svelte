@@ -1,7 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler";
-
 </script>
 
 <div class="mx-10 flex flex-col justify-center">

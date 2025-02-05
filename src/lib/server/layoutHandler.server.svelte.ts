@@ -1,5 +1,5 @@
 import { ConnectionProtocols } from '$lib/client/Protocols/protocols';
-import { Layout } from '../Layout.server.svelte';
+import { Layout } from './Layout.server.svelte';
 
 
 class LayoutServerHandlerClass {
@@ -23,9 +23,6 @@ class LayoutServerHandlerClass {
         layout.createDccEmulatorConnection(ConnectionProtocols.DCCEX, "Emulator 2");
         layout.createDccEmulatorConnection(ConnectionProtocols.DCCEX, "Emulator 3");
         console.log("Created Layout L1");
-
-        // layout.createDccSerialConnection(ConnectionProtocols.DCCEX, "COM4", 115200);
-
     }
 
 

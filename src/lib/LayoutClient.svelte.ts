@@ -1,6 +1,6 @@
 import { toast } from "svelte-sonner";
 import { DccEx } from "./client/Protocols/DccEx/DccEx.svelte";
-import { ConnectionProtocols } from "./client/Protocols/protocols";
+import { ConnectionProtocols, ConnectionTypes } from "./client/Protocols/protocols";
 import type { Train } from "../services/train.svelte";
 
 export type Connections = DccEx;
@@ -22,7 +22,9 @@ export class LayoutClient {
     const res = await fetch(`/api/layout/${name}/connections`);
     const json = await res.json();
 
-    const serverConnections: { key: ConnectionUUID, protocol: ConnectionProtocols, connName: string }[] = Array.isArray(json.message) ? json.message : [];
+    const serverConnections: {
+      key: ConnectionUUID, protocol: ConnectionProtocols, connName: string, connType: ConnectionTypes
+    }[] = Array.isArray(json.message) ? json.message : [];
 
     let connections: Map<ConnectionUUID, Connections> = new Map();
 
@@ -31,7 +33,7 @@ export class LayoutClient {
 
       switch (e.protocol) {
         case ConnectionProtocols.DCCEX:
-          conn = new DccEx(name, e.key, e.connName);
+          conn = new DccEx(name, e.key, e.connName, e.connType);
           break;
         case ConnectionProtocols.LCC:
           console.log("No LCC connection availvle");
@@ -52,14 +54,14 @@ export class LayoutClient {
 
   createSSE() {
     this.eventSource = new EventSource(`/api/layout/${this.name}`);
-    
+
     this.eventSource.onmessage = (event) => this.handleData(event.data);
-    
+
     this.eventSource.onerror = (error) => {
       console.error('EventSource error:', error);
       this.eventSource?.close();
     }
-    
+
     console.log(`SSE for ${this.name} is ready to recieve data`);
   }
 
@@ -147,7 +149,7 @@ export class LayoutClient {
 
   getTrains(): Train[] {
     const trainList: Train[] = [];
-    
+
     for (const connection of this.connections.values()) {
       if (connection.trains) {
         trainList.push(...Array.from(connection.trains.values()));
@@ -160,7 +162,7 @@ export class LayoutClient {
   getConnections(): Map<ConnectionUUID, Connections> {
     return this.connections;
   }
-  
+
 }
 
 

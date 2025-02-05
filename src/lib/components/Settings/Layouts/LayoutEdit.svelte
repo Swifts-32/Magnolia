@@ -1,21 +1,12 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import type { Train } from "../../../../services/train.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
-  import { tick } from "svelte";
-  import * as Select from "$lib/components/ui/select/index.js";
   import * as Accordion from "$lib/components/ui/accordion/index.js";
-
-  import {
-    type Connections,
-    type ConnectionUUID,
-    LayoutClient,
-    type LayoutUUID,
-  } from "$lib/LayoutClient.svelte";
-  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler";
+  import { LayoutClient } from "$lib/LayoutClient.svelte";
   import { Plus } from "lucide-svelte";
+  import ConnectionEdit from "./ConnectionEdit.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -52,39 +43,23 @@
     </Dialog.Header>
 
     <div class="w-full">
-        <Accordion.Root type="single">
-            <Accordion.Item value="general">
-                <Accordion.Trigger>General</Accordion.Trigger>
-                <!-- Name -->
-                <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
-
-                  <Label for="layoutName" class="text-right">Name</Label>
-                  <Input id="layoutName" value={layout.name} class="col-span-3" />
-                </div>
-            </Accordion.Item>
+      <Accordion.Root type="single">
+        <Accordion.Item value="general">
+          <Accordion.Trigger>General</Accordion.Trigger>
+          <!-- Name -->
+          <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
+            <Label for="layoutName" class="text-right">Name</Label>
+            <Input id="layoutName" value={layout.name} class="col-span-3" />
+          </div>
+        </Accordion.Item>
 
         <Accordion.Item value="connections">
           <Accordion.Trigger>Connections</Accordion.Trigger>
           <Accordion.Content>
             <!-- Add Buttons to go to dialog to edit each connection -->
             {#each layout.connections as [key, connection]}
-              <button
-                class="border-primary border-2 px-3 flex rounded-md gap-3 w-full my-2 h-14 items-center select-none"
-                onclick={() => (editMode = true)}
-              >
-                <p class="text-xl">{connection.connName}</p>
-                <div class="flex-col flex">
-                  <p class="text-sm text-start text-gray-400">
-                    Protocol: e.g. DCC Ex, LCC, etc.
-                  </p>
-                  <!-- TODO:Add the connection type e.g. Serial, Bluetooth, etc. -->
-                  <p class="text-sm text-start text-gray-400">
-                    Type: e.g. Serial, Bluetooth, etc.
-                  </p>
-                </div>
-              </button>
+              <ConnectionEdit {connection} />
             {/each}
-
             <button
               class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-14 justify-center items-center select-none"
             >
@@ -94,33 +69,6 @@
           </Accordion.Content>
         </Accordion.Item>
       </Accordion.Root>
-
-      <!-- Connection -->
-      <!-- <div class="grid grid-cols-4 my-2 items-center gap-4">
-        <Label for="layoutConnection" class="text-right">Connection</Label>
-        <Select.Root type="single" name="layoutConnection">
-          <Select.Trigger class="w-56">
-
-            "asd"
-          </Select.Trigger>
-          <Select.Content>
-            {#if layout}
-              {#each layout.connections as [key, connection]}
-                <Select.Item value={key}>
-                  {#if connection}
-                    <div class="flex flex-col">
-                      <p>{connection.connName}</p>
-                      <p class="text-sm">UID: {key}</p>
-                    </div>
-                  {:else}
-                    <p class="text-sm">UID: {key}</p>
-                  {/if}
-                </Select.Item>
-              {/each}
-            {/if}
-          </Select.Content>
-        </Select.Root>
-      </div> -->
     </div>
 
     <Dialog.Footer>

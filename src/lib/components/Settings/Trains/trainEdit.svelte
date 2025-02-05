@@ -76,10 +76,11 @@
       </div>
 
       <!-- Connection -->
-      <div class="grid grid-cols-4 my-2 items-center gap-4">
+      <!-- TODO Convert to a dynamic width -->
+      <div class="grid grid-cols-4 my-2 items-center gap-4 w-full">
         <Label for="trainConnection" class="text-right">Connection</Label>
         <Select.Root type="single" name="trainConnection" bind:value={selectedConnectionUUID}>
-          <Select.Trigger class="w-56">
+          <Select.Trigger class="w-80">
             {selectedConnection?.connName ?? selectedConnectionUUID}
           </Select.Trigger>
           <Select.Content>
@@ -100,6 +101,9 @@
           </Select.Content>
         </Select.Root>
       </div>
+
+      <!-- TODO Add functions -->
+
     </div>
 
     <Dialog.Footer>

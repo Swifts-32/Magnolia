@@ -9,8 +9,10 @@ export const GET = async ({ params }) => {
         const connections = [...layout.connections].map(([key, value]) => ({
             key,
             protocol: value.protocol,
-            connName: value.connName,
+            connName: value.name,
+            connType: value.hardware.connType,
         }));
+
 
         return new Response(JSON.stringify({ message: connections }), { status: 200 });
     }

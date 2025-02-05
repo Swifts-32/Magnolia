@@ -2,6 +2,7 @@
   import { Plus } from "lucide-svelte";
   import LayoutEdit from "$lib/components/Settings/Layouts/LayoutEdit.svelte";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler";
+  import { Toaster } from "$lib/components/ui/sonner";
 </script>
 
 <div class="m-4">
@@ -19,3 +20,4 @@
     </button>
   </div>
 </div>
+<Toaster/>

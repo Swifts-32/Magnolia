@@ -1,12 +1,12 @@
-import { SerialConnection } from "$lib/server/Connections/Serial/SerialConnection.server";
-import { ConnectionProtocols } from "./client/Protocols/protocols";
-import { type ConnectionType } from "./server/Connections/connection";
-import { EmulatorConnection } from "./server/Connections/Emulator/Emulator.server";
+import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server";
+import { ConnectionProtocols } from "../client/Protocols/protocols";
+import { Connection } from "./Connections/connection.server";
+import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.server";
 
 export class Layout {
   public name: string;
   public rank: number = 0;
-  public connections: Map<string, ConnectionType> = new Map();
+  public connections: Map<string, Connection> = new Map();
 
   private controllers: Set<ReadableStreamDefaultController> = new Set();
 
@@ -36,34 +36,32 @@ export class Layout {
    * @param baudRate 
    */
   createDccSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string) {
-    const connection = new SerialConnection(protocol, path, baudRate, connName);
+    const hardware = new SerialConnection(path, baudRate);
     const connUUID = crypto.randomUUID();
 
-
-    connection.onDataReceived((data: string) => {
+    hardware.onDataReceived((data: string) => {
       const message = `data: Cid:${connUUID}: ${data}\n\n`;
       this.controllers.forEach(controller => controller.enqueue(message));
     });
 
+    const connection = new Connection(hardware, connName, protocol);
     this.connections.set(connUUID, connection);
+
   }
 
   /**
    * Creates an emulated DCC EX connection
    */
   createDccEmulatorConnection(protocol: ConnectionProtocols, connName: string) {
-    const connection = new EmulatorConnection(protocol, connName);
+    const hardware = new EmulatorConnection();
     const connUUID = crypto.randomUUID();
 
-
-    connection.onDataReceived((data: string) => {
-      // if (!this.streamController) return console.log(`Failed to send "${data}" to server - Stream controller is null.`);
-      // this.streamController.enqueue(`data: Cid:${connUUID}: ${data}\n\n`);
-
+    hardware.onDataReceived((data: string) => {
       const message = `data: Cid:${connUUID}: ${data}\n\n`;
       this.controllers.forEach(controller => controller.enqueue(message));
     });
 
+    const connection = new Connection(hardware, connName, protocol);
     this.connections.set(connUUID, connection);
 
   }
