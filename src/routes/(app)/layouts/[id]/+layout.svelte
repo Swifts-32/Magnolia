@@ -25,6 +25,12 @@
 			displayInNav: true,
 			displayInFooter: false,
 		},
+		{
+			linkText: "Settings",
+			url: `/layouts/${$page.params.id}/settings`,
+			displayInNav: true,
+			displayInFooter: false,
+		},
 	];
 
 	const navBarData = new NavBarData(links, curLink);

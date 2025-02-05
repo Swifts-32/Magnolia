@@ -1,5 +1,5 @@
 import type { Direction } from "../../../../(app)/layouts/[id]/throttle/throttle.js";
-import { LayoutServerHandler } from "../../../../../lib/server/layoutHandler.server.svelte.js";
+import { LayoutServerHandler } from "../../../../../lib/server/LayoutHandler.server.svelte.js";
 
 export interface LocoSpeed {
     addr: number,

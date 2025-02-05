@@ -1,22 +1,32 @@
-import type { CryptoUUID } from "$lib/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { Direction } from "../../../../routes/(app)/layouts/[id]/throttle/throttle";
 import { Train } from "../../../../services/train.svelte";
-import { ConnectionProtocols, type IProtocol } from "../protocols";
+import { ConnectionProtocols, ConnectionTypes, type IProtocol } from "../protocols";
 
 export class DccEx implements IProtocol {
-  public isConnected: boolean = $state(false);
-  public name: string | undefined = undefined;
   public powerStatus: boolean = $state(false);
-  public protocol: ConnectionProtocols = ConnectionProtocols.DCCEX;
   public trains: Map<number, Train> = new Map();
   public version: string | undefined = undefined;
-  private layoutName: string;
-  private connUUID: CryptoUUID;
+  
+  public readonly protocol: ConnectionProtocols = ConnectionProtocols.DCCEX;
+  public connType: ConnectionTypes = $state() as ConnectionTypes;
+  public connUUID: ConnectionUUID;
+  public layoutUUID: LayoutUUID;
+  public connName: string = $state() as string;
+  public isConnected: boolean = $state(false);
 
-  constructor(layoutName: string, connUUID: CryptoUUID) {
+  private layoutName: string;
+
+  constructor(layoutName: string, connUUID: ConnectionUUID, connName: string, connType: ConnectionTypes) {
     this.layoutName = layoutName;
+    // TODO: This is a hack to get the layoutUUID. We should get this from the server.
+    this.layoutUUID = layoutName;
     this.connUUID = connUUID;
+    this.connName = connName;
+    this.connType = connType;
   }
+
+
 
   processCommand(command: string) {
 
@@ -147,6 +157,6 @@ export class DccEx implements IProtocol {
   }
 
   addTrain(cab: number, name: string) {
-    this.trains.set(cab, new Train(cab, name));
+    this.trains.set(cab, new Train(cab, name, this.connUUID));
   }
 }

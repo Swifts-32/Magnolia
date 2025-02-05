@@ -1,18 +1,16 @@
-import type { ConnectionProtocols } from "$lib/client/Protocols/protocols";
-import type { IConnection } from "../connection";
+import { ConnectionProtocols, ConnectionTypes } from "$lib/client/Protocols/protocols";
+import type { IEmulatorConnection } from "../hardware";
 
-export class EmulatorConnection implements IConnection {
-  public protocol: ConnectionProtocols;
+
+export class EmulatorConnection implements IEmulatorConnection {
   public isConnected: boolean = false;
+  public readonly connType: ConnectionTypes = ConnectionTypes.Emulator;
 
   private _onDataReceived: ((data: string) => void) | null = null;
   public onDataReceived(callback: (data: string) => void) {
     this._onDataReceived = callback;
   }
 
-  constructor(protocol: ConnectionProtocols) {
-    this.protocol = protocol;
-  }
 
   connect() {
     this.isConnected = true;
@@ -27,7 +25,6 @@ export class EmulatorConnection implements IConnection {
   write(command: string) {
     if (this._onDataReceived) {
 
-      // TODO Implement a DCC EX emulator.x    
       command = command.trim();
 
       switch (true) {

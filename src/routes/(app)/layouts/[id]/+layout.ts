@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import { LayoutClient } from "$lib/LayoutClient.svelte";
+import { LayoutClient } from "$lib/client/LayoutClient.svelte";
 import type { LayoutLoad } from "./$types";
 
 export const load: LayoutLoad = async ({ params, fetch }) => {

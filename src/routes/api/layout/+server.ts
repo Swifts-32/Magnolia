@@ -1,19 +1,5 @@
-import { ConnectionProtocols } from "$lib/client/Protocols/protocols.js";
-import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
-import { json } from "@sveltejs/kit";
+import { LayoutServerHandler } from "$lib/server/LayoutHandler.server.svelte";
 
-export const GET = async ({ url }) => {
-    const param = url.searchParams.get("name");
-
-    if (param) {
-        if (LayoutServerHandler.Layouts.has(param)) {
-            return json(JSON.stringify(LayoutServerHandler.Layouts.get(param)));
-        }
-        return json(null);
-    }
-    else {
-        return json(JSON.stringify(Array.from(LayoutServerHandler.Layouts.entries())));
-    }
-
-    //TODO Remove add Layout handler
+export const GET = async () => {
+    return new Response(JSON.stringify(Array.from(LayoutServerHandler.layouts.entries())), { status: 200 });
 }

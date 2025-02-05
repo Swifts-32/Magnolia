@@ -1,15 +1,16 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 import { WindowsBinding } from '@serialport/bindings-cpp'
-import type { IConnection } from "../connection";
-import type { ConnectionProtocols } from '$lib/client/Protocols/protocols';
+import type { ISerialConnection } from "../hardware";
+import { ConnectionProtocols, ConnectionTypes } from '$lib/client/Protocols/protocols';
 
-export class SerialConnection implements IConnection {
+export class SerialConnection implements ISerialConnection {
 
     private serialPort: SerialPort | null = null;
 
     public path: string;
     public baudRate: number;
-    public protocol: ConnectionProtocols;
+    public readonly connType: ConnectionTypes = ConnectionTypes.Serial;
+
 
     private _onDataReceived: ((data: string) => void) | null = null;
     public onDataReceived(callback: (data: string) => void) {
@@ -20,11 +21,12 @@ export class SerialConnection implements IConnection {
         return this.serialPort?.isOpen ?? false;
     };
 
-    constructor(protocol: ConnectionProtocols, path: string, baudRate: number) {
+    constructor(path: string, baudRate: number) {
         this.path = path;
         this.baudRate = baudRate;
-        this.protocol = protocol
     }
+
+
 
 
     async connect() {
