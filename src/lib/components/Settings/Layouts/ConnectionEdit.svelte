@@ -68,7 +68,6 @@
         console.error("Error updating connection:", error);
         toast.error("Error updating connection");
       });
-
   }
 </script>
 
@@ -77,12 +76,11 @@
   onclick={() => (editMode = true)}
 >
   <p class="text-xl">{connection.connName}</p>
-  <div class="flex-col flex">
-    <p class="text-sm text-start text-gray-400">
+  <div class="flex-col flex items-start">
+    <p class="text-sm text-gray-400">
       Protocol: {getProtocolName(Number(connProtocol) as ConnectionProtocols)}
     </p>
-    <!-- TODO:Add the connection type e.g. Serial, Bluetooth, etc. -->
-    <p class="text-sm text-start text-gray-400">
+    <p class="text-sm text-gray-400">
       Type: {getConnectionTypeName(Number(connType) as ConnectionTypes)}
     </p>
   </div>

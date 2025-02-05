@@ -23,11 +23,11 @@
 </script>
 
 <button
-  class="border-primary border-2 p-3 rounded-md w-60 h-fit select-none"
+  class="border-primary border-2 p-3 flex gap-3 items-center rounded-md w-72 h-16 select-none"
   onclick={() => (editMode = true)}
 >
   <p class="text-2xl text-start">{layout.name}</p>
-  <div class="flex gap-3">
+  <div class="flex flex-col items-start">
     <p class="text-sm text-gray-400">Addr: {layout.name}</p>
     <p class="text-sm text-gray-400">Connection: {layout.name}</p>
   </div>

@@ -1,8 +1,9 @@
 <script lang="ts">
-  import type { LayoutData } from "../../$types";
   import TrainEdit from "$lib/components/Settings/Trains/trainEdit.svelte";
+  import type { LayoutData } from "../../$types";
   let { data }: { data: LayoutData } = $props();
 </script>
+
 
 
 <div class="m-4">

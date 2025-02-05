@@ -4,7 +4,6 @@
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
-  import { tick } from "svelte";
   import * as Select from "$lib/components/ui/select/index.js";
   import {
     type Connections,
@@ -13,6 +12,7 @@
     type LayoutUUID,
   } from "$lib/LayoutClient.svelte";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler";
+  import { TrainFront } from "lucide-svelte";
 
   interface Props {
     train: Train;
@@ -40,14 +40,14 @@
   }
 </script>
 
-
-
 <button
-  class="border-primary border-2 p-3 rounded-md w-60 h-fit select-none"
+  class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
   onclick={() => (editMode = true)}
 >
+  <TrainFront size={40} strokeWidth={1}/>
+
   <p class="text-2xl text-start">{train.name}</p>
-  <div class="flex gap-3">
+  <div class="flex-col flex items-start">
     <p class="text-sm text-gray-400">Addr: {train.addr}</p>
     <p class="text-sm text-gray-400">Connection: {selectedConnection?.connName}</p>
   </div>
