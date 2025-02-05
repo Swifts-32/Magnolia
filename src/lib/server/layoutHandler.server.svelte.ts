@@ -7,28 +7,27 @@ class LayoutServerHandlerClass {
 
     //TODO Remove adding default layout
     constructor() {
+        this.createDefaultLayout("L1", 3);
+        this.createDefaultLayout("L2", 2);
+    }
+    
 
-        this.addNewLayout("L1");
-        this.addNewLayout("L2");
-
-        let layout = this.layouts.get("L1");
-        if (!layout) {
-            console.log("Layout L1 not found");
-            return;
+    private createDefaultLayout(name: string, noOfConnections: number) {
+        let layout = this.addNewLayout(name);
+        for (let i = 0; i < noOfConnections; i++) {
+            layout.createDccEmulatorConnection(ConnectionProtocols.DCCEX, `Emulator ${i + 1}`);
         }
 
+        console.log(`Created Default Layout ${name}`);
+    }
 
-
-        layout.createDccEmulatorConnection(ConnectionProtocols.DCCEX, "Emulator 1");
-        layout.createDccEmulatorConnection(ConnectionProtocols.DCCEX, "Emulator 2");
-        layout.createDccEmulatorConnection(ConnectionProtocols.DCCEX, "Emulator 3");
-        console.log("Created Layout L1");
+    addNewLayout(name: string): Layout {
+        let layout = new Layout(name);
+        this.layouts.set(name, layout);
+        return layout;
     }
 
 
-    addNewLayout(name: string) {
-        this.layouts.set(name, new Layout(name));
-    }
 
 
 }

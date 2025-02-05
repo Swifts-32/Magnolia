@@ -13,9 +13,9 @@
     {/each}
 
     <button
-      class="border-primary border-2 p-2 rounded-md w-60 h-20 select-none flex justify-center place-items-center"
+      class="border-primary border-2 p-2 rounded-md w-72 h-16 select-none flex justify-center place-items-center"
     >
-      <Plus size={50} />
+      <Plus size={40} />
       <p class="text-xl">Add new layout</p>
     </button>
   </div>

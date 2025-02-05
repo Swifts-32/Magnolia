@@ -1,4 +1,4 @@
-import { LayoutServerHandler } from '$lib/server/layoutHandler.server.svelte.js';
+import { LayoutServerHandler } from '$lib/server/LayoutHandler.server.svelte.js';
 
 export const POST = async ({ request, params }) => {
     const { id } = params;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TrainEdit from "$lib/components/Settings/Trains/trainEdit.svelte";
+  import TrainEdit from "$lib/components/Settings/Trains/TrainEdit.svelte";
   import type { LayoutData } from "../../$types";
   let { data }: { data: LayoutData } = $props();
 </script>

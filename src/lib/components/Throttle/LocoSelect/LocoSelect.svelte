@@ -6,7 +6,7 @@
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import { cn } from "$lib/utils.js";
-    import type { Connections } from "$lib/LayoutClient.svelte";
+    import type { Connections } from "$lib/client/LayoutClient.svelte";
 
     interface Props {
         curAddr: number | undefined;

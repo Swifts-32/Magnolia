@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Connections } from "$lib/LayoutClient.svelte";
+  import type { Connections } from "$lib/client/LayoutClient.svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";

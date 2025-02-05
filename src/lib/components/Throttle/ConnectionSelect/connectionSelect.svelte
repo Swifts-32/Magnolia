@@ -6,7 +6,7 @@
     import * as Popover from "$lib/components/ui/popover/index.js";
     import { Button } from "$lib/components/ui/button/index.js";
     import { cn } from "$lib/utils.js";
-    import type { ConnectionUUID, LayoutClient } from "$lib/LayoutClient.svelte";
+    import type { ConnectionUUID, LayoutClient } from "$lib/client/LayoutClient.svelte";
 
     interface Props {
         curConnectionUUID: ConnectionUUID | null;

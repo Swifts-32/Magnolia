@@ -1,4 +1,4 @@
-import type { ConnectionUUID, LayoutUUID } from "$lib/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { Direction } from "../../../../routes/(app)/layouts/[id]/throttle/throttle";
 import { Train } from "../../../../services/train.svelte";
 import { ConnectionProtocols, ConnectionTypes, type IProtocol } from "../protocols";

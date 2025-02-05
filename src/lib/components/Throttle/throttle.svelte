@@ -9,7 +9,7 @@
         Connections,
         ConnectionUUID,
         LayoutClient,
-    } from "$lib/LayoutClient.svelte";
+    } from "$lib/client/LayoutClient.svelte";
     import ConnectionSelect from "./ConnectionSelect/connectionSelect.svelte";
 
     interface Props {

@@ -7,7 +7,7 @@
   import type { LayoutData } from "../$types";
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import Input from "$lib/components/ui/input/input.svelte";
-  import type { ConnectionUUID } from "$lib/LayoutClient.svelte";
+  import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
 
   let { data }: { data: LayoutData } = $props();
   let debugValue = $state("");

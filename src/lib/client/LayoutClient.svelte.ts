@@ -1,7 +1,7 @@
 import { toast } from "svelte-sonner";
-import { DccEx } from "./client/Protocols/DccEx/DccEx.svelte";
-import { ConnectionProtocols, ConnectionTypes } from "./client/Protocols/protocols";
-import type { Train } from "../services/train.svelte";
+import { DccEx } from "./Protocols/DccEx/DccEx.svelte";
+import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
+import type { Train } from "../../services/train.svelte";
 
 export type Connections = DccEx;
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;

@@ -1,4 +1,4 @@
-import { LayoutServerHandler } from "../../../../../../lib/server/layoutHandler.server.svelte";
+import { LayoutServerHandler } from "../../../../../../lib/server/LayoutHandler.server.svelte";
 
 export const GET = async ({ params }) => {
     let { id, connUUID } = params; // Extract the dynamic parameter

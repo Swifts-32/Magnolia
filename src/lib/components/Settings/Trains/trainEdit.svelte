@@ -10,7 +10,7 @@
     type ConnectionUUID,
     LayoutClient,
     type LayoutUUID,
-  } from "$lib/LayoutClient.svelte";
+  } from "$lib/client/LayoutClient.svelte";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler";
   import { TrainFront } from "lucide-svelte";
 

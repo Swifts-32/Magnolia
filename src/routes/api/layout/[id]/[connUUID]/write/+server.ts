@@ -1,4 +1,4 @@
-import { LayoutServerHandler } from "../../../../../../lib/server/layoutHandler.server.svelte";
+import { LayoutServerHandler } from "../../../../../../lib/server/LayoutHandler.server.svelte";
 
 export const GET = async ({ params, url }) => {
     let { id, connUUID } = params; // Extract the dynamic parameter
@@ -12,7 +12,7 @@ export const GET = async ({ params, url }) => {
         if (!connection)
             return new Response(JSON.stringify({ message: `DCC connection does not exist on layout: ${id}` }), { status: 406 });
 
-        else if (!connection.isConnected)
+        else if (!connection.hardware.isConnected)
             return new Response(JSON.stringify({ message: `DCC is not connected on layout ${id}` }), { status: 406 });
 
         else if (!data)

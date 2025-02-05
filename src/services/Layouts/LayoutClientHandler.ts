@@ -1,4 +1,4 @@
-import type { LayoutClient, LayoutUUID } from "$lib/LayoutClient.svelte";
+import type { LayoutClient, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 
 class LayoutClientHandler {
     private layouts = new Map<string, LayoutClient>();

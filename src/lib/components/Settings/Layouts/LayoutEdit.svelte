@@ -4,7 +4,7 @@
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import * as Accordion from "$lib/components/ui/accordion/index.js";
-  import { LayoutClient } from "$lib/LayoutClient.svelte";
+  import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { Plus } from "lucide-svelte";
   import ConnectionEdit from "./ConnectionEdit.svelte";
 

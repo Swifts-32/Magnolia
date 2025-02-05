@@ -1,4 +1,4 @@
-import type { ConnectionUUID } from "$lib/LayoutClient.svelte";
+import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
 import { Direction } from "../routes/(app)/layouts/[id]/throttle/throttle";
 
 export type FunctionModes = "toggle" | "select"

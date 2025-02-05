@@ -1,5 +1,5 @@
 import type { ClientInit } from "@sveltejs/kit";
-import { LayoutClient, type LayoutUUID } from "$lib/LayoutClient.svelte";
+import { LayoutClient, type LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { layoutClientHandler } from "./services/Layouts/LayoutClientHandler";
 
 export const init: ClientInit = async () => {

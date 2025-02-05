@@ -11,5 +11,18 @@ export class Connection {
         this.hardware = connection;
         this.name = name;
         this.protocol = protocol;
-    }    
+    } 
+    
+    async connect() {
+        await this.hardware.connect();
+    }
+
+
+    disconnect() {
+        this.hardware.disconnect();
+    }
+
+    write(data: string) {
+        this.hardware.write(data);
+    }
 }
