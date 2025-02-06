@@ -4,13 +4,14 @@ import type { SerialConnection } from "./Serial/SerialConnection.server";
 
 
 export interface IHardware {
-    connect: () => void;
+    connect: () => Promise<string>;
     isConnected: boolean;
     connType: ConnectionTypes;
-    disconnect: () => void;
+    disconnect: () => Promise<string>;
     write: (data: string) => void;
     onDataReceived: (callback: (data: string) => void) => void;
 }
+
 
 export interface ISerialConnection extends IHardware {
     path: string;

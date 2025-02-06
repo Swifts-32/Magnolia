@@ -5,7 +5,7 @@ import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.ser
 
 export class Layout {
   public name: string;
-  public rank: number = 0;
+  public position: number = 0;
   public connections: Map<string, Connection> = new Map();
 
   private controllers: Set<ReadableStreamDefaultController> = new Set();
@@ -25,7 +25,6 @@ export class Layout {
       cancel: (reason) => {
         this.controllers.delete(streamController);
       }
-
     });
   }
 
@@ -46,7 +45,6 @@ export class Layout {
 
     const connection = new Connection(hardware, connName, protocol);
     this.connections.set(connUUID, connection);
-
   }
 
   /**
@@ -63,6 +61,5 @@ export class Layout {
 
     const connection = new Connection(hardware, connName, protocol);
     this.connections.set(connUUID, connection);
-
   }
 }
