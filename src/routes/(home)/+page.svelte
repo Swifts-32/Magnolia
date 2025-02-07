@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler";
+    import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler.svelte";
+    import LayoutAdd from "$lib/components/Settings/Layouts/LayoutAdd.svelte";
 </script>
 
 <div class="mx-10 flex flex-col justify-center">
@@ -9,7 +10,7 @@
 
     
     <div class="flex">
-        {#each layoutClientHandler.getLayouts() as layout}
+        {#each layoutClientHandler.layouts.values() as layout}
             <button
                 class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
                 onclick={() => goto(`/layouts/${layout.uuid}`)}
@@ -17,5 +18,6 @@
                 <p class="text-3xl text-center">{layout.name}</p>
             </button>
         {/each}
+        <LayoutAdd/>
     </div>
 </div>

@@ -4,7 +4,7 @@ import { Layout } from './Layout.server.svelte';
 import { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { ConnectionTypes } from '$lib/client/Protocols/protocols';
 import type { ISerialConnection } from './Connections/Hardware/hardware';
-import type { LayoutUUID } from '$lib/client/LayoutClient.svelte';
+import { LayoutClient, type LayoutUUID } from '$lib/client/LayoutClient.svelte';
 
 class LayoutServerHandlerClass {
     public layouts: Map<LayoutUUID, Layout> = new Map();
@@ -15,17 +15,6 @@ class LayoutServerHandlerClass {
 
     constructor() {
         this.loadSavedLayouts();
-
-        //TODO Remove adding default layout
-        if (this.layouts.size === 0) {
-            this.createDefaultLayout("L1", 3);
-            this.createDefaultLayout("L2", 2);
-            console.log(`Server: Created default layouts`);
-        }
-        else {
-            console.log(`Server: Loaded ${this.layouts.size} layouts`);
-        }
-
 
         // Auto save layoutsa
         this.saveInterval = setInterval(() => {
@@ -52,21 +41,7 @@ class LayoutServerHandlerClass {
         console.log("Cleaned up LayoutServerHandler");
     }
 
-
-
-
-    private createDefaultLayout(name: string, noOfConnections: number) {
-
-        let layout = this.addNewLayout(name);
-        for (let i = 0; i < noOfConnections; i++) {
-            layout.createEmulatorConnection(ConnectionProtocols.DCCEX, `Emulator ${i + 1}`);
-        }
-
-        console.log(`Created Default Layout ${name}`);
-    }
-
-
-    addNewLayout(name: string): Layout {
+    public addNewLayout(name: string): Layout {
         const layoutUUID = crypto.randomUUID();
         let layout = new Layout(name, layoutUUID);
 
@@ -175,5 +150,6 @@ class LayoutServerHandlerClass {
         }
     }
 }
+
 
 export const LayoutServerHandler = new LayoutServerHandlerClass();

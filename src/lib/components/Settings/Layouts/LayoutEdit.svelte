@@ -8,6 +8,7 @@
   import { Plus } from "lucide-svelte";
   import ConnectionEdit from "./ConnectionEdit.svelte";
   import { toast } from "svelte-sonner";
+  import ConnectionAdd from "./ConnectionAdd.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -84,12 +85,7 @@
             {#each layout.connections as [key, connection]}
               <ConnectionEdit {connection} />
             {/each}
-            <button
-              class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-14 justify-center items-center select-none"
-            >
-              <Plus size={30} />
-              <p class="text-xl">Add Connection</p>
-            </button>
+            <ConnectionAdd />
           </Accordion.Content>
         </Accordion.Item>
       </Accordion.Root>

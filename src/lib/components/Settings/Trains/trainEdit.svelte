@@ -11,7 +11,7 @@
     LayoutClient,
     type LayoutUUID,
   } from "$lib/client/LayoutClient.svelte";
-  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler";
+  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import { TrainFront } from "lucide-svelte";
 
   interface Props {
@@ -24,8 +24,9 @@
   let editMode: boolean = $state(false);
 
   const layout: LayoutClient | undefined = $derived.by(() => {
-    return layoutClientHandler.getLayout(layoutUUID);
+    return layoutClientHandler.layouts.get(layoutUUID);
   });
+
 
   let selectedConnectionUUID: ConnectionUUID = $state(train.connectionUUID);
   const selectedConnection: Connections | undefined = $derived.by(() => {
