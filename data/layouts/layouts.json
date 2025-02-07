@@ -5,7 +5,7 @@
     "uuid": "1a82d32b-f194-4576-8384-0e334cd12b4f",
     "connections": [
       {
-        "uuid": "1dafaa4b-bfd6-43c1-bd84-4f15b91f37f8",
+        "uuid": "45efe0ef-f86c-4a81-9427-04bb73c569c2",
         "name": "Emulator 1",
         "protocol": 0,
         "hardware": {
@@ -13,7 +13,7 @@
         }
       },
       {
-        "uuid": "0c277363-bf1c-4d87-a8ec-33b1b9a83904",
+        "uuid": "6141e8c8-e43c-483a-b04f-bf718523daf7",
         "name": "Emulator 2",
         "protocol": 0,
         "hardware": {
@@ -21,7 +21,7 @@
         }
       },
       {
-        "uuid": "11fabbe8-2632-4292-9ad7-b062207cb6a9",
+        "uuid": "95938861-d808-4ebb-8934-81e9afcf4a42",
         "name": "Emulator 3",
         "protocol": 0,
         "hardware": {
@@ -36,7 +36,7 @@
     "uuid": "619d57c0-f521-4cff-9334-6c92fbe443e2",
     "connections": [
       {
-        "uuid": "fe96e9c8-5fca-47b5-b71c-14b8f363b5c8",
+        "uuid": "5abb28b1-3b73-442c-b0e2-3a721bc93930",
         "name": "Emulator 1",
         "protocol": 0,
         "hardware": {
@@ -44,7 +44,7 @@
         }
       },
       {
-        "uuid": "dbc2915c-e40e-45cc-9c46-f75e5d460eb5",
+        "uuid": "ead050bb-3ec6-4571-972d-a163a464b522",
         "name": "Emulator 2",
         "protocol": 0,
         "hardware": {
@@ -52,11 +52,5 @@
         }
       }
     ]
-  },
-  {
-    "name": "LCC 1",
-    "position": 0,
-    "uuid": "11b6daa3-40b1-43a8-957a-9035a4757417",
-    "connections": []
   }
 ]
