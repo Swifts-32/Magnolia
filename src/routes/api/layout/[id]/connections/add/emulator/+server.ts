@@ -23,7 +23,7 @@ export const POST = async ({ request, params }) => {
         const connKey = `conn_${Date.now()}`;
 
         // Add the new connection to the layout
-        layout.createDccEmulatorConnection(data.connName, data.protocol);
+        layout.createEmulatorConnection(data.connName, data.protocol);
 
         return new Response(
             JSON.stringify({

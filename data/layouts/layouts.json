@@ -1,0 +1,54 @@
+[
+  {
+    "name": "L1",
+    "position": 0,
+    "connections": [
+      {
+        "uuid": "ba057d97-9639-43fc-adcb-ae9226a5ac5e",
+        "name": "Emulator 1",
+        "protocol": 0,
+        "hardware": {
+          "type": 5
+        }
+      },
+      {
+        "uuid": "a84f4ef1-1fc3-4109-b5c7-a5863bb1c23c",
+        "name": "Emulator 2",
+        "protocol": 0,
+        "hardware": {
+          "type": 5
+        }
+      },
+      {
+        "uuid": "d64e97e7-2001-4c29-96b0-3d6743fda2b1",
+        "name": "Emulator 3",
+        "protocol": 0,
+        "hardware": {
+          "type": 5
+        }
+      }
+    ]
+  },
+  {
+    "name": "L2",
+    "position": 0,
+    "connections": [
+      {
+        "uuid": "63d094f8-87cf-4214-ab6e-5758b8363f1e",
+        "name": "Emulator 1",
+        "protocol": 0,
+        "hardware": {
+          "type": 5
+        }
+      },
+      {
+        "uuid": "1b1b182b-751e-4b28-94e9-ecdc46163fb0",
+        "name": "Emulator 2",
+        "protocol": 0,
+        "hardware": {
+          "type": 5
+        }
+      }
+    ]
+  }
+]

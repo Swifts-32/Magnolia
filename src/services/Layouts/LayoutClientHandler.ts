@@ -1,18 +1,20 @@
 import type { LayoutClient, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 
 class LayoutClientHandler {
-    private layouts = new Map<string, LayoutClient>();
+    private layouts = new Map<LayoutUUID, LayoutClient>();
 
 
-    addLayouts(layouts: Map<string, LayoutClient>) {
-        layouts.forEach(element => {
-            this.layouts.set(element.name, element);
+    addLayouts(layouts: Map<LayoutUUID, LayoutClient>) {
+        layouts.forEach((element) => {
+            this.layouts.set(element.uuid, element);
         });
     }
 
+
     addLayout(layout: LayoutClient) {
-        this.layouts.set(layout.name, layout);
+        this.layouts.set(layout.uuid, layout);
     }
+
 
     getLayout(layoutUUID: LayoutUUID) {
         return this.layouts.get(layoutUUID);

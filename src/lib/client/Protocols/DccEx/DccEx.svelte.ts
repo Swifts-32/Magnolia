@@ -15,15 +15,12 @@ export class DccEx implements IProtocol {
   public connName: string = $state() as string;
   public isConnected: boolean = $state(false);
 
-  private layoutName: string;
-
-  constructor(layoutName: string, connUUID: ConnectionUUID, connName: string, connType: ConnectionTypes) {
-    this.layoutName = layoutName;
-    // TODO: This is a hack to get the layoutUUID. We should get this from the server.
-    this.layoutUUID = layoutName;
+  constructor(layoutUUID: LayoutUUID, connUUID: ConnectionUUID, connName: string, connType: ConnectionTypes) {
+    this.layoutUUID = layoutUUID;
     this.connUUID = connUUID;
     this.connName = connName;
     this.connType = connType;
+
   }
 
 
@@ -115,7 +112,7 @@ export class DccEx implements IProtocol {
     let train = this.trains.get(cab);
 
     if (train) {
-      fetch(`/api/layout/${this.layoutName}/${this.connUUID}/write?data=<t ${cab} ${train.speed} ${dir}>`)
+      fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<t ${cab} ${train.speed} ${dir}>`)
     }
   }
 
@@ -134,9 +131,10 @@ export class DccEx implements IProtocol {
 
     if (train) {
       train.speed = speed;
-      fetch(`/api/layout/${this.layoutName}/${this.connUUID}/write?data=<t ${cab} ${speed} ${train.direction}>`)
+      fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<t ${cab} ${speed} ${train.direction}>`)
     }
   }
+
 
   setFunction(cab: number | undefined, functionId: number, state: boolean) {
     if (!cab) return;
@@ -144,7 +142,7 @@ export class DccEx implements IProtocol {
     let train = this.trains.get(cab);
 
     if (train) {
-      fetch(`/api/layout/${this.layoutName}/${this.connUUID}/write?data=<F ${cab} ${functionId} ${+state}>`)
+      fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<F ${cab} ${functionId} ${+state}>`)
     }
   }
 

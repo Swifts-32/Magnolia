@@ -14,11 +14,16 @@ export interface IHardware {
 
 
 export interface ISerialConnection extends IHardware {
+    connType: ConnectionTypes.Serial;
     path: string;
     baudRate: number;
 }
 
+
 export interface IEmulatorConnection extends IHardware {
-}
+    connType: ConnectionTypes.Emulator;
+};
+
+
 
 export type HardwareTypes = SerialConnection | EmulatorConnection;

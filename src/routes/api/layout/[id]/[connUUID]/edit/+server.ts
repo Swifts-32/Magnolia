@@ -1,7 +1,7 @@
 import { ConnectionTypes } from "$lib/client/Protocols/protocols";
 import { EmulatorConnection } from "$lib/server/Connections/Hardware/Emulator/Emulator.server.js";
 import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server.js";
-import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
+import { LayoutServerHandler } from "$lib/server/LayoutHandler.server.svelte";
 
 export const POST = async ({ request, params }) => {
     const { id, connUUID } = params;
@@ -51,7 +51,8 @@ export const POST = async ({ request, params }) => {
 
         // Update the connection in the layout
         layout.connections.set(connUUID, connection);
-
+        LayoutServerHandler.saveLayouts();
+        
         return new Response(
             JSON.stringify({
                 message: 'Connection updated successfully',

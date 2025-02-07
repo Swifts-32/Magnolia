@@ -4,10 +4,12 @@ import { layoutClientHandler } from "./services/Layouts/LayoutClientHandler";
 
 export const init: ClientInit = async () => {
     const json = await fetch("/api/layout").then(res => res.json());
-    const layouts = json.map(([name, _config]: [LayoutUUID, any]) => ({ name }));
+    const layouts = json.map(([uuid, config]: [LayoutUUID, any]) => ({ uuid, config }));
+
 
     for (const layout of layouts) {
-        layoutClientHandler.addLayout(await LayoutClient.create(layout.name, fetch));
+        const layoutClient = await LayoutClient.create(layout.uuid, fetch);
+        layoutClientHandler.addLayout(layoutClient);
     }
 
     console.log("Client Init");

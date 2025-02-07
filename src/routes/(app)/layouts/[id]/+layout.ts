@@ -1,17 +1,22 @@
 import { browser } from "$app/environment";
-import { LayoutClient } from "$lib/client/LayoutClient.svelte";
+import { goto } from "$app/navigation";
+import { type LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import { redirect } from "@sveltejs/kit";
+import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler";
 import type { LayoutLoad } from "./$types";
 
 export const load: LayoutLoad = async ({ params, fetch }) => {
     const { id } = params;
 
-    const Layout = await LayoutClient.create(id, fetch);
+    const layout = layoutClientHandler.getLayout(id as LayoutUUID);
+    if (!layout) return redirect(300, "/");
+
 
     if (browser) {
-        Layout.createSSE();
+        layout.createSSE();
     }
 
     return {
-        Layout
+        layout
     };
 }

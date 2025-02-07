@@ -19,14 +19,11 @@
 
   <div class="flex flex-col gap-3">
     {@render layoutButton("Trains", () =>
-      goto(`/layouts/${data.Layout.name}/settings/trains`)
+      goto(`/layouts/${data.layout.uuid}/settings/trains`)
     )}
-    {@render layoutButton("Accessories", () =>
-      goto(`/layouts/${data.Layout.name}/settings/accessories`)
-    )}
-    {@render layoutButton("Connections", () =>
-      goto(`/layouts/${data.Layout.name}/settings/connections`)
-    )}
+    {@render layoutButton("Accessories", () => {})}
+
+    {@render layoutButton("Connections", () => {})}
   </div>
 </div>
 

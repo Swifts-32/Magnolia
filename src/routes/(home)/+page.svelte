@@ -12,7 +12,7 @@
         {#each layoutClientHandler.getLayouts() as layout}
             <button
                 class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
-                onclick={() => goto(`/layouts/${layout.name}`)}
+                onclick={() => goto(`/layouts/${layout.uuid}`)}
             >
                 <p class="text-3xl text-center">{layout.name}</p>
             </button>

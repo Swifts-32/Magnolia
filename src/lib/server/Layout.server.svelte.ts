@@ -1,3 +1,4 @@
+import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server";
 import { ConnectionProtocols } from "../client/Protocols/protocols";
 import { Connection } from "./Connections/connection.server";
@@ -5,22 +6,27 @@ import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.ser
 
 export class Layout {
   public name: string;
+  public uuid: LayoutUUID;
   public position: number = 0;
   public connections: Map<string, Connection> = new Map();
 
   private controllers: Set<ReadableStreamDefaultController> = new Set();
 
-  constructor(name: string) {
+  constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
+    this.uuid = uuid;
   }
+
 
   createStream(): ReadableStream {
     let streamController: ReadableStreamDefaultController;
 
+    console.log("Creating stream");
     return new ReadableStream({
       start: (controller) => {
         streamController = controller;
         this.controllers.add(controller);
+        controller.enqueue("Connected\n");
       },
       cancel: (reason) => {
         this.controllers.delete(streamController);
@@ -34,7 +40,7 @@ export class Layout {
    * @param path 
    * @param baudRate 
    */
-  createDccSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string) {
+  createSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string) {
     const hardware = new SerialConnection(path, baudRate);
     const connUUID = crypto.randomUUID();
 
@@ -50,7 +56,7 @@ export class Layout {
   /**
    * Creates an emulated DCC EX connection
    */
-  createDccEmulatorConnection(protocol: ConnectionProtocols, connName: string) {
+  createEmulatorConnection(protocol: ConnectionProtocols, connName: string) {
     const hardware = new EmulatorConnection();
     const connUUID = crypto.randomUUID();
 

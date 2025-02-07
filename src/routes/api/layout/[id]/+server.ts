@@ -1,22 +1,19 @@
-import { LayoutServerHandler } from "$lib/server/LayoutHandler.server.svelte";
-import { type RequestHandler } from "@sveltejs/kit";
+import type { LayoutUUID } from '$lib/client/LayoutClient.svelte';
+import { LayoutServerHandler } from '$lib/server/layoutHandler.server.svelte';
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET = async ({ params }) => {
+    let { id } = params; // Extract the dynamic parameter
 
-    const { id } = params;
-    if (!id) return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
+    const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
+    if (!layout) {
+        return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
+    }
 
-    let layout = LayoutServerHandler.layouts.get(id);
-    if (!layout) return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
+    const layoutData = {
+        name: layout.name,
+        uuid: layout.uuid,
+        rank: layout.position,
+    }
 
-    console.log("Creating New Stream");
-
-    return new Response(layout.createStream(), {
-        headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            Connection: 'keep-alive'
-        }
-    });
-
-};
+    return new Response(JSON.stringify({ message: layoutData }), { status: 200 });
+}

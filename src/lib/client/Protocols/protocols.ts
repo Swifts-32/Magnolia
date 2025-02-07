@@ -1,4 +1,4 @@
-import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import type { Direction } from "../../../routes/(app)/layouts/[id]/throttle/throttle";
 import type { Train } from "../../../services/train.svelte";
 import type { DccEx } from "./DccEx/DccEx.svelte";
@@ -54,7 +54,7 @@ export interface IProtocol {
 
     connName: string;
     connType: ConnectionTypes;
-    layoutUUID: string;
+    layoutUUID: LayoutUUID;
     connUUID: ConnectionUUID;
     powerStatus: boolean;
     protocol: ConnectionProtocols;
