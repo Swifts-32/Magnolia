@@ -56,43 +56,8 @@ class LayoutServerHandlerClass {
             mkdirSync(LayoutServerHandlerClass.LAYOUTS_DIR, { recursive: true });
         }
 
-        const layoutsData = Array.from(this.layouts.entries()).map(([name, layout]) => ({
-            name: layout.name,
-            position: layout.position,
-            uuid: layout.uuid,
-            connections: Array.from(layout.connections.entries()).map(([uuid, connection]) => {
-                const baseConfig = {
-                    uuid,
-                    name: connection.name,
-                    protocol: connection.protocol,
-                    hardware: {
-                        type: connection.hardware.connType,
-                    }
-                };
-
-                // Add hardware-specific configuration
-                switch (connection.hardware.connType) {
-                    case ConnectionTypes.Serial:
-                        const hardware = connection.hardware as ISerialConnection;
-                        return {
-                            ...baseConfig,
-                            hardware: {
-                                ...baseConfig.hardware,
-                                path: hardware.path,
-                                baudRate: hardware.baudRate,
-                            }
-                        };
-                    default:
-
-                        return baseConfig;
-
-
-                }
-
-            })
-        }));
-
-
+        const layoutsData = Array.from(this.layouts.values()).map(layout => layout.toJSON());
+        
         const filePath = join(LayoutServerHandlerClass.LAYOUTS_DIR, 'layouts.json');
         writeFileSync(filePath, JSON.stringify(layoutsData, null, 2));
     }

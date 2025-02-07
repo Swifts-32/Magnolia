@@ -1,4 +1,5 @@
 <script lang="ts">
+  import TrainAdd from "$lib/components/Settings/Trains/TrainAdd.svelte";
   import TrainEdit from "$lib/components/Settings/Trains/TrainEdit.svelte";
   import type { LayoutData } from "../../$types";
   
@@ -12,5 +13,6 @@
     {#each data.layout.getTrains() as train}
       <TrainEdit {train} layoutUUID={data.layout.uuid} />
     {/each}
+    <TrainAdd layoutUUID={data.layout.uuid} />
   </div>
 </div>

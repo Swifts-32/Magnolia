@@ -28,7 +28,6 @@ export class LayoutClient {
     const json = await fetch(`/api/layout/${layoutUUID}`).then(res => res.json());
     const layoutData = json.message;
     
-    console.log("Created layout: ", layoutData.name);
     return new LayoutClient(layoutData.name, connections, layoutUUID);
   }
 

@@ -85,7 +85,7 @@
             {#each layout.connections as [key, connection]}
               <ConnectionEdit {connection} />
             {/each}
-            <ConnectionAdd />
+            <ConnectionAdd {layout} />
           </Accordion.Content>
         </Accordion.Item>
       </Accordion.Root>

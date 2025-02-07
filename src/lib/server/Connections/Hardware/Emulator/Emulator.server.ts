@@ -4,7 +4,8 @@ import type { IEmulatorConnection } from "../hardware";
 
 export class EmulatorConnection implements IEmulatorConnection {
   public isConnected: boolean = false;
-  public readonly connType: ConnectionTypes = ConnectionTypes.Emulator;
+  public connType: ConnectionTypes.Emulator = ConnectionTypes.Emulator;
+
 
   private dataReceived: ((data: string) => void) | null = null;
   public onDataReceived(callback: (data: string) => void) {
@@ -103,5 +104,11 @@ export class EmulatorConnection implements IEmulatorConnection {
           break;
       }
     }
+  }
+
+  toJSON() {
+    return {
+      connType: this.connType
+    };
   }
 }

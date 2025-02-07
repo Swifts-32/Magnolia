@@ -16,7 +16,8 @@ class LayoutClientHandler {
             } else if (this.layouts.has(layout.uuid)) {
                 // Layout exists, update it
                 const layoutClient = this.layouts.get(layout.uuid);
-                // Add in an update function
+                // TODO: Add in an update function for connections
+
             }
             else {
                 this.layouts.delete(layout.uuid);
