@@ -13,15 +13,16 @@
   let debugValue = $state("");
   let debugTrainValue: number = $state(23);
 
-  let uuid: ConnectionUUID | undefined = data.Layout.connections.keys().next()
+  let uuid: ConnectionUUID | undefined = data.layout.connections.keys().next()
     .value as ConnectionUUID;
 </script>
 
-{#if data.Layout}
+{#if data.layout}
   <main class="m-5">
     <!-- Debug controls for DCC EX -->
     <div class="my-4 border-2 p-3 flex flex-col gap-2">
       <p>Debug</p>
+      <p>Connection UUID: {uuid}</p>
 
       <div class="flex gap-2">
         <Button onclick={() => (debugValue = "<t 3 10 0>")}>Speed</Button>
@@ -31,45 +32,50 @@
 
       <div class="flex gap-2">
         <Input class="w-30" bind:value={debugValue} />
-        <Button class="w-40" onclick={async () => await data.Layout.write(uuid, debugValue)}
+        <Button
+          class="w-40"
+          onclick={async () => await data.layout.write(uuid, debugValue)}
           >Send</Button
         >
         <Input class="w-16" bind:value={debugTrainValue} />
-        <Button class="w-40" onclick={() => data.Layout.connections
-            .get(uuid)
-            ?.addTrain(debugTrainValue, `New Train ${debugTrainValue}`)}
+        <Button
+          class="w-40"
+          onclick={() =>
+            data.layout.connections
+              .get(uuid)
+              ?.addTrain(debugTrainValue, `New Train ${debugTrainValue}`)}
           >Add New Train</Button
-  
         >
       </div>
     </div>
 
-
     <div class="flex gap-2 content-center mb-5">
       <!-- Connection button for theDCC CS
        Shows the connection status of the DCC CS -->
-      {#if data.Layout.connections.get(uuid)?.isConnected}
+      {#if data.layout.connections.get(uuid)?.isConnected}
         <Button
           class="w-40"
-          onclick={async () => await data.Layout.disconnect(uuid)}
+          onclick={async () => await data.layout.disconnect(uuid)}
         >
           <PowerOff />
+
           Disconnect DCC
         </Button>
       {:else}
         <Button
           class="w-40"
-          onclick={async () => await data.Layout.connect(uuid)}
+          onclick={async () => await data.layout.connect(uuid)}
         >
           <Power />
+
           Connect DCC
         </Button>
       {/if}
 
       <!-- Emergency Stop -->
       <Button
-        disabled={!data.Layout.connections.get(uuid)?.isConnected}
-        onclick={async () => await data.Layout.write(uuid, "<!>")}
+        disabled={!data.layout.connections.get(uuid)?.isConnected}
+        onclick={async () => await data.layout.write(uuid, "<!>")}
         variant="destructive"
         size="icon"
       >
@@ -79,7 +85,7 @@
       <div class="flex items-center space-x-2">
         <!-- TODO: Add power status to page-->
         <Switch
-          disabled={!data.Layout.connections.get(uuid)?.isConnected}
+          disabled={!data.layout.connections.get(uuid)?.isConnected}
           id="track-power"
           checked={false}
         />
@@ -88,8 +94,8 @@
     </div>
 
     <div class="flex flex-row justify-center gap-4">
-      <Throttle curLayout={data.Layout} />
-      <Throttle curLayout={data.Layout} />
+      <Throttle curLayout={data.layout} />
+      <Throttle curLayout={data.layout} />
     </div>
   </main>
 {:else}

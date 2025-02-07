@@ -13,14 +13,14 @@ export class Connection {
         this.protocol = protocol;
     } 
     
-    async connect() {
-        await this.hardware.connect();
+    async connect(): Promise<string> {
+        return await this.hardware.connect();
     }
 
-
-    disconnect() {
-        this.hardware.disconnect();
+    async disconnect(): Promise<string> {
+        return await this.hardware.disconnect();
     }
+
 
     write(data: string) {
         this.hardware.write(data);

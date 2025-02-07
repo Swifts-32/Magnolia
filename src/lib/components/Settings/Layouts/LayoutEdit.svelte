@@ -7,6 +7,8 @@
   import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { Plus } from "lucide-svelte";
   import ConnectionEdit from "./ConnectionEdit.svelte";
+  import { toast } from "svelte-sonner";
+  import ConnectionAdd from "./ConnectionAdd.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -16,21 +18,44 @@
 
   let editMode: boolean = $state(false);
 
+  let layoutName: string = $state(layout.name);
+
   function saveChanges() {
-    fetch(`/api/layout/${layout.name}/trains/add`);
-    editMode = false;
+    const data: any = {
+      layoutName: layoutName,
+    };
+
+    fetch(`/api/layout/${layout.uuid}/edit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (response.ok) {
+          editMode = false; // Close the dialog on success
+          toast.success("Layout updated successfully");
+
+          // Update the layout
+          layout.name = layoutName;
+        } else {
+          console.error("Failed to update layout");
+          toast.error("Failed to update layout");
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating layout:", error);
+        toast.error("Error updating layout");
+      });
   }
 </script>
 
 <button
-  class="border-primary border-2 p-3 flex gap-3 items-center rounded-md w-72 h-16 select-none"
+  class="border-primary border-2 p-3 items-center rounded-md w-96 h-16 select-none"
   onclick={() => (editMode = true)}
 >
   <p class="text-2xl text-start">{layout.name}</p>
-  <div class="flex flex-col items-start">
-    <p class="text-sm text-gray-400">Addr: {layout.name}</p>
-    <p class="text-sm text-gray-400">Connection: {layout.name}</p>
-  </div>
 </button>
 
 <Dialog.Root open={editMode}>
@@ -49,7 +74,7 @@
           <!-- Name -->
           <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
             <Label for="layoutName" class="text-right">Name</Label>
-            <Input id="layoutName" value={layout.name} class="col-span-3" />
+            <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
           </div>
         </Accordion.Item>
 
@@ -60,12 +85,7 @@
             {#each layout.connections as [key, connection]}
               <ConnectionEdit {connection} />
             {/each}
-            <button
-              class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-14 justify-center items-center select-none"
-            >
-              <Plus size={30} />
-              <p class="text-xl">Add Connection</p>
-            </button>
+            <ConnectionAdd />
           </Accordion.Content>
         </Accordion.Item>
       </Accordion.Root>

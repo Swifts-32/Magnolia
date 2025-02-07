@@ -12,9 +12,9 @@ export class SerialConnection implements ISerialConnection {
     public readonly connType: ConnectionTypes = ConnectionTypes.Serial;
 
 
-    private _onDataReceived: ((data: string) => void) | null = null;
+    private dataReceived: ((data: string) => void) | null = null;
     public onDataReceived(callback: (data: string) => void) {
-        this._onDataReceived = callback;
+        this.dataReceived = callback;
     }
 
     public get isConnected(): boolean {
@@ -29,7 +29,7 @@ export class SerialConnection implements ISerialConnection {
 
 
 
-    async connect() {
+    async connect(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
 
             this.serialPort = new SerialPort({
@@ -43,14 +43,14 @@ export class SerialConnection implements ISerialConnection {
             this.serialPort.pipe(parser);
 
             parser.on('data', (data) => {
-                if (this._onDataReceived) {
-                    this._onDataReceived(data);
+                if (this.dataReceived) {
+                    this.dataReceived(data);
                 }
             });
 
             this.serialPort.open((err) => {
                 if (err) {
-                    reject(err.message);
+                    reject(`Failed to open port on ${this.path}: ${err.message}`);
                 }
 
                 resolve(`Successfully opened port on ${this.path}`);
@@ -58,21 +58,23 @@ export class SerialConnection implements ISerialConnection {
         });
     }
 
-    disconnect() {
+    disconnect(): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
         if (this.serialPort) {
             this.serialPort.close((err) => {
                 if (err) {
-                    console.log(`Error closing port on ${this.path}: ${err.message}`)
+                    reject(err.message);
                 }
-                else {
-                    console.log(`Successfully closed port on ${this.path}`);
-                }
-            });
-        }
-        else {
-            console.log("Serial port does not exist");
-        }
+
+                resolve(`Successfully closed port on ${this.path}`);
+                });
+            }
+            else {
+                reject("Serial port does not exist");
+            }
+        });
     }
+
 
     write(data: string) {
         if (this.serialPort?.isOpen) {
