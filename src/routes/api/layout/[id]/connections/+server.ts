@@ -5,17 +5,11 @@ export const GET = async ({ params }) => {
     let { id } = params; // Extract the dynamic parameter
 
     const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
-
-    if (layout) {
-        const connections = [...layout.connections].map(([key, value]) => ({
-            key,
-            protocol: value.protocol,
-            connName: value.name,
-            connType: value.hardware.connType,
-        }));
-
-
-        return new Response(JSON.stringify({ message: connections }), { status: 200 });
+    if (!layout) {
+        return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
     }
-    return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
+
+    const connections = [...layout.connections.values()].map(connection => connection.toJSON());
+    return new Response(JSON.stringify({ message: connections }), { status: 200 });
+
 }

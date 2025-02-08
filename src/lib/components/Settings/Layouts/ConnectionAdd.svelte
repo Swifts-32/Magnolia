@@ -15,7 +15,6 @@
   } from "$lib/client/Protocols/protocols";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
-  import { DccEx } from "$lib/client/Protocols/DccEx/DccEx.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -26,15 +25,11 @@
   let editMode: boolean = $state(false);
 
   let connName: string | undefined = $state();
-  let connProtocol: string | undefined = $state();
-  let connType: string | undefined = $state();
+  let connProtocol: string = $state(ConnectionProtocols.DCCEX.toString());
+  let connType: string = $state(ConnectionTypes.Serial.toString());
 
   async function saveChanges() {
-    if (
-      connName === undefined ||
-      connProtocol === undefined ||
-      connType === undefined
-    ) {
+    if (connName === undefined) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -62,20 +57,6 @@
 
           // Refresh the layout
           layoutClientHandler.refreshLayouts();
-
-          switch (Number(connProtocol)) {
-            case ConnectionProtocols.DCCEX:
-              layout.connections.set(
-                json.connUUID,
-                new DccEx(
-                  layout.uuid,
-                  json.connUUID,
-                  connName ?? "Undefined",
-                  Number(connType)
-                )
-              );
-              break;
-          }
         } else {
           toast.error("Failed to add connection");
         }

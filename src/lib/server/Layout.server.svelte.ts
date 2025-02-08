@@ -1,14 +1,16 @@
-import type { Connections, ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server";
 import { ConnectionProtocols } from "../client/Protocols/protocols";
 import { Connection } from "./Connections/connection.svelte";
 import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.server";
+import { ServerTrain, type TrainAddress, type TrainUUID } from "./Trains/Train.server";
 
 export class Layout {
   public name: string;
   public uuid: LayoutUUID;
   public position: number = 0;
   public connections: Map<ConnectionUUID, Connection> = new Map();
+  public trains: Map<TrainUUID, ServerTrain> = new Map();
 
   private controllers: Set<ReadableStreamDefaultController> = new Set();
 
@@ -32,6 +34,13 @@ export class Layout {
         this.controllers.delete(streamController);
       }
     });
+  }
+
+
+  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain {
+    const train = new ServerTrain(address, trainName, connUUID, trainUUID);
+    this.trains.set(train.uuid, train);
+    return train;
   }
 
 
@@ -78,7 +87,8 @@ export class Layout {
       name: this.name,
       uuid: this.uuid,
       position: this.position,
-      connections: Array.from(this.connections.values()).map(conn => conn.toJSON())
+      connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
+      trains: Array.from(this.trains.values()).map(train => train.toJSON())
     };
   }
 }

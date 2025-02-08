@@ -1,43 +1,76 @@
 <script lang="ts">
+  import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import type { Train } from "../../../../services/train.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
-  import * as Select from "$lib/components/ui/select/index.js";
   import {
     type Connections,
     type ConnectionUUID,
     LayoutClient,
-    type LayoutUUID,
   } from "$lib/client/LayoutClient.svelte";
-  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import { TrainFront } from "lucide-svelte";
+  import type { ClientTrain } from "$lib/client/Trains/Train";
+  import { toast } from "svelte-sonner";
+  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 
   interface Props {
-    train: Train;
-    layoutUUID: LayoutUUID;
+    train: ClientTrain;
+    layout: LayoutClient;
   }
 
-  let { train, layoutUUID }: Props = $props();
+  let { train, layout }: Props = $props();
 
   let editMode: boolean = $state(false);
 
-  const layout: LayoutClient | undefined = $derived.by(() => {
-    return layoutClientHandler.layouts.get(layoutUUID);
-  });
-
-
-  let selectedConnectionUUID: ConnectionUUID = $state(train.connectionUUID);
+  let selectedConnectionUUID: ConnectionUUID = $state(train.connUUID);
   const selectedConnection: Connections | undefined = $derived.by(() => {
     if (layout) {
       return layout.connections.get(selectedConnectionUUID);
     }
   });
 
-  function saveChanges() {
-    fetch(`/api/layout/${layoutUUID}/${selectedConnectionUUID}/trains/add`);
-    editMode = false;
+  let trainName: string = $state(train.name);
+  let trainAddress: string = $state(train.address.toString());
+
+  async function saveChanges() {
+    if (
+      trainName === undefined ||
+      trainAddress === undefined ||
+      selectedConnectionUUID === undefined
+    ) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const data: any = {
+      uuid: train.uuid,
+      name: trainName,
+      address: trainAddress,
+      connUUID: selectedConnectionUUID,
+    };
+
+    fetch(`/api/layout/${layout.uuid}/trains/edit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then(async (response) => {
+        if (response.ok) {
+          editMode = false; // Close the dialog on success
+          toast.success("Train edited successfully");
+
+          layoutClientHandler.refreshLayouts();
+        } else {
+          toast.error("Failed to edit train");
+        }
+      })
+
+      .catch((error) => {
+        toast.error("Error editing train: " + error);
+      });
   }
 </script>
 
@@ -45,12 +78,14 @@
   class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
   onclick={() => (editMode = true)}
 >
-  <TrainFront size={40} strokeWidth={1}/>
+  <TrainFront size={40} strokeWidth={1} />
 
   <p class="text-2xl text-start">{train.name}</p>
   <div class="flex-col flex items-start">
-    <p class="text-sm text-gray-400">Addr: {train.addr}</p>
-    <p class="text-sm text-gray-400">Connection: {selectedConnection?.connName}</p>
+    <p class="text-sm text-gray-400">Addr: {train.address}</p>
+    <p class="text-sm text-gray-400">
+      Connection: {selectedConnection?.connName}
+    </p>
   </div>
 </button>
 
@@ -67,44 +102,24 @@
       <!-- Name -->
       <div class="grid grid-cols-4 my-2 items-center gap-4">
         <Label for="trainName" class="text-right">Name</Label>
-        <Input id="trainName" value={train.name} class="col-span-3" />
+        <Input id="trainName" bind:value={trainName} class="col-span-3" />
       </div>
+
 
       <!-- Address -->
       <div class="grid grid-cols-4 my-2 items-center gap-4">
         <Label for="trainAddress" class="text-right">Address</Label>
-        <Input id="trainAddress" value={train.addr} class="col-span-3" />
+        <Input id="trainAddress" bind:value={trainAddress} class="col-span-3" />
       </div>
+
 
       <!-- Connection -->
-      <!-- TODO Convert to a dynamic width -->
-      <div class="grid grid-cols-4 my-2 items-center gap-4 w-full">
-        <Label for="trainConnection" class="text-right">Connection</Label>
-        <Select.Root type="single" name="trainConnection" bind:value={selectedConnectionUUID}>
-          <Select.Trigger class="w-80">
-            {selectedConnection?.connName ?? selectedConnectionUUID}
-          </Select.Trigger>
-          <Select.Content>
-            {#if layout}
-              {#each layout.connections as [key, connection]}
-                <Select.Item value={key}>
-                  {#if connection}
-                    <div class="flex flex-col">
-                      <p>{connection.connName}</p>
-                      <p class="text-sm">UID: {key}</p>
-                    </div>
-                  {:else}
-                    <p class="text-sm">UID: {key}</p>
-                  {/if}
-                </Select.Item>
-              {/each}
-            {/if}
-          </Select.Content>
-        </Select.Root>
-      </div>
+      <ConnectionSelector
+        connections={layout.connections}
+        bind:selectedConnectionUUID
+      />
 
       <!-- TODO Add functions -->
-
     </div>
 
     <Dialog.Footer>

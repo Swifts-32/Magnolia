@@ -1,7 +1,8 @@
 import { toast } from "svelte-sonner";
 import { DccEx } from "./Protocols/DccEx/DccEx.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
-import type { Train } from "../../services/train.svelte";
+import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
+import { ClientTrain } from "./Trains/Train";
 
 export type Connections = DccEx;
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -12,23 +13,45 @@ export class LayoutClient {
   eventSource: EventSource | null = null;
   public name: string = $state() as string;
   public uuid: LayoutUUID = $state() as LayoutUUID;
-  public connections: Map<ConnectionUUID, Connections> = new Map();
+  public connections: Map<ConnectionUUID, Connections> = $state(new Map());
+  public trains: Map<TrainUUID, ClientTrain> = $state(new Map());
 
-  private constructor(name: string, connections: Map<ConnectionUUID, Connections>, uuid: LayoutUUID) {
+
+  private constructor(name: string, uuid: LayoutUUID, trains: Map<TrainUUID, ClientTrain>, connections: Map<ConnectionUUID, Connections>) {
     this.name = name;
-    this.connections = connections;
     this.uuid = uuid;
+
+    this.addConnections(connections);
+    this.addTrains(trains);
   }
+
 
 
   static async create(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch): Promise<LayoutClient> {
     let connections: Map<ConnectionUUID, Connections> = await LayoutClient.fetchLayoutConnections(layoutUUID, fetch);
-    
+
     // Fetch layout data
-    const json = await fetch(`/api/layout/${layoutUUID}`).then(res => res.json());
-    const layoutData = json.message;
-    
-    return new LayoutClient(layoutData.name, connections, layoutUUID);
+    const layoutData = await fetch(`/api/layout/${layoutUUID}`).then(res => res.json().then(data => {
+      return data.message;
+    }));
+
+    // TODO: Add functions to the trains
+    const serverTrains: {
+      uuid: TrainUUID,
+      connUUID: ConnectionUUID,
+      address: TrainAddress,
+      name: string,
+    }[] = Array.isArray(layoutData.trains) ? layoutData.trains : [];
+
+    let trains: Map<TrainUUID, ClientTrain> = new Map();
+    serverTrains.forEach(train => {
+      trains.set(train.uuid, new ClientTrain(train.uuid, train.address, train.name, train.connUUID));
+    });
+
+    console.log(`Loaded ${trains.size} trains`);
+
+    return new LayoutClient(layoutData.name, layoutUUID, trains, connections);
+
   }
 
   private static async fetchLayoutConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch): Promise<Map<ConnectionUUID, Connections>> {
@@ -36,30 +59,34 @@ export class LayoutClient {
     const json = await res.json();
 
     const serverConnections: {
-      key: ConnectionUUID,
+      name: string,
       protocol: ConnectionProtocols,
-      connName: string,
-      connType: ConnectionTypes,
+      uuid: ConnectionUUID,
+      hardware: {
+        connType: ConnectionTypes,
+      },
     }[] = Array.isArray(json.message) ? json.message : [];
 
     let connections: Map<ConnectionUUID, Connections> = new Map();
 
-    serverConnections.forEach((e) => {
+    serverConnections.forEach(serverData => {
       let conn: Connections | null = null;
 
-      switch (e.protocol) {
+      switch (serverData.protocol) {
         case ConnectionProtocols.DCCEX:
-          conn = new DccEx(layoutUUID, e.key, e.connName, e.connType);
+          conn = new DccEx(layoutUUID, serverData.uuid, serverData.name, serverData.hardware.connType);
           break;
+
         case ConnectionProtocols.LCC:
           console.log("No LCC connection availvle");
           break;
         default:
+          console.log("Unknown protocol");
           break;
       }
 
       if (conn) {
-        connections.set(e.key, conn);
+        connections.set(serverData.uuid, conn);
       }
 
     });
@@ -69,6 +96,7 @@ export class LayoutClient {
 
   createSSE() {
     this.eventSource = new EventSource(`/api/layout/${this.uuid}/stream`);
+
 
     this.eventSource.onmessage = (event) => this.handleData(event.data);
 
@@ -162,20 +190,59 @@ export class LayoutClient {
     }
   }
 
-  getTrains(): Train[] {
-    const trainList: Train[] = [];
-
-    for (const connection of this.connections.values()) {
-      if (connection.trains) {
-        trainList.push(...Array.from(connection.trains.values()));
-      }
-    }
-
-    return trainList;
-  }
 
   getConnections(): Map<ConnectionUUID, Connections> {
     return this.connections;
+  }
+
+  public addTrains(trains: Map<TrainUUID, ClientTrain>) {
+    for (const train of trains.values()) {
+      this.trains.set(train.uuid, train);
+    }
+  }
+  public addConnections(connections: Map<ConnectionUUID, Connections>) {
+    for (const connection of connections.values()) {
+      this.connections.set(connection.connUUID, connection);
+    }
+  }
+
+  public async fetchTrains() {
+    // Fetch layout data
+    const layoutData = await fetch(`/api/layout/${this.uuid}`).then(res => res.json().then(data => {
+      return data.message;
+
+    }));
+
+    const serverTrains: {
+      uuid: TrainUUID,
+      connUUID: ConnectionUUID,
+      address: TrainAddress,
+      name: string,
+    }[] = Array.isArray(layoutData.trains) ? layoutData.trains : [];
+
+
+    let trains: Map<TrainUUID, ClientTrain> = new Map();
+
+    serverTrains.forEach(trainData => {
+      // TODO Remove trains on client that are not in the server
+      if (this.trains.has(trainData.uuid)) {
+        // Train exists, update it
+        let clientTrain = this.trains.get(trainData.uuid);
+        if (clientTrain) {
+          clientTrain.address = trainData.address;
+          clientTrain.name = trainData.name;
+          clientTrain.connUUID = trainData.connUUID;
+        }
+
+        // TODO: Add functions to the train
+      }
+      else {
+        // Train does not exist, create it
+        trains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID));
+      }
+    });
+
+    this.trains = trains;
   }
 
 }

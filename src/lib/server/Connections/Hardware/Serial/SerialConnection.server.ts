@@ -11,7 +11,6 @@ export class SerialConnection implements ISerialConnection {
     public baudRate: number;
     public connType: ConnectionTypes.Serial = ConnectionTypes.Serial;
 
-
     private dataReceived: ((data: string) => void) | null = null;
     public onDataReceived(callback: (data: string) => void) {
         this.dataReceived = callback;

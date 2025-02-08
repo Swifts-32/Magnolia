@@ -9,7 +9,7 @@ export class DccEx implements IProtocol {
   public version: string | undefined = undefined;
   
   public readonly protocol: ConnectionProtocols = ConnectionProtocols.DCCEX;
-  public connType: ConnectionTypes = $state() as ConnectionTypes;
+  public connType: ConnectionTypes;
   public connUUID: ConnectionUUID;
   public layoutUUID: LayoutUUID;
   public connName: string = $state() as string;
@@ -20,7 +20,6 @@ export class DccEx implements IProtocol {
     this.connUUID = connUUID;
     this.connName = connName;
     this.connType = connType;
-
   }
 
 

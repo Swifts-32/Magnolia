@@ -9,11 +9,5 @@ export const GET = async ({ params }) => {
         return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
     }
 
-    const layoutData = {
-        name: layout.name,
-        uuid: layout.uuid,
-        rank: layout.position,
-    }
-
-    return new Response(JSON.stringify({ message: layoutData }), { status: 200 });
+    return new Response(JSON.stringify({ message: layout.toJSON() }), { status: 200 });
 }
