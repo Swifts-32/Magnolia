@@ -13,28 +13,26 @@ export const POST = async ({ request, params }) => {
         const data = await request.json();
 
         // Validate required fields
-        if (!data.connName || !data.protocol) {
+        if (data.uuid === undefined) {
             return new Response(
-                JSON.stringify({ message: 'Missing required fields: connName and protocol are required' }),
+                JSON.stringify({ message: 'Missing required fields: uuid is required' }),
                 { status: 400 }
             );
         }
 
-
-        // Add the new connection to the layout
-        layout.createEmulatorConnection(data.connName, data.protocol);
+        layout.trains.delete(data.uuid);
 
         return new Response(
             JSON.stringify({
-                message: 'Emulator connection created successfully',
+                message: `Train deleted successfully on layout: ${layout.name}`,
             }),
-            { status: 201 }
-
+            { status: 200 }
         );
     } catch (error) {
         return new Response(
-            JSON.stringify({ message: 'Invalid request body' }),
+            JSON.stringify({ message: `Invalid request body: ${error}` }),
             { status: 400 }
         );
+
     }
 }

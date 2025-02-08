@@ -90,11 +90,11 @@
               <Plus size={30} />
               <p class="text-xl">Add Connection</p>
             </button> -->
-            <ConnectionAdd />
           </Accordion.Content>
         </Accordion.Item>
       </Accordion.Root>
     </div>
+
 
     <Dialog.Footer>
       <Button

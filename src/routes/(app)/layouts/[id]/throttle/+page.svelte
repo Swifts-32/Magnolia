@@ -37,15 +37,6 @@
           onclick={async () => await data.layout.write(uuid, debugValue)}
           >Send</Button
         >
-        <Input class="w-16" bind:value={debugTrainValue} />
-        <Button
-          class="w-40"
-          onclick={() =>
-            data.layout.connections
-              .get(uuid)
-              ?.addTrain(debugTrainValue, `New Train ${debugTrainValue}`)}
-          >Add New Train</Button
-        >
       </div>
     </div>
 
@@ -94,8 +85,8 @@
     </div>
 
     <div class="flex flex-row justify-center gap-4">
-      <Throttle curLayout={data.layout} />
-      <Throttle curLayout={data.layout} />
+      <Throttle layout={data.layout} />
+      <Throttle layout={data.layout} />
     </div>
   </main>
 {:else}

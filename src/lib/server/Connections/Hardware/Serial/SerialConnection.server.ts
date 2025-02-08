@@ -1,7 +1,7 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 import { WindowsBinding } from '@serialport/bindings-cpp'
 import type { ISerialConnection } from "../hardware";
-import { ConnectionProtocols, ConnectionTypes } from '$lib/client/Protocols/protocols';
+import {  ConnectionTypes } from '$lib/client/Protocols/protocols';
 
 export class SerialConnection implements ISerialConnection {
 
@@ -9,8 +9,7 @@ export class SerialConnection implements ISerialConnection {
 
     public path: string;
     public baudRate: number;
-    public readonly connType: ConnectionTypes = ConnectionTypes.Serial;
-
+    public connType: ConnectionTypes.Serial = ConnectionTypes.Serial;
 
     private dataReceived: ((data: string) => void) | null = null;
     public onDataReceived(callback: (data: string) => void) {
@@ -25,9 +24,6 @@ export class SerialConnection implements ISerialConnection {
         this.path = path;
         this.baudRate = baudRate;
     }
-
-
-
 
     async connect(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
@@ -90,5 +86,13 @@ export class SerialConnection implements ISerialConnection {
             console.log("Port is not open. Connecting...")
             this.connect();
         }
+    }
+
+    toJSON() {
+        return {
+            path: this.path,
+            baudRate: this.baudRate,
+            connType: this.connType
+        };
     }
 }

@@ -13,6 +13,7 @@
   } from "$lib/client/Protocols/protocols";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import { toast } from "svelte-sonner";
+  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 
   interface Props {
     connection: Connections;
@@ -24,7 +25,7 @@
 
   let connName: string = $state(connection.connName);
   let connProtocol: string = $state(connection.protocol.toString());
-  let connType: string = $state(connection.connType.toString());
+  let connType: string = $state(ConnectionTypes.Serial.toString());
 
   // Connection specific data
   // Serial Connection
@@ -55,19 +56,16 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Connection updated successfully");
-
-          // Update the connection
-          connection.connName = connName;
-          connection.connType = Number(connType) as ConnectionTypes;
+          layoutClientHandler.refreshLayouts();
         } else {
-          console.error("Failed to update connection");
           toast.error("Failed to update connection");
         }
       })
+
       .catch((error) => {
-        console.error("Error updating connection:", error);
         toast.error("Error updating connection");
       });
+
   }
 </script>
 

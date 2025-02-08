@@ -1,18 +1,20 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import { TrainDirection, type ClientTrain } from "$lib/client/Trains/Train.svelte";
+import type { TrainUUID } from "$lib/server/Trains/Train.server";
 import { Direction } from "../../../../routes/(app)/layouts/[id]/throttle/throttle";
+import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 import { Train } from "../../../../services/train.svelte";
 import { ConnectionProtocols, ConnectionTypes, type IProtocol } from "../protocols";
 
 export class DccEx implements IProtocol {
   public powerStatus: boolean = $state(false);
-  public trains: Map<number, Train> = new Map();
   public version: string | undefined = undefined;
-  
+
   public readonly protocol: ConnectionProtocols = ConnectionProtocols.DCCEX;
-  public connType: ConnectionTypes = $state() as ConnectionTypes;
+  public connType: ConnectionTypes;
   public connUUID: ConnectionUUID;
   public layoutUUID: LayoutUUID;
-  public connName: string = $state() as string;
+  public connName: string;
   public isConnected: boolean = $state(false);
 
   constructor(layoutUUID: LayoutUUID, connUUID: ConnectionUUID, connName: string, connType: ConnectionTypes) {
@@ -20,7 +22,6 @@ export class DccEx implements IProtocol {
     this.connUUID = connUUID;
     this.connName = connName;
     this.connType = connType;
-
   }
 
 
@@ -55,26 +56,30 @@ export class DccEx implements IProtocol {
 
           // Decode speed and direction from speedByte
           let speed: number;
-          let direction: Direction;
+          let direction: TrainDirection;
 
           if (speedByte === 1) {
             speed = -1;  // Emergency Stop (Reverse)
-            direction = Direction.reverse;
+            direction = TrainDirection.Reverse;
           } else if (speedByte === 129) {
             speed = 0;  // Emergency Stop (Forward)
-            direction = Direction.forward;
+            direction = TrainDirection.Reverse;
+
           } else if (speedByte === 0) {
             speed = 0;  // Stop (Reverse)
-            direction = Direction.reverse;
+            direction = TrainDirection.Reverse;
           } else if (speedByte === 128) {
+
             speed = 0;  // Stop (Forward)
-            direction = Direction.forward;
+            direction = TrainDirection.Forward;
+
           } else if (speedByte >= 2 && speedByte <= 127) {
             speed = speedByte - 1;  // Reverse Speed
-            direction = Direction.reverse;
+            direction = TrainDirection.Reverse;
           } else if (speedByte >= 130 && speedByte <= 255) {
             speed = speedByte - 129;  // Forward Speed
-            direction = Direction.forward;
+            direction = TrainDirection.Forward;
+
           } else {
             return null; // Invalid speedByte
           }
@@ -85,15 +90,16 @@ export class DccEx implements IProtocol {
             state: (functionMap & (1 << i)) !== 0
           }));
 
-          let train = this.trains.get(cab);
+          let train = layoutClientHandler.layouts.get(this.layoutUUID)?.getTrain(cab, this.connUUID);
 
           if (train) {
             train.speed = speed;
             train.direction = direction;
 
-            functionStates.forEach(funct => {
-              train.setFunction(funct.index, funct.state);
-            });
+            // TODO: Implement function states
+            // functionStates.forEach(funct => {
+            //   train.setFunction(funct.index, funct.state);
+            // });
           }
         }
 
@@ -106,55 +112,11 @@ export class DccEx implements IProtocol {
 
   }
 
-  setDirection(cab: number | undefined, dir: Direction) {
-    if (!cab) return;
-
-    let train = this.trains.get(cab);
-
-    if (train) {
-      fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<t ${cab} ${train.speed} ${dir}>`)
-    }
+  setDirection(train: ClientTrain) {
+    fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
   }
 
-  getDirection(cab: number | undefined): Direction | undefined {
-    if (!cab) return undefined;
-    let train = this.trains.get(cab);
-    if (!train) return undefined;
-
-    return train.direction;
-  }
-
-  setSpeed(cab: number | undefined, speed: number) {
-    if (!cab) return;
-
-    let train = this.trains.get(cab);
-
-    if (train) {
-      train.speed = speed;
-      fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<t ${cab} ${speed} ${train.direction}>`)
-    }
-  }
-
-
-  setFunction(cab: number | undefined, functionId: number, state: boolean) {
-    if (!cab) return;
-
-    let train = this.trains.get(cab);
-
-    if (train) {
-      fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<F ${cab} ${functionId} ${+state}>`)
-    }
-  }
-
-  getTrain(cab: number | undefined) {
-    if (cab) {
-      return this.trains.get(cab);
-    }
-
-    return undefined;
-  }
-
-  addTrain(cab: number, name: string) {
-    this.trains.set(cab, new Train(cab, name, this.connUUID));
+  setSpeed(train: ClientTrain) {
+    fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
   }
 }
