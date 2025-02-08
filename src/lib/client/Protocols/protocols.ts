@@ -1,7 +1,6 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import type { Direction } from "../../../routes/(app)/layouts/[id]/throttle/throttle";
 import type { Train } from "../../../services/train.svelte";
-import type { DccEx } from "./DccEx/DccEx.svelte";
+import type { ClientTrain, TrainDirection } from "../Trains/Train.svelte";
 
 export enum ConnectionTypes {
     Serial = 0,
@@ -58,15 +57,9 @@ export interface IProtocol {
     connUUID: ConnectionUUID;
     powerStatus: boolean;
     protocol: ConnectionProtocols;
-    trains: Map<number, Train>;
     version: string | undefined;
 
     processCommand(command: string): void;
-    setDirection(cab: number | undefined, dir: Direction): void;
-    getDirection(cab: number | undefined): Direction | undefined;
-    setSpeed(cab: number | undefined, speed: number): void;
-    setFunction(cab: number | undefined, func: number, state: boolean): void;
-    getTrain(cab: number | undefined): Train | undefined;
-    addTrain(cab: number, name: string): void;
-
+    setDirection(train: ClientTrain): void;
+    setSpeed(train: ClientTrain): void;
 }

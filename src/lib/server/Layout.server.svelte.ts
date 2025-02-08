@@ -18,8 +18,17 @@ export class Layout {
     this.name = name;
     this.uuid = uuid;
   }
-
-
+  
+  toJSON() {
+    return {
+      name: this.name,
+      uuid: this.uuid,
+      position: this.position,
+      connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
+      trains: Array.from(this.trains.values()).map(train => train.toJSON())
+    };
+  }
+  
   createStream(): ReadableStream {
     let streamController: ReadableStreamDefaultController;
 
@@ -82,13 +91,4 @@ export class Layout {
     return connection;
   }
 
-  toJSON() {
-    return {
-      name: this.name,
-      uuid: this.uuid,
-      position: this.position,
-      connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
-      trains: Array.from(this.trains.values()).map(train => train.toJSON())
-    };
-  }
 }

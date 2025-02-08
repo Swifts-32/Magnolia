@@ -9,10 +9,11 @@
     type ConnectionUUID,
     LayoutClient,
   } from "$lib/client/LayoutClient.svelte";
-  import { TrainFront } from "lucide-svelte";
-  import type { ClientTrain } from "$lib/client/Trains/Train";
+  import { TrainFront, Trash2 } from "lucide-svelte";
+  import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
+  import Separator from "$lib/components/ui/separator/separator.svelte";
 
   interface Props {
     train: ClientTrain;
@@ -72,10 +73,34 @@
         toast.error("Error editing train: " + error);
       });
   }
+
+  function deleteTrain() {
+    fetch(`/api/layout/${layout.uuid}/trains/delete`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uuid: train.uuid }),
+    })
+      .then(async (response) => {
+        if (response.ok) {
+          toast.success("Train deleted successfully");
+          editMode = false;
+          layoutClientHandler.refreshLayouts();
+        } else {
+          toast.error("Failed to delete train");
+        }
+
+      })
+      .catch((error) => {
+        toast.error("Error deleting train: " + error);
+      });
+  }
 </script>
 
 <button
   class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
+
   onclick={() => (editMode = true)}
 >
   <TrainFront size={40} strokeWidth={1} />
@@ -84,7 +109,7 @@
   <div class="flex-col flex items-start">
     <p class="text-sm text-gray-400">Addr: {train.address}</p>
     <p class="text-sm text-gray-400">
-      Connection: {selectedConnection?.connName}
+      Connection: {layout.connections.get(train.connUUID)?.connName ?? "None"}
     </p>
   </div>
 </button>
@@ -105,13 +130,11 @@
         <Input id="trainName" bind:value={trainName} class="col-span-3" />
       </div>
 
-
       <!-- Address -->
       <div class="grid grid-cols-4 my-2 items-center gap-4">
         <Label for="trainAddress" class="text-right">Address</Label>
         <Input id="trainAddress" bind:value={trainAddress} class="col-span-3" />
       </div>
-
 
       <!-- Connection -->
       <ConnectionSelector
@@ -120,6 +143,18 @@
       />
 
       <!-- TODO Add functions -->
+
+      <Separator class="mt-8" />
+
+      <div class="flex justify-end my-4">
+        <Button
+          class="w-full bg-destructive text-destructive-foreground"
+          onclick={deleteTrain}><Trash2 size={20} /> Delete Train</Button
+        >
+      </div>
+
+
+      <Separator />
     </div>
 
     <Dialog.Footer>
@@ -133,3 +168,5 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
+
+

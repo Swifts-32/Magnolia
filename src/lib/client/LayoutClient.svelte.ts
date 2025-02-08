@@ -2,7 +2,7 @@ import { toast } from "svelte-sonner";
 import { DccEx } from "./Protocols/DccEx/DccEx.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
 import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
-import { ClientTrain } from "./Trains/Train";
+import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
 
 export type Connections = DccEx;
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -70,25 +70,16 @@ export class LayoutClient {
     let connections: Map<ConnectionUUID, Connections> = new Map();
 
     serverConnections.forEach(serverData => {
-      let conn: Connections | null = null;
-
       switch (serverData.protocol) {
         case ConnectionProtocols.DCCEX:
-          conn = new DccEx(layoutUUID, serverData.uuid, serverData.name, serverData.hardware.connType);
+          const connection = new DccEx(layoutUUID, serverData.uuid, serverData.name, serverData.hardware.connType);
+          connections.set(serverData.uuid, connection);
           break;
 
-        case ConnectionProtocols.LCC:
-          console.log("No LCC connection availvle");
-          break;
         default:
-          console.log("Unknown protocol");
+          console.log("Unknown protocol for connection: ", serverData.name);
           break;
       }
-
-      if (conn) {
-        connections.set(serverData.uuid, conn);
-      }
-
     });
 
     return connections;
@@ -232,9 +223,11 @@ export class LayoutClient {
           clientTrain.address = trainData.address;
           clientTrain.name = trainData.name;
           clientTrain.connUUID = trainData.connUUID;
-        }
 
-        // TODO: Add functions to the train
+          // TODO Add functions to the train
+
+          trains.set(trainData.uuid, clientTrain);
+        }
       }
       else {
         // Train does not exist, create it
@@ -245,7 +238,42 @@ export class LayoutClient {
     this.trains = trains;
   }
 
+
+
+  public setTrainDirection(trainUUID: TrainUUID, direction: TrainDirection) {
+    let train = this.trains.get(trainUUID);
+    if (!train) return;
+    
+    let connection = this.connections.get(train.connUUID);
+    if (!connection) return;
+    
+    train.direction = direction;
+    connection.setDirection(train);
+  }
+
+  public setTrainSpeed(trainUUID: TrainUUID, speed: number) {
+    let train = this.trains.get(trainUUID);
+    if (!train) return;
+
+    let connection = this.connections.get(train.connUUID);
+    if (!connection) return;
+
+    train.speed = speed;
+    connection.setSpeed(train);
+  }
+
+  public getTrain(address: TrainAddress, connUUID: ConnectionUUID): ClientTrain | undefined {
+    for (const train of this.trains.values()) {
+      if (train.address === address && train.connUUID === connUUID) {
+        return train;
+      }
+    }
+    return undefined;
+  }
+
 }
+
+
 
 
 export let LayoutC: LayoutClient | null = null;
