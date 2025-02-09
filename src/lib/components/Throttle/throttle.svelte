@@ -4,42 +4,42 @@
   import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
   import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
-  import type { Train } from "../../../services/train.svelte";
-  import type {
-    Connections,
-    ConnectionUUID,
-    LayoutClient,
-  } from "$lib/client/LayoutClient.svelte";
-  import ConnectionSelect from "./ConnectionSelect/connectionSelect.svelte";
+  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import Button from "../ui/button/button.svelte";
+  import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
+  import { CircleAlert } from "lucide-svelte";
 
   interface Props {
     layout: LayoutClient;
     disabled?: boolean;
   }
-  let { layout, disabled }: Props = $props();
+  let { layout, disabled: disabledProp = false}: Props = $props();
 
-  let curConnectionUUID: ConnectionUUID | null = $state(null);
-  let curConnection: Connections | undefined = $derived.by(() => {
-    if (curConnectionUUID) {
-      return layout.connections.get(curConnectionUUID);
+  let curConnection: ClientConnection | undefined = $derived.by(() => {
+    if (curTrain) {
+      return layout.connections.get(curTrain.connUUID);
     }
   });
-  let curAddr: number | undefined = $state(undefined);
   let curTrain: ClientTrain | undefined = $state();
+  let disabled: boolean = $derived(disabledProp || curTrain == undefined);
 
-  // function updateFunc(func: number, state: boolean) {
-  //     if (curAddr) {
-  //         trainHandler.writeFunction(curAddr, func, state);
-  //     }
-  // }
+  function handleDirectionChange(newDirection: number) {
+    if (!curTrain || !curConnection) return;
+    curConnection.setTrainDirection(curTrain.uuid, newDirection);
+  }
+  function handleSpeedChange(newSpeed: number) {
+    if (!curTrain || !curConnection) return;
+    curConnection.setTrainSpeed(curTrain.uuid, newSpeed);
+  }
 </script>
 
 <Card class="p-5 max-w-fit h-[450px] flex flex-col select-none gap-4">
   <!-- Loco Select -->
-  <LocoSelect bind:curTrain {layout} {disabled} />
+  <LocoSelect bind:curTrain {layout} disabled={disabledProp} />
 
   <div class="flex gap-4 justify-between items-center flex-1 grow">
+    <!-- Speed Slider -->
     <div class="w-16 h-full pb-8 pt-4">
       {#if curTrain}
         <Slider
@@ -49,18 +49,14 @@
           orientation="vertical"
           step={1}
           {disabled}
-          onValueChange={(speed) => {
-            if (curTrain) {
-              layout.setTrainDirection(curTrain.uuid, speed);
-            }
-          }}
+          onValueChange={handleSpeedChange}
         />
       {:else}
         <Slider
           type="single"
           orientation="vertical"
           value={8}
-          {disabled}
+          disabled={true}
         />
       {/if}
 
@@ -69,26 +65,36 @@
       </h1>
     </div>
 
-    <!-- Direction Selecter -->
-    {#if curTrain}
-      <DirectionSelector
-        bind:direction={curTrain.direction}
-        onchanged={(dir) => curConnection?.setDirection(curAddr, dir)}
-        disabled={disabled || curTrain == undefined}
-      />
-    {:else}
-      <DirectionSelector
-        direction={1}
-        disabled={disabled || curTrain == undefined}
-      />
-    {/if}
+    <div class="flex flex-col gap-2 h-full">
+      <!-- Emergency Stop -->
+      <Button
+        {disabled}
+        class="size-[54px] m-0"
+        onclick={() => curConnection?.emergencyStop()}
+        variant="destructive"
+        size="icon"
+      >
+        <CircleAlert />
+      </Button>
 
-    {#key curAddr}
+      <!-- Direction Selector -->
+      {#if curTrain}
+        <DirectionSelector
+          bind:direction={curTrain.direction}
+          onchanged={handleDirectionChange}
+          {disabled}
+        />
+      {:else}
+        <DirectionSelector direction={1} disabled={true} />
+      {/if}
+    </div>
+
+    <!-- {#key curAddr}
       <FunctionCarousel
         onclick={(id, state) => {}}
         functions={curTrain?.functions ?? null}
         disabled={disabled || curTrain == undefined}
       />
-    {/key}
+    {/key} -->
   </div>
 </Card>

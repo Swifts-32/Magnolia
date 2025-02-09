@@ -13,7 +13,6 @@ export class Connection {
     public hardware: HardwareTypes;
     public trains: Map<TrainUUID, ServerTrain> = new Map();
 
-
     constructor(connection: HardwareTypes, name: string, protocol: ConnectionProtocols, uuid: ConnectionUUID, trains: Map<TrainUUID, ServerTrain> = new Map()) {
         this.hardware = connection;
         this.name = name;
@@ -21,8 +20,6 @@ export class Connection {
         this.uuid = uuid;
         this.trains = trains;
     }
-
-
 
     toJSON() {
         return {

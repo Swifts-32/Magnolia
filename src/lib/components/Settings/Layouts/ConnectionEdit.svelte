@@ -69,7 +69,7 @@
 </script>
 
 <button
-  class="border-primary border-2 px-3 flex rounded-md gap-3 w-full my-2 h-14 items-center select-none"
+  class="border-primary border-2 px-3 flex rounded-md gap-3 w-96 h-16 items-center select-none"
   onclick={() => (editMode = true)}
 >
   <p class="text-xl">{connection.name}</p>

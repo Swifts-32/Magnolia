@@ -68,13 +68,26 @@
   }
 
   function deleteTrain() {
+    if (!train.connUUID) {
+      toast.error("Train is not connected to a connection");
+      return;
+    }
+
+    const data = {
+      uuid: train.uuid,
+      connUUID: train.connUUID,
+    };
+
     fetch(`/api/layout/${layout.uuid}/trains/delete`, {
+
       method: "POST",
+
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ uuid: train.uuid }),
+      body: JSON.stringify(data),
     })
+
       .then(async (response) => {
         if (response.ok) {
           toast.success("Train deleted successfully");

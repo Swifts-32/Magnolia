@@ -5,10 +5,6 @@
   import type { LayoutData } from "../../$types";
 
   let { data }: { data: LayoutData } = $props();
-
-  $effect(() => {
-    console.log(data.layout.trains.size);
-  });
 </script>
 
 <div class="m-4">
@@ -16,7 +12,7 @@
   <h1 class="text-4xl my-10">Trains</h1>
 
   <div class="flex flex-wrap gap-3">
-    {#each data.layout.trains.values() as train (train.uuid)}
+    {#each data.layout.getTrains().values() as train (train.uuid)}
       <TrainEdit {train} layout={data.layout} />
     {/each}
     <TrainAdd layout={data.layout} />

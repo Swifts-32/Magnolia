@@ -4,12 +4,13 @@ import { ConnectionProtocols, ConnectionTypes } from "../Protocols/protocols";
 import { TrainDirection, type ClientTrain } from "../Trains/Train.svelte";
 
 export class ClientConnection {
-  public protocol: ConnectionProtocols;
-  public hardware: ConnectionTypes;
-  public name: string;
+  public protocol: ConnectionProtocols = $state() as ConnectionProtocols;
+  public hardware: ConnectionTypes = $state() as ConnectionTypes;
+  public name: string = $state() as string;
   public uuid: ConnectionUUID;
   public layoutUUID: LayoutUUID;
   public trains: Map<TrainUUID, ClientTrain> = new Map();
+
 
   public isConnected: boolean = $state(false);
 
@@ -35,13 +36,13 @@ export class ClientConnection {
 
 
   private processDCCEXCommand(command: string) {
-    if (/<p0>/.test(command)) { // Power Off
+    if (/Cid:[^:]+:\s*<p0>/.test(command)) { // Power Off
       console.log("Power Off");
       return;
-    } else if (/<p1>/.test(command)) { // Power On
+    } else if (/Cid:[^:]+:\s*<p1>/.test(command)) { // Power On
       console.log("Power On");
       return;
-    } else if (/<l (\d+) (\d+) (\d|\d{2}|[012][0-5][0-5]) (\d+)>/.test(command)) {
+    } else if (/Cid:[^:]+:\s*<l (\d+) (\d+) (\d|\d{2}|[012][0-5][0-5]) (\d+)>/.test(command)) {
       /**
        * <l cab reg speedByte functMap>
        * cab: DCC Address of the decoder/loco.
@@ -51,7 +52,7 @@ export class ClientConnection {
        *    - forward - 130-255 = speed 1-126, 128 = stop, 129 = Emergency Stop
        * FunctiMap: individual function states represented by the bits in a byte
        */
-      const match = command.match(/<l (\d+) (\d+) (\d|\d{2}|[012][0-5][0-5]) (\d+)>/);
+      const match = command.match(/Cid:[^:]+:\s*<l (\d+) (\d+) (\d|\d{2}|[012][0-5][0-5]) (\d+)>/);
 
       if (match) {
         const cab = parseInt(match[1]);  // Loco ID
@@ -138,6 +139,7 @@ export class ClientConnection {
       switch (this.protocol) {
         case ConnectionProtocols.DCCEX:
           fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
+          console.log(`<t ${train.address} ${train.speed} ${train.direction}>`);
           break;
         default:
           console.log("Unknown protocol: " + this.protocol);
@@ -145,6 +147,18 @@ export class ClientConnection {
       }
     }
   }
+
+  emergencyStop() {
+    switch (this.protocol) {
+      case ConnectionProtocols.DCCEX:
+        fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<!>`);
+        break;
+      default:
+        console.log("Unknown protocol: " + this.protocol);
+        break;
+    }
+  }
+
 
   getTrain(trainAddress: TrainAddress): ClientTrain | undefined {
     for (const train of this.trains.values()) {

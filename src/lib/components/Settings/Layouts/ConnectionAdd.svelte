@@ -69,7 +69,7 @@
 </script>
 
 <button
-  class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-14 justify-center items-center select-none"
+  class="border-primary border-2 flex p-3 rounded-md w-96 h-16 justify-center items-center select-none"
   onclick={() => (editMode = true)}
 >
   <Plus size={30} />
