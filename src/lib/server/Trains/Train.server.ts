@@ -29,6 +29,17 @@ export class ServerTrain {
         };
     }
 
+    public static fromJSON(json: any): ServerTrain | null {
+        if (json.uuid == undefined || json.connUUID == undefined || json.address == undefined || json.name == undefined) {
+            console.log(`Invalid train data`);
+            return null;
+        }
+
+        // TODO: Recreate functions when loading trains
+
+        return new ServerTrain(json.address, json.name, json.connUUID, json.uuid);
+    }
+
     
     addFunction(id: number, icon: FunctionIcons, mode: FunctionModes) {
         this.functions.set(id, new ServerTrainFunctions(id, icon, mode));

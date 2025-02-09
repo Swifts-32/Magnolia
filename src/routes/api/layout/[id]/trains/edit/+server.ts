@@ -20,8 +20,14 @@ export const POST = async ({ request, params }) => {
             );
         }
 
+        // Get the new connection
+        const newConn = layout.connections.get(data.connUUID);
+        if (!newConn) {
+            return new Response(JSON.stringify({ message: `Connection with uuid ${data.connUUID} not found` }), { status: 404 });
+        }
 
-        let train = layout.trains.get(data.uuid);
+        let train = layout.getTrain(data.uuid);
+
         if (!train) {
             return new Response(JSON.stringify({ message: `Train with uuid ${data.uuid} not found` }), { status: 404 });
         }
@@ -31,26 +37,26 @@ export const POST = async ({ request, params }) => {
         train.name = data.name;
         train.connUUID = data.connUUID;
 
+        
         // Add functions to the train
-
+        
         //TODO Add functions
         if (data.functions) {}
-
+        
+        newConn.trains.set(train.uuid, train);
+        LayoutServerHandler.saveLayouts();
 
         return new Response(
             JSON.stringify({
-                message: `Train created successfully on layout: ${layout.name}`,
-                trainUUID: train.uuid
-
+                message: `Train updated successfully on layout: ${layout.name}`,
             }),
-            { status: 201 }
-
+            { status: 200 }
         );
     } catch (error) {
         return new Response(
             JSON.stringify({ message: `Invalid request body: ${error}` }),
             { status: 400 }
-        );
+        );  
 
     }
 }

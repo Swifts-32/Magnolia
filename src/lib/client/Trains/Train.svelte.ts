@@ -13,9 +13,10 @@ export class ClientTrain {
 
     // Train data
     public uuid: TrainUUID;
-    public address: TrainAddress;
-    public name: string;
-    public connUUID: ConnectionUUID;
+    public address: TrainAddress = $state() as TrainAddress;
+    public name: string = $state() as string;
+    public connUUID: ConnectionUUID = $state() as ConnectionUUID;
+
 
     // Non-Saveable Data
     public speed: number = $state(0);

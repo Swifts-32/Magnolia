@@ -16,7 +16,7 @@
 {/snippet}
 
 <div class="flex">
-  <div class="w-max m-4 p-4 border-primary border-2 rounded-md">
+  <div class="w-max m-4 p-4 h-full border-primary border-2 rounded-md">
     <h1 class="text-4xl my-10">Settings</h1>
 
     <div class="flex flex-col gap-3">

@@ -30,8 +30,6 @@ export const POST = async ({ request, params }) => {
         return new Response(
             JSON.stringify({
                 message: `Train created successfully on layout: ${layout.name}`,
-                trainUUID: train.uuid
-
             }),
             { status: 201 }
 

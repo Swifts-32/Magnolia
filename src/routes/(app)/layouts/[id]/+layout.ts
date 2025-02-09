@@ -1,5 +1,4 @@
 import { browser } from "$app/environment";
-import { goto } from "$app/navigation";
 import { type LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { redirect } from "@sveltejs/kit";
 import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";

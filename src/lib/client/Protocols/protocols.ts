@@ -1,7 +1,3 @@
-import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import type { Train } from "../../../services/train.svelte";
-import type { ClientTrain, TrainDirection } from "../Trains/Train.svelte";
-
 export enum ConnectionTypes {
     Serial = 0,
     Wifi = 1,
@@ -44,22 +40,4 @@ export function getConnectionTypeName(connType: ConnectionTypes): string {
             return "Unknown";
 
     }
-}
-
-
-
-export interface IProtocol {
-    isConnected: boolean;
-
-    connName: string;
-    connType: ConnectionTypes;
-    layoutUUID: LayoutUUID;
-    connUUID: ConnectionUUID;
-    powerStatus: boolean;
-    protocol: ConnectionProtocols;
-    version: string | undefined;
-
-    processCommand(command: string): void;
-    setDirection(train: ClientTrain): void;
-    setSpeed(train: ClientTrain): void;
 }

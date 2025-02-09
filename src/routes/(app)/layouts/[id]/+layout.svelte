@@ -36,5 +36,9 @@
 	const navBarData = new NavBarData(links, curLink);
 </script>
 
-<NavBar {navBarData} />
-{@render children()}
+<div class="flex flex-col h-dvh">
+	<NavBar {navBarData} />
+	{@render children()}
+</div>
+
+

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Connections } from "$lib/client/LayoutClient.svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
@@ -14,18 +13,19 @@
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
+  import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
 
   interface Props {
-    connection: Connections;
+    connection: ClientConnection;
   }
 
   let { connection }: Props = $props();
 
   let editMode = $state(false);
 
-  let connName: string = $state(connection.connName);
+  let connName: string = $state(connection.name);
   let connProtocol: string = $state(connection.protocol.toString());
-  let connType: string = $state(ConnectionTypes.Serial.toString());
+  let connType: string = $state(connection.hardware.toString());
 
   // Connection specific data
   // Serial Connection
@@ -45,7 +45,7 @@
       data.baudRate = baudRate;
     }
 
-    fetch(`/api/layout/${connection.layoutUUID}/${connection.connUUID}/edit`, {
+    fetch(`/api/layout/${connection.layoutUUID}/${connection.uuid}/edit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,15 +65,14 @@
       .catch((error) => {
         toast.error("Error updating connection");
       });
-
   }
 </script>
 
 <button
-  class="border-primary border-2 px-3 flex rounded-md gap-3 w-full my-2 h-14 items-center select-none"
+  class="border-primary border-2 px-3 flex rounded-md gap-3 w-96 h-16 items-center select-none"
   onclick={() => (editMode = true)}
 >
-  <p class="text-xl">{connection.connName}</p>
+  <p class="text-xl">{connection.name}</p>
   <div class="flex-col flex items-start">
     <p class="text-sm text-gray-400">
       Protocol: {getProtocolName(Number(connProtocol) as ConnectionProtocols)}

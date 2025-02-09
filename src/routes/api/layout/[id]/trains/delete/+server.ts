@@ -13,14 +13,18 @@ export const POST = async ({ request, params }) => {
         const data = await request.json();
 
         // Validate required fields
-        if (data.uuid === undefined) {
+        if (data.uuid === undefined || data.connUUID === undefined) {
             return new Response(
-                JSON.stringify({ message: 'Missing required fields: uuid is required' }),
+                JSON.stringify({ message: 'Missing required fields: uuid and connUUID are required' }),
                 { status: 400 }
             );
         }
 
-        layout.trains.delete(data.uuid);
+        const conn = layout.connections.get(data.connUUID);
+        if (!conn) {
+            return new Response(JSON.stringify({ message: `Connection ${data.connUUID} not found on layout: ${layout.name}` }), { status: 404 });
+        }
+        conn.trains.delete(data.uuid);
 
         return new Response(
             JSON.stringify({

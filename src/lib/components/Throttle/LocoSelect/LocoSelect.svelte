@@ -15,7 +15,8 @@
     layout: LayoutClient;
   }
 
-  let { curTrain = $bindable(), disabled, layout }: Props = $props();
+  let { curTrain = $bindable(), disabled = false, layout }: Props = $props();
+
 
   let open = $state(false);
   let triggerRef = $state<HTMLButtonElement>(null!);
@@ -50,7 +51,7 @@
       <Command.List>
         <Command.Empty>No trains found. :(</Command.Empty>
         <Command.Group>
-          {#each layout.trains.values() as train}
+          {#each layout.getTrains().values() as train}
             <Command.Item
               {disabled}
               value={train.name}
@@ -69,7 +70,7 @@
                 </p>
                 <p class="text-xs text-gray-500 leading-[0.5rem]">
 
-                  Connection: {layout.connections.get(train.connUUID)?.connName ?? "Undefined"}
+                  Connection: {layout.connections.get(train.connUUID)?.name ?? "Undefined"}
                 </p>
               </div>
               <Check
