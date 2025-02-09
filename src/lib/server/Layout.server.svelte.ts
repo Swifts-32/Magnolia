@@ -10,7 +10,6 @@ export class Layout {
   public uuid: LayoutUUID;
   public position: number = 0;
   public connections: Map<ConnectionUUID, Connection> = new Map();
-  public trains: Map<TrainUUID, ServerTrain> = new Map();
 
   private controllers: Set<ReadableStreamDefaultController> = new Set();
 
@@ -25,12 +24,32 @@ export class Layout {
       uuid: this.uuid,
       position: this.position,
       connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
-      trains: Array.from(this.trains.values()).map(train => train.toJSON())
     };
+  }
+
+  static fromJSON(json: any): Layout | null {
+    if (json.uuid == undefined || json.name == undefined || json.position == undefined) {
+      console.log(`Invalid layout data, ${json.uuid} ${json.name} ${json.position}`);
+      return null;
+    }
+
+    const layout = new Layout(json.name, json.uuid);
+    layout.position = json.position;
+
+    // Recreate connections
+    for (const conn of json.connections) {
+      const connection = Connection.fromJSON(conn);
+      if (connection) {
+        layout.connections.set(connection.uuid, connection);
+      }
+    }
+
+    return layout;
   }
   
   createStream(): ReadableStream {
     let streamController: ReadableStreamDefaultController;
+
 
     console.log("Creating stream");
     return new ReadableStream({
@@ -46,10 +65,14 @@ export class Layout {
   }
 
 
-  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain {
-    const train = new ServerTrain(address, trainName, connUUID, trainUUID);
-    this.trains.set(train.uuid, train);
-    return train;
+  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
+    const connection = this.connections.get(connUUID);
+    
+    if (connection) {
+      const train = new ServerTrain(address, trainName, connUUID, trainUUID);
+      connection.trains.set(train.uuid, train);
+      return train;
+    }   
   }
 
 
@@ -91,4 +114,13 @@ export class Layout {
     return connection;
   }
 
+
+  getTrain(trainUUID: TrainUUID): ServerTrain | undefined {
+    for (const connection of this.connections.values()) {
+      const train = connection.trains.get(trainUUID);
+      if (train) {
+        return train;
+      }
+    }
+  }
 }

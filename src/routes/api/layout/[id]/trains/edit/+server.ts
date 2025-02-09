@@ -20,8 +20,7 @@ export const POST = async ({ request, params }) => {
             );
         }
 
-
-        let train = layout.trains.get(data.uuid);
+        let train = layout.getTrain(data.uuid);
         if (!train) {
             return new Response(JSON.stringify({ message: `Train with uuid ${data.uuid} not found` }), { status: 404 });
         }
