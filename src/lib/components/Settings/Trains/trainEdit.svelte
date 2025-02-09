@@ -5,7 +5,6 @@
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import {
-    type Connections,
     type ConnectionUUID,
     LayoutClient,
   } from "$lib/client/LayoutClient.svelte";
@@ -25,12 +24,6 @@
   let editMode: boolean = $state(false);
 
   let selectedConnectionUUID: ConnectionUUID = $state(train.connUUID);
-  const selectedConnection: Connections | undefined = $derived.by(() => {
-    if (layout) {
-      return layout.connections.get(selectedConnectionUUID);
-    }
-  });
-
   let trainName: string = $state(train.name);
   let trainAddress: string = $state(train.address.toString());
 
@@ -90,7 +83,6 @@
         } else {
           toast.error("Failed to delete train");
         }
-
       })
       .catch((error) => {
         toast.error("Error deleting train: " + error);
@@ -100,7 +92,6 @@
 
 <button
   class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
-
   onclick={() => (editMode = true)}
 >
   <TrainFront size={40} strokeWidth={1} />
@@ -109,7 +100,7 @@
   <div class="flex-col flex items-start">
     <p class="text-sm text-gray-400">Addr: {train.address}</p>
     <p class="text-sm text-gray-400">
-      Connection: {layout.connections.get(train.connUUID)?.connName ?? "None"}
+      Connection: {layout.connections.get(train.connUUID)?.name ?? "None"}
     </p>
   </div>
 </button>
@@ -153,7 +144,6 @@
         >
       </div>
 
-
       <Separator />
     </div>
 
@@ -168,5 +158,3 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
-
-

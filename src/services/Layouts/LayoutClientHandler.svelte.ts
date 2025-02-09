@@ -10,11 +10,12 @@ class LayoutClientHandler {
         const serverLayoutUUIDs = new Set(layouts.map((layout: { uuid: LayoutUUID }) => layout.uuid));
 
         // Remove layouts that don't exist on server
-        for (const [uuid, client] of this.layouts) {
+        for (const uuid of this.layouts.keys()) {
             if (!serverLayoutUUIDs.has(uuid)) {
                 this.layouts.delete(uuid);
             }
         }
+
 
         for (const layout of layouts) {
             if (!this.layouts.has(layout.uuid)) {

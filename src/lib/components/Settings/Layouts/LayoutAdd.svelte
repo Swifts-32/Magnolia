@@ -6,7 +6,6 @@
   import * as Accordion from "$lib/components/ui/accordion/index.js";
   import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
-  import ConnectionAdd from "./ConnectionAdd.svelte";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 
   let editMode: boolean = $state(false);
@@ -14,6 +13,11 @@
   let layoutName: string | undefined = $state();
 
   function saveChanges() {
+    if (!layoutName) {
+      toast.error("Layout name is required");
+      return;
+    }
+
     const data: any = {
       layoutName: layoutName,
     };
@@ -29,7 +33,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Layout created successfully");
-
 
           // Refresh the layout list
           layoutClientHandler.refreshLayouts();
@@ -76,25 +79,8 @@
             <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
           </div>
         </Accordion.Item>
-
-        <Accordion.Item value="connections">
-          <Accordion.Trigger>Connections</Accordion.Trigger>
-          <Accordion.Content>
-            <!-- Add Buttons to go to dialog to edit each connection -->
-            <!-- {#each layout.connections as [key, connection]}
-              <ConnectionEdit {connection} />
-            {/each}
-            <button
-              class="border-primary border-2 flex p-3 rounded-md gap- w-full my-1 h-14 justify-center items-center select-none"
-            >
-              <Plus size={30} />
-              <p class="text-xl">Add Connection</p>
-            </button> -->
-          </Accordion.Content>
-        </Accordion.Item>
       </Accordion.Root>
     </div>
-
 
     <Dialog.Footer>
       <Button

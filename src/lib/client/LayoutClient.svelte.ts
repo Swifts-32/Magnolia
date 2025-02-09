@@ -1,10 +1,9 @@
 import { toast } from "svelte-sonner";
-import { DccEx } from "./Protocols/DccEx/DccEx.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
 import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
 import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
+import { ClientConnection } from "./Connections/ClientConnection.svelte";
 
-export type Connections = DccEx;
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
 
@@ -13,13 +12,14 @@ export class LayoutClient {
   eventSource: EventSource | null = null;
   public name: string = $state() as string;
   public uuid: LayoutUUID = $state() as LayoutUUID;
-  public connections: Map<ConnectionUUID, Connections> = $state(new Map());
+  public connections: Map<ConnectionUUID, ClientConnection> = $state(new Map());
   public trains: Map<TrainUUID, ClientTrain> = $state(new Map());
 
 
-  private constructor(name: string, uuid: LayoutUUID, trains: Map<TrainUUID, ClientTrain>, connections: Map<ConnectionUUID, Connections>) {
+  private constructor(name: string, uuid: LayoutUUID, trains: Map<TrainUUID, ClientTrain>, connections: Map<ConnectionUUID, ClientConnection>) {
     this.name = name;
     this.uuid = uuid;
+
 
     this.addConnections(connections);
     this.addTrains(trains);
@@ -27,66 +27,16 @@ export class LayoutClient {
     this.refreshLayout();
   }
 
-
-
   static async create(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch): Promise<LayoutClient> {
-    // let connections: Map<ConnectionUUID, Connections> = await LayoutClient.fetchLayoutConnections(layoutUUID, fetch);
-
     // Fetch layout data
     const layoutData = await fetch(`/api/layout/${layoutUUID}`).then(res => res.json().then(data => {
       return data.message;
     }));
 
-    // // TODO: Add functions to the trains
-    // const serverTrains: {
-    //   uuid: TrainUUID,
-    //   connUUID: ConnectionUUID,
-    //   address: TrainAddress,
-    //   name: string,
-    // }[] = Array.isArray(layoutData.trains) ? layoutData.trains : [];
-
-    // let trains: Map<TrainUUID, ClientTrain> = new Map();
-    // serverTrains.forEach(train => {
-    //   trains.set(train.uuid, new ClientTrain(train.uuid, train.address, train.name, train.connUUID));
-    // });
-
-    // console.log(`Loaded ${trains.size} trains`);
     const connections = await LayoutClient.fetchConnections(layoutUUID, fetch, new Map());
     const trains = await LayoutClient.fetchTrains(layoutUUID, fetch, new Map());
 
     return new LayoutClient(layoutData.name, layoutUUID, trains, connections);
-
-  }
-
-  private static async fetchLayoutConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch): Promise<Map<ConnectionUUID, Connections>> {
-    const res = await fetch(`/api/layout/${layoutUUID}/connections`);
-    const json = await res.json();
-
-    const serverConnections: {
-      name: string,
-      protocol: ConnectionProtocols,
-      uuid: ConnectionUUID,
-      hardware: {
-        connType: ConnectionTypes,
-      },
-    }[] = Array.isArray(json.message) ? json.message : [];
-
-    let connections: Map<ConnectionUUID, Connections> = new Map();
-
-    serverConnections.forEach(serverData => {
-      switch (serverData.protocol) {
-        case ConnectionProtocols.DCCEX:
-          const connection = new DccEx(layoutUUID, serverData.uuid, serverData.name, serverData.hardware.connType);
-          connections.set(serverData.uuid, connection);
-          break;
-
-        default:
-          console.log("Unknown protocol for connection: ", serverData.name);
-          break;
-      }
-    });
-
-    return connections;
   }
 
   createSSE() {
@@ -186,7 +136,7 @@ export class LayoutClient {
   }
 
 
-  getConnections(): Map<ConnectionUUID, Connections> {
+  getConnections(): Map<ConnectionUUID, ClientConnection> {
     return this.connections;
   }
 
@@ -195,11 +145,14 @@ export class LayoutClient {
       this.trains.set(train.uuid, train);
     }
   }
-  public addConnections(connections: Map<ConnectionUUID, Connections>) {
+
+  public addConnections(connections: Map<ConnectionUUID, ClientConnection>) {
     for (const connection of connections.values()) {
-      this.connections.set(connection.connUUID, connection);
+      this.connections.set(connection.uuid, connection);
     }
   }
+
+
 
   public async refreshLayout() {
     this.trains = await LayoutClient.fetchTrains(this.uuid, fetch, this.trains);
@@ -218,6 +171,7 @@ export class LayoutClient {
       connUUID: ConnectionUUID,
       address: TrainAddress,
       name: string,
+      functions: any[],
     }[] = Array.isArray(trainData) ? trainData : [];
 
 
@@ -248,18 +202,18 @@ export class LayoutClient {
       }
       else {
         // Train does not exist, create it
-        trains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID));
+        clientTrains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID));
       }
     });
+
 
     return clientTrains;
   }
 
-  private static async fetchConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch, connections: Map<ConnectionUUID, Connections>) {
+  private static async fetchConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch, connections: Map<ConnectionUUID, ClientConnection>) {
     // Fetch connection data
     const connectionData = await fetch(`/api/layout/${layoutUUID}/connections`).then(res => res.json().then(data => {
       return data.message;
-
     }));
 
     const serverConnections: {
@@ -273,12 +227,12 @@ export class LayoutClient {
 
     // Get all server connection UUIDs for comparison
     const serverConnectionUUIDs = new Set(serverConnections.map(conn => conn.uuid));
-    let clientConnections: Map<ConnectionUUID, Connections> = new Map();
+    let clientConnections: Map<ConnectionUUID, ClientConnection> = new Map();
 
     // Remove connections that exist on client but not on server
     for (const [uuid, connection] of connections) {
       if (!serverConnectionUUIDs.has(uuid)) {
-        console.log(`Removing connection ${connection.connName} (${uuid}) as it no longer exists on server`);
+        console.log(`Removing connection ${connection.name} (${uuid}) as it no longer exists on server`);
         continue;
       }
       clientConnections.set(uuid, connection);
@@ -291,8 +245,8 @@ export class LayoutClient {
         let clientConnection = clientConnections.get(connData.uuid);
         if (clientConnection) {
 
-          clientConnection.connName = connData.name;
-          clientConnection.connType = connData.hardware.connType;
+          clientConnection.name = connData.name;
+          clientConnection.hardware = connData.hardware.connType;
 
           // TODO: Update the connection protocol
         }
@@ -302,10 +256,9 @@ export class LayoutClient {
         // Connection does not exist, create it
         switch (connData.protocol) {
           case ConnectionProtocols.DCCEX:
-            const connection = new DccEx(layoutUUID, connData.uuid, connData.name, connData.hardware.connType);
+            const connection = new ClientConnection(connData.protocol, connData.hardware.connType, connData.name, connData.uuid, layoutUUID);
             clientConnections.set(connData.uuid, connection);
             break;
-
 
           default:
             console.log("Unknown protocol for connection: ", connData.name);
@@ -317,43 +270,26 @@ export class LayoutClient {
     return clientConnections;
   }
 
-
-
-
-  public setTrainDirection(trainUUID: TrainUUID, direction: TrainDirection) {
-    let train = this.trains.get(trainUUID);
-    if (!train) return;
-    
-    let connection = this.connections.get(train.connUUID);
-    if (!connection) return;
-    
-    train.direction = direction;
-    connection.setDirection(train);
-  }
-
-  public setTrainSpeed(trainUUID: TrainUUID, speed: number) {
-    let train = this.trains.get(trainUUID);
-    if (!train) return;
-
-    let connection = this.connections.get(train.connUUID);
+  public setTrainDirection(connUUID: ConnectionUUID, trainUUID: TrainUUID, direction: TrainDirection) {
+    let connection = this.connections.get(connUUID);
     if (!connection) return;
 
-    train.speed = speed;
-    connection.setSpeed(train);
+    connection.setTrainDirection(trainUUID, direction);
   }
 
-  public getTrain(address: TrainAddress, connUUID: ConnectionUUID): ClientTrain | undefined {
-    for (const train of this.trains.values()) {
-      if (train.address === address && train.connUUID === connUUID) {
-        return train;
-      }
-    }
-    return undefined;
+  public setTrainSpeed(connUUID: ConnectionUUID, trainUUID: TrainUUID, speed: number) {
+    let connection = this.connections.get(connUUID);
+    if (!connection) return;
+
+    connection.setTrainSpeed(trainUUID, speed);
   }
 
+  public getTrain(connUUID: ConnectionUUID, trainUUID: TrainUUID): ClientTrain | undefined {
+    let connection = this.connections.get(connUUID);
+    if (!connection) return;
+
+    return connection.trains.get(trainUUID);
+  }
 }
-
-
-
 
 export let LayoutC: LayoutClient | null = null;

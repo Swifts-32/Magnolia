@@ -40,7 +40,7 @@ export class Layout {
     for (const conn of json.connections) {
       const connection = Connection.fromJSON(conn);
       if (connection) {
-        layout.connections.set(connection.uuid, connection);
+        layout.createConnection(connection);
       }
     }
 
@@ -114,8 +114,20 @@ export class Layout {
     return connection;
   }
 
+  createConnection(connection: Connection): Connection {
+    connection.hardware.onDataReceived((data: string) => {
+      const message = `data: Cid:${connection.uuid}: ${data}\n\n`;
+      this.controllers.forEach(controller => controller.enqueue(message));
+    });
+
+    this.connections.set(connection.uuid, connection);
+    return connection;
+  }
+
+
 
   getTrain(trainUUID: TrainUUID): ServerTrain | undefined {
+
     for (const connection of this.connections.values()) {
       const train = connection.trains.get(trainUUID);
       if (train) {
