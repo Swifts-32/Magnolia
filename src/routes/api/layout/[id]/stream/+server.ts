@@ -1,5 +1,5 @@
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { LayoutServerHandler } from "$lib/server/LayoutHandler.server.svelte";
+import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
 import { type RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ params }) => {

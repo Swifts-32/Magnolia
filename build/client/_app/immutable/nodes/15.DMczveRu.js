@@ -1,0 +1,1 @@
+import"../chunks/Bg9kRutz.js";import"../chunks/DmDfgG_S.js";import{M as a}from"../chunks/CIzyzYsA.js";import{t as p,a as e}from"../chunks/Di4jkbpq.js";var r=p('<p class="text-2xl font-bold">Settings</p> <p>No Settings Available yet...</p>',1);function l(t){var o=r();a(2),e(t,o)}export{l as component};

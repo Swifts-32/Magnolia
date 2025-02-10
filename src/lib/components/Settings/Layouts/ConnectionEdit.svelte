@@ -14,6 +14,7 @@
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
+  import SerialConnection from "../Connections/Serial/SerialConnection.svelte";
 
   interface Props {
     connection: ClientConnection;
@@ -29,21 +30,24 @@
 
   // Connection specific data
   // Serial Connection
-  let serialPath: string = $state("COM4");
-  let baudRate: number = $state(12);
+  // TODO Add to the connections object
+  let serialPath: string | undefined = $state();
+  let serialBaudRate: number | undefined = $state();
 
   function saveChanges() {
+    if (connType === ConnectionTypes.Serial.toString() && (serialPath === undefined || serialBaudRate === undefined)) {
+      toast.error("Please fill in all serial connection fields");
+      return;
+    }
+
     const data: any = {
       connName: connName,
       protocol: Number(connProtocol),
       connType: Number(connType),
+      serialPath: serialPath,
+      serialBaudRate: serialBaudRate,
     };
 
-    // Add connection type specific data
-    if (connType === ConnectionTypes.Serial.toString()) {
-      data.path = serialPath;
-      data.baudRate = baudRate;
-    }
 
     fetch(`/api/layout/${connection.layoutUUID}/${connection.uuid}/edit`, {
       method: "POST",
@@ -61,7 +65,6 @@
           toast.error("Failed to update connection");
         }
       })
-
       .catch((error) => {
         toast.error("Error updating connection");
       });
@@ -145,23 +148,8 @@
 
     <!-- Alternitve info depending on the connection type -->
     {#if connType === ConnectionTypes.Serial.toString()}
-      <!-- Serial Connection -->
-      <!-- Serial Port -->
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="serialPort" class="text-right">Port</Label>
-        <Input id="serialPort" value={connection.path} class="col-span-3" />
-      </div>
-
-      <!-- Baud Rate -->
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="baudRate" class="text-right">Baud Rate</Label>
-        <Input id="baudRate" value={connection.baudRate} class="col-span-3" />
-      </div>
-    {:else if connType === ConnectionTypes.Emulator.toString()}
-      <!-- Emulator Connection -->
-      <!-- Nothing Needed. Just here for parity -->
+      <SerialConnection bind:serialPath bind:serialBaudRate />
     {/if}
-
     <Separator />
 
     <Dialog.Footer>

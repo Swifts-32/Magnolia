@@ -1,15 +1,17 @@
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { Layout } from './Layout.server.svelte';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { type LayoutUUID } from '$lib/client/LayoutClient.svelte';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class LayoutServerHandlerClass {
   public layouts: Map<LayoutUUID, Layout> = new Map();
 
-  private static LAYOUTS_DIR = 'data/layouts';
+  private static LAYOUTS_DIR = join(process.cwd(), `data/layouts`);
   private saveInterval: ReturnType<typeof setInterval>;
-
 
   constructor() {
     this.loadSavedLayouts();
@@ -18,25 +20,12 @@ class LayoutServerHandlerClass {
     this.saveInterval = setInterval(() => {
       this.saveLayouts();
     }, 5 * (60 * 1000)); // 5 minutes
-
-    // Process signal handlers
-    if (typeof process !== "undefined") {
-      process.on("SIGINT", () => {
-        this.cleanup();
-        process.exit(0);
-      });
-
-      process.on("SIGTERM", () => {
-        this.cleanup();
-        process.exit(0);
-      });
-    }
   }
 
-  private cleanup() {
+  public shutdown() {
     this.saveLayouts();
     clearInterval(this.saveInterval);
-    console.log("Cleaned up LayoutServerHandler");
+    console.log("Shutting down LayoutServerHandler");
   }
 
   public addNewLayout(name: string): Layout {

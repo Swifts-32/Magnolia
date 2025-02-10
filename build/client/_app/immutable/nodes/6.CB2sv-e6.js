@@ -1,0 +1,1 @@
+import"../chunks/Bg9kRutz.js";import"../chunks/DmDfgG_S.js";import{t as e,a as t}from"../chunks/Di4jkbpq.js";var a=e("<p>Mixed View will go here</p>");function n(p){var o=a();t(p,o)}export{n as component};

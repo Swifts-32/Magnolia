@@ -1,0 +1,1 @@
+import{O as o,g as t}from"../chunks/CdSyYd4z.js";import"../chunks/Bg9kRutz.js";import"../chunks/DmDfgG_S.js";const r=({params:e})=>{t.mode=new o},m=Object.freeze(Object.defineProperty({__proto__:null,load:r},Symbol.toStringTag,{value:"Module"}));function s(e){}export{s as component,m as universal};

@@ -1,5 +1,5 @@
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { LayoutServerHandler } from "$lib/server/LayoutHandler.server.svelte";
+import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
 
 export const POST = async ({ request, params }) => {
     const { id } = params;

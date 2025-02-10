@@ -15,6 +15,8 @@
   } from "$lib/client/Protocols/protocols";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
+  import { onMount } from "svelte";
+  import SerialConnection from "../Connections/Serial/SerialConnection.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -28,18 +30,31 @@
   let connProtocol: string = $state(ConnectionProtocols.DCCEX.toString());
   let connType: string = $state(ConnectionTypes.Serial.toString());
 
+  let serialPath: string | undefined = $state();
+  let serialBaudRate: number | undefined = $state();
+
   async function saveChanges() {
     if (connName === undefined) {
       toast.error("Please fill in all fields");
       return;
     }
 
+    // Check if the connection type is serial and if the serial path and baud rate are filled in
+    if (connType === ConnectionTypes.Serial.toString() && (serialPath === undefined || serialBaudRate === undefined)) {
+      toast.error("Please fill in all serial connection fields");
+      return;
+    }
+
+
     const data: any = {
       connName: connName,
 
       protocol: Number(connProtocol),
       connType: Number(connType),
+      serialPath: serialPath,
+      serialBaudRate: serialBaudRate,
     };
+
 
     fetch(`/api/layout/${layout.uuid}/connections/add`, {
       method: "POST",
@@ -52,8 +67,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Connection added successfully");
-
-          const json = await response.json();
 
           // Refresh the layout
           layoutClientHandler.refreshLayouts();
@@ -117,7 +130,7 @@
     <div class="grid grid-cols-4 items-center gap-4">
       <Label for="connType" class="text-right">Hardware</Label>
       <Select.Root type="single" name="connType" bind:value={connType}>
-        <Select.Trigger class="w-80">
+        <Select.Trigger class="col-span-3">
           {getConnectionTypeName(Number(connType) as ConnectionTypes)}
         </Select.Trigger>
         <Select.Content>
@@ -136,6 +149,9 @@
       </Select.Root>
     </div>
 
+    {#if connType === ConnectionTypes.Serial.toString()}
+      <SerialConnection bind:serialPath bind:serialBaudRate />
+    {/if}
     <Separator />
 
     <Dialog.Footer>
