@@ -7,9 +7,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . -t swifts32/magnoliawebapp:latest
-    - name: Push the Docker image
-      run: |
-        docker login -u swifts32 -p ${{ secrets.DOCKER_HUB_TOKEN }}
-        docker push swifts32/magnoliawebapp:latest
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: swifts32
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+
+    - name: Build and Push the Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile
+        push: true
+        tags: swifts32/magnoliawebapp:latest
+        platforms: linux/amd64,linux/arm64,linux/arm/v7
+        username: swifts32
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+
