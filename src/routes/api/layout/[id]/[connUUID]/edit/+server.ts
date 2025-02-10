@@ -1,11 +1,12 @@
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { ConnectionTypes } from "$lib/client/Protocols/protocols";
 import { EmulatorConnection } from "$lib/server/Connections/Hardware/Emulator/Emulator.server.js";
 import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server.js";
-import { LayoutServerHandler } from "$lib/server/LayoutHandler.server.svelte";
+import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte.js";
 
 export const POST = async ({ request, params }) => {
     const { id, connUUID } = params;
-    const layout = LayoutServerHandler.layouts.get(id);
+    const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
 
     if (!layout) {
         return new Response(
@@ -14,7 +15,7 @@ export const POST = async ({ request, params }) => {
         );
     }
 
-    const connection = layout.connections.get(connUUID);
+    let connection = layout.connections.get(connUUID as ConnectionUUID);
     if (!connection) {
         return new Response(
             JSON.stringify({ message: `Connection ${connUUID} not found.` }),
@@ -30,17 +31,25 @@ export const POST = async ({ request, params }) => {
         if (data.protocol) connection.protocol = data.protocol;
 
         // Update type-specific properties
-
         switch (data.connType) {
             case ConnectionTypes.Serial: {
-                connection.hardware = new SerialConnection(data.path, data.baudRate);
+                if (data.serialPath === undefined || data.serialBaudRate === undefined) {
+                    return new Response(
+                        JSON.stringify({ message: `Invalid serial connection: Path is: ${data.serialPath} or Baud Rate is: ${data.serialBaudRate}` }),
+                        { status: 400 }
+
+                    );
+
+                }
+
+                connection.hardware = new SerialConnection(data.serialPath, data.serialBaudRate);
                 break;
             }
+
             case ConnectionTypes.Emulator: {
                 connection.hardware = new EmulatorConnection();
                 break;
             }
-
 
             default:
                 return new Response(
@@ -50,7 +59,7 @@ export const POST = async ({ request, params }) => {
         }
 
         // Update the connection in the layout
-        layout.connections.set(connUUID, connection);
+        layout.connections.set(connUUID as ConnectionUUID, connection);
         LayoutServerHandler.saveLayouts();
         
         return new Response(

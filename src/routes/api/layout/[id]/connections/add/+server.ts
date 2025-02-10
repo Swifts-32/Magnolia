@@ -26,20 +26,16 @@ export const POST = async ({ request, params }) => {
 
         switch (data.connType) {
             case ConnectionTypes.Emulator:
-
                 connection = layout.createEmulatorConnection(data.protocol as ConnectionProtocols, data.connName);
                 break;
 
-
             case ConnectionTypes.Serial:
-                if (data.path === undefined || data.baudRate === undefined) {
-                    return new Response(JSON.stringify({ message: 'Missing required fields: path and baudRate are required for serial connections' }), { status: 400 });
+                if (data.serialPath === undefined || data.serialBaudRate === undefined) {
+                    return new Response(JSON.stringify({ message: 'Missing required fields: serialPath and serialBaudRate are required for serial connections' }), { status: 400 });
                 }
 
                 connection = layout.createSerialConnection(data.protocol, data.path, data.baudRate, data.connName);
                 break;
-
-
 
             default:
                 return new Response(JSON.stringify({ message: 'Invalid connection type' }), { status: 400 });

@@ -39,12 +39,22 @@
       return;
     }
 
+    // Check if the connection type is serial and if the serial path and baud rate are filled in
+    if (connType === ConnectionTypes.Serial.toString() && (serialPath === undefined || serialBaudRate === undefined)) {
+      toast.error("Please fill in all serial connection fields");
+      return;
+    }
+
+
     const data: any = {
       connName: connName,
 
       protocol: Number(connProtocol),
       connType: Number(connType),
+      serialPath: serialPath,
+      serialBaudRate: serialBaudRate,
     };
+
 
     fetch(`/api/layout/${layout.uuid}/connections/add`, {
       method: "POST",
@@ -57,8 +67,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Connection added successfully");
-
-          const json = await response.json();
 
           // Refresh the layout
           layoutClientHandler.refreshLayouts();
@@ -141,9 +149,8 @@
       </Select.Root>
     </div>
 
-
     {#if connType === ConnectionTypes.Serial.toString()}
-    <SerialConnection bind:serialPath={serialPath} bind:serialBaudRate={serialBaudRate} />
+      <SerialConnection bind:serialPath bind:serialBaudRate />
     {/if}
     <Separator />
 
