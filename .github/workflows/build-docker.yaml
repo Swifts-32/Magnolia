@@ -11,4 +11,5 @@ jobs:
       run: docker build . -t swifts32/magnoliawebapp:latest
     - name: Push the Docker image
       run: |
-       docker push swifts32/magnoliawebapp:latest
+        docker login -u swifts32 -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push swifts32/magnoliawebapp:latest
