@@ -15,6 +15,8 @@
   } from "$lib/client/Protocols/protocols";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
+  import { onMount } from "svelte";
+  import SerialConnection from "../Connections/Serial/SerialConnection.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -27,6 +29,9 @@
   let connName: string | undefined = $state();
   let connProtocol: string = $state(ConnectionProtocols.DCCEX.toString());
   let connType: string = $state(ConnectionTypes.Serial.toString());
+
+  let serialPath: string | undefined = $state();
+  let serialBaudRate: number | undefined = $state();
 
   async function saveChanges() {
     if (connName === undefined) {
@@ -117,7 +122,7 @@
     <div class="grid grid-cols-4 items-center gap-4">
       <Label for="connType" class="text-right">Hardware</Label>
       <Select.Root type="single" name="connType" bind:value={connType}>
-        <Select.Trigger class="w-80">
+        <Select.Trigger class="col-span-3">
           {getConnectionTypeName(Number(connType) as ConnectionTypes)}
         </Select.Trigger>
         <Select.Content>
@@ -136,6 +141,10 @@
       </Select.Root>
     </div>
 
+
+    {#if connType === ConnectionTypes.Serial.toString()}
+    <SerialConnection bind:serialPath={serialPath} bind:serialBaudRate={serialBaudRate} />
+    {/if}
     <Separator />
 
     <Dialog.Footer>

@@ -18,25 +18,12 @@ class LayoutServerHandlerClass {
     this.saveInterval = setInterval(() => {
       this.saveLayouts();
     }, 5 * (60 * 1000)); // 5 minutes
-
-    // Process signal handlers
-    if (typeof process !== "undefined") {
-      process.on("SIGINT", () => {
-        this.cleanup();
-        process.exit(0);
-      });
-
-      process.on("SIGTERM", () => {
-        this.cleanup();
-        process.exit(0);
-      });
-    }
   }
 
-  private cleanup() {
+  public shutdown() {
     this.saveLayouts();
     clearInterval(this.saveInterval);
-    console.log("Cleaned up LayoutServerHandler");
+    console.log("Shutting down LayoutServerHandler");
   }
 
   public addNewLayout(name: string): Layout {
