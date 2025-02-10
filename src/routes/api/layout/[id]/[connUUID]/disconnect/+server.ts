@@ -1,12 +1,13 @@
-import { LayoutServerHandler } from "../../../../../../lib/server/LayoutHandler.server.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
 
 export const GET = async ({ params }) => {
     let { id, connUUID } = params; // Extract the dynamic parameter
 
-    const layout = LayoutServerHandler.layouts.get(id);
+    const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
     if (!layout) return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
 
-    let connection = layout.connections.get(connUUID);
+    let connection = layout.connections.get(connUUID as ConnectionUUID);
     if (!connection) return new Response(JSON.stringify({ message: `Connection does not exist on layout: ${id}` }), { status: 406 });
 
     const result = await connection.disconnect();

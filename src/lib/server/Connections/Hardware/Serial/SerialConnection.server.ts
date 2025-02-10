@@ -1,9 +1,13 @@
 import { SerialPort, ReadlineParser } from 'serialport';
-import { WindowsBinding } from '@serialport/bindings-cpp'
 import type { ISerialConnection } from "../hardware";
 import {  ConnectionTypes } from '$lib/client/Protocols/protocols';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { autoDetect } = require('@serialport/bindings-cpp');
 
 export class SerialConnection implements ISerialConnection {
+
 
     private serialPort: SerialPort | null = null;
 
@@ -29,10 +33,11 @@ export class SerialConnection implements ISerialConnection {
         return new Promise<string>((resolve, reject) => {
 
             this.serialPort = new SerialPort({
-                binding: WindowsBinding,
+                binding: autoDetect(),
                 path: this.path,
                 baudRate: this.baudRate,
                 autoOpen: false
+
             });
 
             const parser = new ReadlineParser();

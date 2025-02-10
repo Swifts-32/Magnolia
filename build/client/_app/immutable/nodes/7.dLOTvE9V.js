@@ -1,0 +1,1 @@
+import{r as e}from"../chunks/B90CZVMX.js";const o=()=>{e(308,"panel/operate")},t=Object.freeze(Object.defineProperty({__proto__:null,load:o},Symbol.toStringTag,{value:"Module"}));export{t as universal};

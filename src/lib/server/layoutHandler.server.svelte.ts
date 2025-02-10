@@ -1,15 +1,17 @@
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { Layout } from './Layout.server.svelte';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { type LayoutUUID } from '$lib/client/LayoutClient.svelte';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class LayoutServerHandlerClass {
   public layouts: Map<LayoutUUID, Layout> = new Map();
 
-  private static LAYOUTS_DIR = 'data/layouts';
+  private static LAYOUTS_DIR = join(process.cwd(), `data/layouts`);
   private saveInterval: ReturnType<typeof setInterval>;
-
 
   constructor() {
     this.loadSavedLayouts();
