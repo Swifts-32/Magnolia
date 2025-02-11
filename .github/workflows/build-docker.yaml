@@ -28,8 +28,6 @@ jobs:
         file: Dockerfile
         push: true
         tags: swifts32/magnoliawebapp:latest
-        platforms: linux/amd64,linux/arm64,linux/arm/v7
-        username: swifts32
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+        platforms: linux/amd64,linux/arm64
 
 
