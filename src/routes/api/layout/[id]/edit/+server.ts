@@ -3,7 +3,7 @@ import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
 
 export const POST = async ({ request, params }) => {
     const { id } = params;
-    const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
+    let layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
 
     if (!layout) {
         return new Response(
@@ -22,8 +22,6 @@ export const POST = async ({ request, params }) => {
         return new Response(
             JSON.stringify({
                 message: 'Layout updated successfully',
-
-                layout: layout
             }),
             { status: 200 }
         );

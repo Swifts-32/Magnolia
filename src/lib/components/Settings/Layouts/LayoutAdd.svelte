@@ -36,6 +36,9 @@
 
           // Refresh the layout list
           layoutClientHandler.refreshLayouts();
+
+          // Clear the dialog data
+          layoutName = undefined;
         } else {
           console.error("Failed to create layout");
           toast.error("Failed to create layout");
