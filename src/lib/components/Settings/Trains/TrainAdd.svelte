@@ -11,11 +11,13 @@
   import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
+  import type { Snippet } from "svelte";
 
   interface Props {
     layout: LayoutClient;
+    children?: Snippet;
   }
-  let { layout }: Props = $props();
+  let { layout, children }: Props = $props();
 
   let editMode: boolean = $state(false);
 
@@ -62,12 +64,8 @@
   }
 </script>
 
-<button
-  class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
-  onclick={() => (editMode = true)}
->
-  <Plus size={40} strokeWidth={1} />
-  <p class="text-2xl text-start">Add Train</p>
+<button class="w-full" onclick={() => (editMode = true)}>
+  {@render children?.()}
 </button>
 
 <Dialog.Root open={editMode}>

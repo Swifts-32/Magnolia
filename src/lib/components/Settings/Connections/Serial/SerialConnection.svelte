@@ -67,8 +67,12 @@
     <div
       class="flex flex-col justify-center items-start text-[0.6rem] leading-3 text-gray-400"
     >
-      <p>{port.friendlyName ?? "Undefined Name"}</p>
-      <p>{port.manufacturer ?? "Undefined Manufacturer"}</p>
+      {#if port.isCustom}
+        <p>Custom Port</p>
+      {:else}
+        <p>{port.friendlyName ?? "Undefined Name"}</p>
+        <p>{port.manufacturer ?? "Undefined Manufacturer"}</p>
+      {/if}
     </div>
   </div>
 {/snippet}
@@ -106,7 +110,6 @@
           <Command.Group>
             {#if serialPathSearch?.trim() && !serialPorts.some((port) => port.path === serialPathSearch)}
               <Command.Item
-                class="w-80 h-10"
                 value="CustomFilter"
                 onSelect={() => {
                   serialPorts = [
@@ -120,15 +123,16 @@
                   serialPath = serialPathSearch;
                   closeAndFocusSerialPathTrigger();
                 }}
+                class="w-80 h-10 flex justify-between {serialPath ==
+                serialPathSearch
+                  ? 'cursor-default'
+                  : 'cursor-pointer'}"
               >
-                <div class="flex flex-1 justify-start items-center gap-2">
-                  <p>{serialPathSearch}</p>
-                  <div
-                    class="flex flex-col justify-center items-start text-[0.6rem] leading-3 text-gray-400"
-                  >
-                    <p>Custom Port</p>
-                  </div>
-                </div>
+                {@render pathItem({
+                  path: serialPathSearch,
+                  friendlyName: "Custom Port",
+                  isCustom: true,
+                })}
                 <Check
                   class={cn(
                     "mr-2 size-4",
@@ -157,7 +161,9 @@
                     }
                     closeAndFocusSerialPathTrigger();
                   }}
-                  class="h-10"
+                  class="h-10 flex justify-between {serialPath == port.path
+                    ? 'cursor-default'
+                    : 'cursor-pointer'}"
                 >
                   {@render pathItem(port)}
                   <Check

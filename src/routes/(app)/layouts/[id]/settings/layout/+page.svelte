@@ -8,7 +8,6 @@
   import { onDestroy, onMount } from "svelte";
   import { Toaster } from "$lib/components/ui/sonner";
   import { toast } from "svelte-sonner";
-  import { navigating } from "$app/state";
 
   let { data }: { data: LayoutData } = $props();
   let layoutName: string | undefined = $state(data.layout.name);
@@ -27,6 +26,11 @@
     const layoutData = {
       layoutName: layoutName,
     };
+
+    // Don't update the layout if nothing has changed
+    if (layoutName === data.layout.name) {
+      return;
+    }
 
     fetch(`/api/layout/${data.layout.uuid}/edit`, {
       method: "POST",

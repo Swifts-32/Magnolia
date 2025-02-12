@@ -7,8 +7,21 @@
   import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
+  import { fade, fly, slide } from "svelte/transition";
+  import {
+    backOut,
+    circOut,
+    cubicOut,
+    elasticIn,
+    elasticOut,
+    expoOut,
+    sineOut,
+  } from "svelte/easing";
+  import { Tween } from "svelte/motion";
 
   let editMode: boolean = $state(false);
+  let page: number = $state(0);
 
   let layoutName: string | undefined = $state();
 
@@ -49,7 +62,24 @@
         console.error("Error creating layout:", error);
         toast.error("Error creating layout");
       });
+  }
 
+  let progress = new Tween(0, {
+    duration: 400,
+    easing: cubicOut,
+  });
+
+  function flyIn(node, { duration }) {
+    return {
+      duration,
+      css: (t, u) => {
+        const eased = circOut(t);
+        return `
+					transform: scale(${eased});
+          opacity: ${eased};
+        `;
+      },
+    };
   }
 </script>
 
@@ -63,6 +93,53 @@
   <p class="text-xl">Add new layout</p>
 </button>
 
+{#if editMode}
+  <div
+    transition:flyIn={{ duration: 300 }}
+    class="p-4 fixed inset-0 z-10 bg-background flex-col place-items-center content-center gap-20"
+  >
+    {#key page}
+      {#if page === 0}
+        <!-- Page 0 content: flies out left and new content will fly in from right -->
+        <div
+          in:fly={{ x: 1000, duration: 600 }}
+          out:fly={{ x: -1000, duration: 600 }}
+          class="flex flex-col place-items-center content-center"
+        >
+          <h1 class="text-4xl mb-5">Add New Layout</h1>
+          <h1 class="text-2xl mb-10">What do you want to call this layout?</h1>
+
+          <!-- Name -->
+          <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
+            <Label for="layoutName" class="text-right">Name</Label>
+            <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
+          </div>
+          <div class="flex gap-4 mt-10">
+            <Button
+              class="w-32"
+              variant="outline"
+              onclick={() => (editMode = false)}>Cancel</Button
+            >
+            <Button class="w-32" onclick={() => (page = 1)}>Next</Button>
+          </div>
+        </div>
+      {:else if page === 1}
+        <!-- Page 1 content: flies in from right and exits to left if you go back -->
+        <div
+          in:fly={{ x: 1000, duration: 600 }}
+          out:fly={{ x: -1000, duration: 600 }}
+          class="flex flex-col place-items-center content-center"
+        >
+          <h1 class="text-4xl mb-5">Add New Layout</h1>
+          <h1 class="text-2xl mb-10">Add New Connections</h1>
+          <Button class="w-32" onclick={() => (page = 0)}>Save</Button>
+        </div>
+      {/if}
+    {/key}
+  </div>
+  <Toaster />
+{/if}
+<!-- 
 <Dialog.Root open={editMode}>
   <Dialog.Content
     interactOutsideBehavior="ignore"
@@ -77,7 +154,7 @@
         <Accordion.Item value="general">
           <Accordion.Trigger>General</Accordion.Trigger>
           <!-- Name -->
-          <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
+<!-- <div class="grid grid-cols-4 mt-2 mb-4 items-center gap-4">
             <Label for="layoutName" class="text-right">Name</Label>
             <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
           </div>
@@ -95,4 +172,4 @@
       <Button type="submit" class="w-28" onclick={saveChanges}>Save</Button>
     </Dialog.Footer>
   </Dialog.Content>
-</Dialog.Root>
+</Dialog.Root> -->
