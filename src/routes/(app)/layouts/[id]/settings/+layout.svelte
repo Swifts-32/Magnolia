@@ -20,6 +20,9 @@
     <h1 class="text-4xl my-10">Settings</h1>
 
     <div class="flex flex-col gap-3">
+      {@render layoutButton("Layout", () =>
+        goto(`/layouts/${data.layout.uuid}/settings/layout`)
+      )}
       {@render layoutButton("Trains", () =>
         goto(`/layouts/${data.layout.uuid}/settings/trains`)
       )}

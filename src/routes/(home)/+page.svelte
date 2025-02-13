@@ -9,8 +9,8 @@
     <hr class="my-10" />
 
     
-    <div class="flex">
-        {#each layoutClientHandler.layouts.values() as layout}
+    <div class="flex flex-wrap">
+        {#each layoutClientHandler.layouts.values() as layout (layout.uuid)}
             <button
                 class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
                 onclick={() => goto(`/layouts/${layout.uuid}`)}

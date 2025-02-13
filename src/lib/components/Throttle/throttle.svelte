@@ -14,15 +14,23 @@
     layout: LayoutClient;
     disabled?: boolean;
   }
-  let { layout, disabled: disabledProp = false}: Props = $props();
+  let { layout, disabled: disabledProp = false }: Props = $props();
 
   let curConnection: ClientConnection | undefined = $derived.by(() => {
     if (curTrain) {
       return layout.connections.get(curTrain.connUUID);
     }
+    return undefined;
   });
   let curTrain: ClientTrain | undefined = $state();
-  let disabled: boolean = $derived(disabledProp || curTrain == undefined);
+
+  // Disable throttle if:
+  // - Disabled prop is true
+  // - No train is selected
+  // - Train is not connected to a connection
+  let disabled: boolean = $derived(
+    disabledProp || curTrain == undefined || !curConnection?.isConnected
+  );
 
   function handleDirectionChange(newDirection: number) {
     if (!curTrain || !curConnection) return;
@@ -33,6 +41,8 @@
     curConnection.setTrainSpeed(curTrain.uuid, newSpeed);
   }
 </script>
+
+
 
 <Card class="p-5 max-w-fit h-[450px] flex flex-col select-none gap-4">
   <!-- Loco Select -->

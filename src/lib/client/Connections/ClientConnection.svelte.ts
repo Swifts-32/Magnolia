@@ -42,7 +42,7 @@ export class ClientConnection {
     } else if (/Cid:[^:]+:\s*<p1>/.test(command)) { // Power On
       console.log("Power On");
       return;
-    } else if (/Cid:[^:]+:\s*<l (\d+) (\d+) (\d|\d{2}|[012][0-5][0-5]) (\d+)>/.test(command)) {
+    } else if (/Cid:[^:]+:\s*<l (\d+) (\d+) ([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (\d+)>/.test(command)) {
       /**
        * <l cab reg speedByte functMap>
        * cab: DCC Address of the decoder/loco.
@@ -52,7 +52,7 @@ export class ClientConnection {
        *    - forward - 130-255 = speed 1-126, 128 = stop, 129 = Emergency Stop
        * FunctiMap: individual function states represented by the bits in a byte
        */
-      const match = command.match(/Cid:[^:]+:\s*<l (\d+) (\d+) (\d|\d{2}|[012][0-5][0-5]) (\d+)>/);
+      const match = command.match(/Cid:[^:]+:\s*<l (\d+) (\d+) ([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (\d+)>/);
 
       if (match) {
         const cab = parseInt(match[1]);  // Loco ID
@@ -107,6 +107,9 @@ export class ClientConnection {
           //   train.setFunction(funct.index, funct.state);
           // });
         }
+        else {
+          console.log("Train not found: " + cab);
+        }
       }
 
     } else {
@@ -139,7 +142,6 @@ export class ClientConnection {
       switch (this.protocol) {
         case ConnectionProtocols.DCCEX:
           fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
-          console.log(`<t ${train.address} ${train.speed} ${train.direction}>`);
           break;
         default:
           console.log("Unknown protocol: " + this.protocol);
@@ -159,16 +161,13 @@ export class ClientConnection {
     }
   }
 
-
   getTrain(trainAddress: TrainAddress): ClientTrain | undefined {
     for (const train of this.trains.values()) {
-      if (train.address === trainAddress) {
+      if (train.address.toString().trim() == trainAddress.toString().trim()) {
         return train;
       }
     }
     return undefined;
   }
-
-
 }
 

@@ -5,7 +5,11 @@ class LayoutClientHandler {
 
     public async refreshLayouts() {
         const json = await fetch("/api/layout").then(res => res.json());
-        const layouts = json.map(([uuid, config]: [LayoutUUID, any]) => ({ uuid, config }));
+        const layouts = json.map((layout: { uuid: LayoutUUID, name: string, position: number, connections: any[] }) => ({
+            uuid: layout.uuid,
+            name: layout.name,
+            position: layout.position,
+        }));
         // Get set of server layout UUIDs
         const serverLayoutUUIDs = new Set(layouts.map((layout: { uuid: LayoutUUID }) => layout.uuid));
 
@@ -30,9 +34,13 @@ class LayoutClientHandler {
                     continue;
                 }
 
+                layoutClient.name = layout.name;
                 await layoutClient.refreshLayout();
             }
         }
+
+        // Trigger reactivity by reassigning the map
+        this.layouts = new Map(this.layouts);
     }
 
 }

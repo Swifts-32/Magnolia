@@ -8,6 +8,9 @@
   import { cn } from "$lib/utils.js";
   import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import { Plus } from "lucide-svelte";
+  import { type TrainUUID } from "$lib/server/Trains/Train.server";
+  import TrainAdd from "$lib/components/Settings/Trains/TrainAdd.svelte";
 
   interface Props {
     curTrain: ClientTrain | undefined;
@@ -17,8 +20,8 @@
 
   let { curTrain = $bindable(), disabled = false, layout }: Props = $props();
 
-
   let open = $state(false);
+  let trainSearch: string = $state("");
   let triggerRef = $state<HTMLButtonElement>(null!);
   function closeAndFocusTrigger() {
     open = false;
@@ -46,36 +49,50 @@
     {/snippet}
   </Popover.Trigger>
   <Popover.Content class="w-[275px] p-0">
-    <Command.Root>
-      <Command.Input placeholder="Search trains..." {disabled} />
+    <Command.Root
+      filter={(value, search, keywords) => {
+        if (value === "create-train") return 1;
+        return keywords?.some((k) =>
+          k.toLowerCase().includes(search.trim().toLowerCase())
+        )
+          ? 1
+          : 0;
+      }}
+    >
+      <Command.Input
+        placeholder="Search trains..."
+        bind:value={trainSearch}
+        {disabled}
+      />
       <Command.List>
-        <Command.Empty>No trains found. :(</Command.Empty>
+        <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
           {#each layout.getTrains().values() as train}
             <Command.Item
               {disabled}
-              value={train.name}
+              value={train.uuid}
+              keywords={[train.name, train.address.toString()]}
               onSelect={() => {
                 curTrain = train;
                 closeAndFocusTrigger();
               }}
-              class="flex justify-between {train.uuid == curTrain?.uuid
+              class=" h-10 flex justify-between {train.uuid == curTrain?.uuid
                 ? 'cursor-default'
                 : 'cursor-pointer'}"
             >
-              <div class="flex flex-col">
+              <div class="flex items-center gap-2">
                 <p class="text-md">{train.name}</p>
-                <p class="text-xs text-gray-500 leading-[0.5rem]">
-                  ID: {train.address}
-                </p>
-                <p class="text-xs text-gray-500 leading-[0.5rem]">
-
-                  Connection: {layout.connections.get(train.connUUID)?.name ?? "Undefined"}
-                </p>
+                <div
+                  class="flex flex-col justify-center items-start text-[0.6rem] leading-3 text-gray-400"
+                >
+                  <p>Address: {train.address}</p>
+                  <p>
+                    Connection: {layout.connections.get(train.connUUID)?.name ??
+                      "Undefined"}
+                  </p>
+                </div>
               </div>
               <Check
-
-
                 class={cn(
                   "mr-2 size-4",
                   curTrain?.uuid !== train.uuid && "text-transparent"
@@ -83,6 +100,21 @@
               />
             </Command.Item>
           {/each}
+
+          <Command.Separator class="my-1" />
+
+          <Command.Item
+            {disabled}
+            value="create-train"
+            class="h-10 flex justify-center"
+          >
+            <TrainAdd {layout}>
+              <div class="flex items-center justify-center gap-2">
+                <Plus class="size-6" />
+                <p>Create Train</p>
+              </div>
+            </TrainAdd>
+          </Command.Item>
         </Command.Group>
       </Command.List>
     </Command.Root>

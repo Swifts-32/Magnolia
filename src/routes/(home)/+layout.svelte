@@ -13,12 +13,12 @@
 			displayInNav: true,
 			displayInFooter: false,
 		},
-		{
-			linkText: "Settings",
-			url: "/settings",
-			displayInNav: true,
-			displayInFooter: false,
-		},
+		// {
+		// 	linkText: "Settings",
+		// 	url: "/settings",
+		// 	displayInNav: true,
+		// 	displayInFooter: false,
+		// },
 	];
 
 	const navbarData = new NavBarData(links, curLink);

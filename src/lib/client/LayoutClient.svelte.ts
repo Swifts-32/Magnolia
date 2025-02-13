@@ -220,6 +220,7 @@ export class LayoutClient {
       hardware: {
         connType: ConnectionTypes,
       },
+      isConnected: boolean,
       trains: {
         uuid: TrainUUID,
         connUUID: ConnectionUUID,
@@ -251,6 +252,7 @@ export class LayoutClient {
 
           clientConnection.name = connData.name;
           clientConnection.hardware = connData.hardware.connType;
+          clientConnection.isConnected = connData.isConnected;
 
           // TODO: Update the connection protocol
 

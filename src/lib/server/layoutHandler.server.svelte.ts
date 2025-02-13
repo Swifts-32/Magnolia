@@ -73,6 +73,11 @@ class LayoutServerHandlerClass {
       console.log('Error loading layouts:', error);
     }
   }
+
+  public deleteLayout(uuid: LayoutUUID) {
+    this.layouts.delete(uuid);
+    this.saveLayouts();
+  }
 }
 
 
