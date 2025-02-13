@@ -27,6 +27,7 @@ export class Connection {
             protocol: this.protocol,
             uuid: this.uuid,
             hardware: this.hardware.toJSON(),
+            isConnected: this.hardware.isConnected,
             trains: Array.from(this.trains.values()).map(train => train.toJSON())
         };
     }
