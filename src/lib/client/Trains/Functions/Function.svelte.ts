@@ -1,4 +1,4 @@
-import type { TrainFunctionIcons, TrainFunctionModes, TrainFunctionUUID } from "$lib/server/Trains/Functions.server";
+import type { TrainFunctionIcons, TrainFunctionModes, TrainFunctionUUID } from "$lib/server/Trains/Functions";
 
 export class TrainClientFunction {
     uuid: TrainFunctionUUID;

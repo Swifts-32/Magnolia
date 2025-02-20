@@ -1,12 +1,14 @@
 <script lang="ts">
+    import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
     import type { CarouselAPI } from "$lib/components/ui/carousel/context";
     import * as Carousel from "$lib/components/ui/carousel/index";
-    import type { Funct } from "../../../../services/train.svelte";
+    
+    import type { TrainFunctionUUID } from "$lib/server/Trains/Functions";
     import FunctionButton from "./FunctionButton.svelte";
 
     interface Props {
         disabled?: boolean;
-        functions: Map<number, Funct> | null;
+        functions: Map<TrainFunctionUUID, TrainClientFunction> | null;
         onclick?: (id: number, state: boolean) => void;
     }
 
@@ -34,7 +36,7 @@
         return chunks;
     }
 
-    let entriesArray: Funct[] = [];
+    let entriesArray: TrainClientFunction[] = [];
     if (functions) {
         entriesArray = Array.from(functions.values()).filter(func => func.visible);
     }
@@ -61,9 +63,9 @@
                             <FunctionButton
                                 {disabled}
                                 icon={func.icon}
-                                id={func.id}
+                                uuid={func.uuid}
                                 mode={func.mode}
-                                name={func.mode}
+                                name={func.name}
                                 bind:selected={func.state}
                                 {onclick}
                             />

@@ -1,18 +1,16 @@
 <script lang="ts">
     import Button from "$lib/components/ui/button/button.svelte";
     import Toggle from "$lib/components/ui/toggle/toggle.svelte";
-    import {
-        FunctionIcons,
-        type FunctionModes,
-    } from "../../../../services/train.svelte";
+    
+    import { TrainFunctionIcons, type TrainFunctionModes, type TrainFunctionUUID } from "$lib/server/Trains/Functions";
     import { Bell, Lightbulb, Sun, Volume2 } from "lucide-svelte";
 
     interface Props {
         disabled?: boolean;
         name: string;
-        id: number;
-        icon: FunctionIcons;
-        mode: FunctionModes;
+        uuid: TrainFunctionUUID;
+        icon: TrainFunctionIcons;
+        mode: TrainFunctionModes;
         selected: boolean;
         onclick?: (id: number, state: boolean) => void;
         [key: string]: any;
@@ -37,19 +35,19 @@
 {/snippet}
 
 {#snippet body()}
-    {#if icon == FunctionIcons.Light1}
+    {#if icon == TrainFunctionIcons.Light1}
         <Lightbulb />
         {@render functionText()}
-    {:else if icon == FunctionIcons.Light2}
+    {:else if icon == TrainFunctionIcons.Light2}
         <Sun />
         {@render functionText()}
-    {:else if icon == FunctionIcons.Speaker}
+    {:else if icon == TrainFunctionIcons.Speaker}
         <Volume2 />
         {@render functionText()}
-    {:else if icon == FunctionIcons.Bell}
+    {:else if icon == TrainFunctionIcons.Bell}
         <Bell />
         {@render functionText()}
-    {:else if icon == FunctionIcons.text}
+    {:else if icon == TrainFunctionIcons.Text}
         <p class="text-lg">
             F{id}
         </p>

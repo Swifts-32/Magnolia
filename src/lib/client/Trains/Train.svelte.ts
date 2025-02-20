@@ -1,4 +1,4 @@
-import type { TrainFunctionUUID } from "$lib/server/Trains/Functions.server";
+import type { TrainFunctionUUID } from "$lib/server/Trains/Functions";
 import type { TrainAddress } from "$lib/server/Trains/Train.server";
 
 import type { TrainUUID } from "$lib/server/Trains/Train.server";

@@ -99,12 +99,14 @@
       {/if}
     </div>
 
-    <!-- {#key curAddr}
+    {#key curTrain}
       <FunctionCarousel
-        onclick={(id, state) => {}}
+        onclick={(id, state) => {
+          console.log("Function clicked", id);
+        }}
         functions={curTrain?.functions ?? null}
         disabled={disabled || curTrain == undefined}
       />
-    {/key} -->
+    {/key}
   </div>
 </Card>

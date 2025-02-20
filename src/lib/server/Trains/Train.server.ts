@@ -1,5 +1,6 @@
 import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
-import { ServerTrainFunctions, TrainFunctionIcons, type TrainFunctionModes, type TrainFunctionUUID } from "./Functions.server";
+import { ServerTrainFunctions } from "./Functions.server";
+import { TrainFunctionIcons, type TrainFunctionModes, type TrainFunctionUUID } from "./Functions";
 
 export type TrainUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type TrainAddress = string | number;
