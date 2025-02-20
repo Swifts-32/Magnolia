@@ -42,9 +42,6 @@ class LayoutClientHandler {
         // Trigger reactivity by reassigning the map
         this.layouts = new Map(this.layouts);
     }
-
 }
-
-
 
 export const layoutClientHandler = new LayoutClientHandler();

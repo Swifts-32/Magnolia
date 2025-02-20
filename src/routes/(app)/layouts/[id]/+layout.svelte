@@ -1,33 +1,33 @@
 <script lang="ts">
-	import { page } from "$app/stores";
+    import { page } from "$app/state";
 	import { NavBarData } from "$lib/components/NavBar/linkUtils.svelte";
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
 
 	let { children } = $props();
 
-	const curLink = $page.url.pathname;
+	const curLink = page.url.pathname;
 	const links = [
 		{
 			linkText: "Home",
-			url: `/layouts/${$page.params.id}`,
+			url: `/layouts/${page.params.id}`,
 			displayInNav: true,
 			displayInFooter: false,
 		},
 		{
 			linkText: "Throttle",
-			url: `/layouts/${$page.params.id}/throttle`,
+			url: `/layouts/${page.params.id}/throttle`,
 			displayInNav: true,
 			displayInFooter: false,
 		},
 		{
 			linkText: "Panel",
-			url: `/layouts/${$page.params.id}/panel`,
+			url: `/layouts/${page.params.id}/panel`,
 			displayInNav: true,
 			displayInFooter: false,
 		},
 		{
 			linkText: "Settings",
-			url: `/layouts/${$page.params.id}/settings`,
+			url: `/layouts/${page.params.id}/settings`,
 			displayInNav: true,
 			displayInFooter: false,
 		},

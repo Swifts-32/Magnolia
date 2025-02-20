@@ -1,8 +1,5 @@
 export enum ConnectionTypes {
     Serial = 0,
-    Wifi = 1,
-    Bluetooth = 3,
-    Zigbee = 4,
     Emulator = 5,
 }
 
@@ -27,17 +24,10 @@ export function getConnectionTypeName(connType: ConnectionTypes): string {
     switch (connType) {
         case ConnectionTypes.Serial:
             return "Serial";
-
-        case ConnectionTypes.Wifi:
-            return "Wifi";
-        case ConnectionTypes.Bluetooth:
-            return "Bluetooth";
-        case ConnectionTypes.Zigbee:
-            return "Zigbee";
         case ConnectionTypes.Emulator:
             return "Emulator";
         default:
-            return "Unknown";
+            return "Unknown Connection Type";
 
     }
 }

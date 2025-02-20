@@ -3,6 +3,8 @@ import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
 import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
 import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
+import type { TrainFunctionJSON } from "$lib/server/Trains/Functions.server";
+import { TrainClientFunction } from "./Trains/Functions/Function.svelte";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -167,7 +169,7 @@ export class LayoutClient {
       connUUID: ConnectionUUID,
       address: TrainAddress,
       name: string,
-      functions: any[],
+      functions: TrainFunctionJSON[],
     }[] = Array.isArray(trainData) ? trainData : [];
 
 
@@ -193,12 +195,24 @@ export class LayoutClient {
           clientTrain.address = trainData.address;
           clientTrain.name = trainData.name;
           clientTrain.connUUID = trainData.connUUID;
-          // TODO Add functions to the train
+
+
+          // Update trains functions
+          trainData.functions.forEach(func => {
+            clientTrain.functions.set(func.uuid, new TrainClientFunction(func.uuid, func.value, func.name, func.icon, func.mode));
+          });
         }
-      }
-      else {
-        // Train does not exist, create it
-        clientTrains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID));
+        else {
+          // Train does not exist, create it
+          let clientTrain = new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID);
+
+          // Add functions to the train
+          trainData.functions.forEach(func => {
+            clientTrain.functions.set(func.uuid, new TrainClientFunction(func.uuid, func.value, func.name, func.icon, func.mode));
+          });
+
+          clientTrains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID));
+        }
       }
     });
 
