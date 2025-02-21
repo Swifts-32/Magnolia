@@ -3,7 +3,7 @@ import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
 import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
 import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
-import type { TrainFunctionJSON } from "$lib/server/Trains/Functions";
+import type { TrainFunctionJSON } from "$lib/types/Trains/Functions/Functions";
 import { TrainClientFunction } from "./Trains/Functions/Function.svelte";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;

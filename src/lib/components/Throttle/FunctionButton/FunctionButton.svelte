@@ -2,7 +2,7 @@
     import Button from "$lib/components/ui/button/button.svelte";
     import Toggle from "$lib/components/ui/toggle/toggle.svelte";
     
-    import { TrainFunctionIcons, type TrainFunctionModes, type TrainFunctionUUID } from "$lib/server/Trains/Functions";
+    import { TrainFunctionIcons, type TrainFunctionModes, type TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
     import { Bell, Lightbulb, Sun, Volume2 } from "lucide-svelte";
 
     interface Props {
