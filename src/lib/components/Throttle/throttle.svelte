@@ -9,11 +9,9 @@
   import Button from "../ui/button/button.svelte";
   import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
   import { CircleAlert } from "lucide-svelte";
-  import {
-    TrainFunctionIcons,
-    type TrainFunctionData,
-  } from "$lib/types/Trains/Functions/Functions";
   import { toast } from "svelte-sonner";
+  import { type ITrainFunctionData, type TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
+  import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandler.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -45,6 +43,10 @@
     if (!curTrain || !curConnection) return;
     curConnection.setTrainSpeed(curTrain.uuid, newSpeed);
   }
+  function handleFunctionChange(uuid: TrainFunctionUUID, state: boolean) {
+    if (!curTrain || !curConnection) return;
+    curConnection.setTrainFunction(curTrain.uuid, uuid, state);
+  }
 </script>
 
 <Card class="p-5 max-w-fit h-[450px] flex flex-col select-none gap-4">
@@ -56,11 +58,11 @@
       onclick={() => {
         if (curTrain == undefined) return;
 
-        const data: TrainFunctionData = {
+        const data: ITrainFunctionData = {
           uuid: crypto.randomUUID(),
           value: "1",
           name: "Function 1",
-          icon: TrainFunctionIcons.Light1,
+          icon: "Speaker",
           mode: "toggle",
           visible: true,
         };
@@ -79,6 +81,7 @@
             let json = await res.json();
             if (res.ok) {
               toast.success(json.message);
+              layoutClientHandler.refreshLayouts();
             } else {
               toast.error(json.message);
             }
@@ -148,9 +151,7 @@
 
     {#key curTrain}
       <FunctionCarousel
-        onclick={(id, state) => {
-          console.log("Function clicked", id);
-        }}
+        onclick={handleFunctionChange}
         functions={curTrain?.functions ?? null}
         disabled={disabled || curTrain == undefined}
       />

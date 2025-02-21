@@ -1,26 +1,19 @@
 <script lang="ts">
+    import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
     import Button from "$lib/components/ui/button/button.svelte";
     import Toggle from "$lib/components/ui/toggle/toggle.svelte";
-    
-    import { TrainFunctionIcons, type TrainFunctionModes, type TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
+    import type { TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
     import { Bell, Lightbulb, Sun, Volume2 } from "lucide-svelte";
 
     interface Props {
         disabled?: boolean;
-        name: string;
-        uuid: TrainFunctionUUID;
-        icon: TrainFunctionIcons;
-        mode: TrainFunctionModes;
-        selected: boolean;
-        onclick?: (id: number, state: boolean) => void;
+        trainFunction: TrainClientFunction;
+        onclick?: (uuid: TrainFunctionUUID, state: boolean) => void;
         [key: string]: any;
     }
 
     let {
-        name,
-        id,
-        icon,
-        mode,
+        trainFunction,
         selected = $bindable(false),
         onclick,
         disabled,
@@ -30,42 +23,42 @@
 
 {#snippet functionText()}
     <p class="text-[0.7rem] leading-[7px]">
-        F{id}
+        {trainFunction.name}
     </p>
 {/snippet}
 
 {#snippet body()}
-    {#if icon == TrainFunctionIcons.Light1}
+    {#if trainFunction.icon == "Light1"}
         <Lightbulb />
         {@render functionText()}
-    {:else if icon == TrainFunctionIcons.Light2}
+    {:else if trainFunction.icon == "Light2"}
         <Sun />
         {@render functionText()}
-    {:else if icon == TrainFunctionIcons.Speaker}
+    {:else if trainFunction.icon == "Speaker"}
         <Volume2 />
         {@render functionText()}
-    {:else if icon == TrainFunctionIcons.Bell}
+    {:else if trainFunction.icon == "Bell"}
         <Bell />
         {@render functionText()}
-    {:else if icon == TrainFunctionIcons.Text}
+    {:else if trainFunction.icon == "Text"}
         <p class="text-lg">
-            F{id}
+            {trainFunction.name}
         </p>
     {/if}
 {/snippet}
 
-{#if mode == "toggle"}
+{#if trainFunction.mode == "toggle"}
     <Toggle
         {disabled}
         size="icon"
         class="size-14 p-2 flex flex-col gap-1"
         bind:pressed={selected}
-        onclick={() => onclick?.(id, !selected)}
+        onclick={() => onclick?.(trainFunction.uuid, !selected)}
         {...props}
     >
         {@render body()}
     </Toggle>
-{:else if mode == "select"}
+{:else if trainFunction.mode == "select"}
     <Button
         {disabled}
         size="icon"
@@ -73,11 +66,11 @@
         variant="default"
         onmousedown={() => {
             selected = true;
-            onclick?.(id, selected);
+            onclick?.(trainFunction.uuid, selected);
         }}
         onmouseup={() => {
             selected = false;
-            onclick?.(id, selected);
+            onclick?.(trainFunction.uuid, selected);
         }}
         {...props}
     >

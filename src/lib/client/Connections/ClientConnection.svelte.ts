@@ -1,4 +1,5 @@
-import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
+import type { TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
+import type { TrainAddress, TrainUUID } from "$lib/types/Trains/Train";
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "../Protocols/protocols";
 import { TrainDirection, type ClientTrain } from "../Trains/Train.svelte";
@@ -168,6 +169,25 @@ export class ClientConnection {
       }
     }
     return undefined;
+  }
+
+  setTrainFunction(trainUUID: TrainUUID, functionUUID: TrainFunctionUUID, state: boolean) {
+    const train = this.trains.get(trainUUID);
+    if (!train) return;
+
+    const funct = train.functions.get(functionUUID);
+    if (!funct) return
+    funct.state = state;
+
+    switch (this.protocol) {
+      case ConnectionProtocols.DCCEX:
+        fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<f ${train.address} ${funct.value} ${state ? 1 : 0}>`);
+        break;
+      default:
+        console.log("Unknown protocol: " + this.protocol);
+        break;
+
+    }
   }
 }
 

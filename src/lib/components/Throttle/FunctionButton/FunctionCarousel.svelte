@@ -8,7 +8,7 @@
 	interface Props {
 		disabled?: boolean;
 		functions: Map<TrainFunctionUUID, TrainClientFunction> | null;
-		onclick?: (id: number, state: boolean) => void;
+		onclick?: (uuid: TrainFunctionUUID, state: boolean) => void;
 	}
 
 	let { functions, onclick, disabled }: Props = $props();
@@ -61,10 +61,7 @@
 						{#each funcs as func}
 							<FunctionButton
 								{disabled}
-								icon={func.icon}
-								uuid={func.uuid}
-								mode={func.mode}
-								name={func.name}
+								trainFunction={func}							
 								bind:selected={func.state}
 								{onclick}
 							/>

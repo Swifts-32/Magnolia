@@ -3,7 +3,8 @@ import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/Serial
 import { ConnectionProtocols } from "../client/Protocols/protocols";
 import { Connection } from "./Connections/connection.svelte";
 import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.server";
-import { ServerTrain, type TrainAddress, type TrainUUID } from "./Trains/Train.server";
+import { ServerTrain } from "./Trains/Train.server";
+import { type TrainAddress, type TrainUUID } from "$lib/types/Trains/Train";
 
 export class Layout {
   public name: string;

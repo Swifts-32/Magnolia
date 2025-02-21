@@ -1,7 +1,7 @@
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
-import type { TrainUUID } from "$lib/server/Trains/Train.server.js";
-import { ConvertFunctionData, type TrainFunctionData, type TrainFunctionModes, type TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions.js";
+import type { TrainUUID } from "$lib/types/Trains/Train";
+import { isFunctionData } from "$lib/types/Trains/Functions/Functions.js";
 
 export const POST = async ({ request, params }) => {
 	const { id, trainUUID } = params;
@@ -18,26 +18,21 @@ export const POST = async ({ request, params }) => {
 
 	const data = await request.json();
 
-	// Validate required field
-	try {
-		console.log(data);
-		const trainFunctionData = ConvertFunctionData.toTrainFunctionData(data.message);
-
-		train.addFunction(trainFunctionData.uuid as TrainFunctionUUID, trainFunctionData.value, trainFunctionData.name, trainFunctionData.icon, trainFunctionData.mode as TrainFunctionModes);
-
+	if (!isFunctionData(data)) {
 		return new Response(
-			JSON.stringify({
-				message: `Function created successfully on train: ${train.name}`,
-			}),
-			{ status: 201 }
-
-		);
-	}
-	catch (error) {
-		return new Response(
-			JSON.stringify({ message: `Invalid function data: ${error}` }),
+			JSON.stringify({ message: `Invalid function data: ${data}` }),
 			{ status: 400 }
 		);
 	}
+
+	train.addFunction(data.uuid, data.value, data.name, data.icon, data.mode);
+
+	return new Response(
+		JSON.stringify({
+			message: `Function created successfully on train: ${train.name}`,
+		}),
+		{ status: 201 }
+	);
+
 
 }

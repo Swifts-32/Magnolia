@@ -1,4 +1,4 @@
-import type { TrainFunctionUUID, TrainFunctionIcons, TrainFunctionModes, TrainFunctionData } from "../../types/Trains/Functions/Functions";
+import type { TrainFunctionUUID, TrainFunctionIcons, TrainFunctionModes, ITrainFunctionData } from "../../types/Trains/Functions/Functions";
 
 export class ServerTrainFunctions {
     uuid: TrainFunctionUUID;
@@ -18,7 +18,7 @@ export class ServerTrainFunctions {
     }
 
 
-    toJSON(): TrainFunctionData {
+    toJSON(): ITrainFunctionData {
         return {
             uuid: this.uuid,
             value: this.value,

@@ -5,7 +5,7 @@
   import Switch from "$lib/components/ui/switch/switch.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import type { LayoutData } from "../$types";
-    import { Toaster } from "$lib/components/ui/sonner";
+  import { Toaster } from "$lib/components/ui/sonner";
 
   let { data }: { data: LayoutData } = $props();
 

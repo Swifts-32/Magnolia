@@ -1,9 +1,9 @@
-import type { TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
-import type { TrainAddress } from "$lib/server/Trains/Train.server";
+import type { TrainFunctionIcons, TrainFunctionModes, TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
+import type { TrainAddress } from "$lib/types/Trains/Train";
 
-import type { TrainUUID } from "$lib/server/Trains/Train.server";
+import type { TrainUUID } from "$lib/types/Trains/Train";
 import type { ConnectionUUID } from "../LayoutClient.svelte";
-import type { TrainClientFunction } from "./Functions/Function.svelte";
+import { TrainClientFunction } from "./Functions/Function.svelte";
 
 export enum TrainDirection {
     Reverse = 0,
@@ -34,6 +34,10 @@ export class ClientTrain {
         functions.forEach((func) => {
             this.functions.set(func.uuid, func);
         });
+    }
+
+    public addFunction(uuid: TrainFunctionUUID, value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes) {
+        this.functions.set(uuid, new TrainClientFunction(uuid, value, name, icon, mode));
     }
 }
 

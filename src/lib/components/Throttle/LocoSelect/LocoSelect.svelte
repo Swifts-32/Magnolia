@@ -9,7 +9,8 @@
   import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import { Plus } from "lucide-svelte";
-  import { type TrainUUID } from "$lib/server/Trains/Train.server";
+  
+  import { type TrainUUID } from "$lib/types/Trains/Train";
   import TrainAdd from "$lib/components/Settings/Trains/TrainAdd.svelte";
 
   interface Props {
