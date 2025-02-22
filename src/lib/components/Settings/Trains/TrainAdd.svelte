@@ -12,6 +12,7 @@
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
   import type { Snippet } from "svelte";
+    import type { ITrainData } from "$lib/types/Trains/Train";
 
   interface Props {
     layout: LayoutClient;
@@ -35,10 +36,12 @@
       return;
     }
 
-    const data: any = {
+    const data: ITrainData = {
       name: trainName,
       address: trainAddress,
       connUUID: selectedConnectionUUID,
+      functions: [],
+      uuid: crypto.randomUUID(),
     };
 
     fetch(`/api/layout/${layout.uuid}/trains/add`, {
@@ -49,13 +52,15 @@
       body: JSON.stringify(data),
     })
       .then(async (response) => {
+        const json = await response.json();
+
         if (response.ok) {
           editMode = false; // Close the dialog on success
-          toast.success("Train added successfully");
+          toast.success(json.message);
 
           layoutClientHandler.refreshLayouts();
         } else {
-          toast.error("Failed to add train");
+          toast.error(json.message);
         }
       })
       .catch((error) => {

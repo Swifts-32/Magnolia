@@ -1,6 +1,5 @@
-import type { TrainFunctionIcons, TrainFunctionModes, TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
+import type { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
 import type { TrainAddress } from "$lib/types/Trains/Train";
-
 import type { TrainUUID } from "$lib/types/Trains/Train";
 import type { ConnectionUUID } from "../LayoutClient.svelte";
 import { TrainClientFunction } from "./Functions/Function.svelte";
@@ -16,7 +15,7 @@ export class ClientTrain {
     public address: TrainAddress = $state() as TrainAddress;
     public name: string = $state() as string;
     public connUUID: ConnectionUUID = $state() as ConnectionUUID;
-    public functions: Map<TrainFunctionUUID, TrainClientFunction> = new Map();
+    public functions: Map<string, TrainClientFunction> = new Map();
 
     // Non-Saveable Data
     public speed: number = $state(0);
@@ -32,12 +31,19 @@ export class ClientTrain {
 
     public addFunctions(functions: TrainClientFunction[]) {
         functions.forEach((func) => {
-            this.functions.set(func.uuid, func);
+            this.functions.set(func.value, func);
         });
     }
 
-    public addFunction(uuid: TrainFunctionUUID, value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes) {
-        this.functions.set(uuid, new TrainClientFunction(uuid, value, name, icon, mode));
+    public addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number) {
+        this.functions.set(value, new TrainClientFunction(value, name, icon, mode, position));
+    }
+
+    public setFunction(value: string, state: boolean) {
+        const func = this.functions.get(value);
+        if (!func) return;
+
+        func.state = state;
     }
 }
 

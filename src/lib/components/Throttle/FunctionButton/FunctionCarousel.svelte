@@ -2,13 +2,12 @@
 	import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 	import type { CarouselAPI } from "$lib/components/ui/carousel/context";
 	import * as Carousel from "$lib/components/ui/carousel/index";
-	import type { TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
 	import FunctionButton from "./FunctionButton.svelte";
 
 	interface Props {
 		disabled?: boolean;
-		functions: Map<TrainFunctionUUID, TrainClientFunction> | null;
-		onclick?: (uuid: TrainFunctionUUID, state: boolean) => void;
+		functions: Map<string, TrainClientFunction> | null;
+		onclick?: (value: string, state: boolean) => void;
 	}
 
 	let { functions, onclick, disabled }: Props = $props();

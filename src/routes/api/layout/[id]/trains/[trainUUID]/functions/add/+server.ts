@@ -25,7 +25,7 @@ export const POST = async ({ request, params }) => {
 		);
 	}
 
-	train.addFunction(data.uuid, data.value, data.name, data.icon, data.mode);
+	train.addFunction(data.value, data.name, data.icon, data.mode, data.position);
 
 	return new Response(
 		JSON.stringify({

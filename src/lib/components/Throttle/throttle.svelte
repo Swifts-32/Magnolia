@@ -10,7 +10,7 @@
   import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
   import { CircleAlert } from "lucide-svelte";
   import { toast } from "svelte-sonner";
-  import { type ITrainFunctionData, type TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
+  import { type ITrainFunctionData } from "$lib/types/Trains/Functions/Functions";
   import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandler.svelte";
 
   interface Props {
@@ -43,9 +43,9 @@
     if (!curTrain || !curConnection) return;
     curConnection.setTrainSpeed(curTrain.uuid, newSpeed);
   }
-  function handleFunctionChange(uuid: TrainFunctionUUID, state: boolean) {
+  function handleFunctionChange(value: string, state: boolean) {
     if (!curTrain || !curConnection) return;
-    curConnection.setTrainFunction(curTrain.uuid, uuid, state);
+    curConnection.setTrainFunction(curTrain.uuid, value, state);
   }
 </script>
 
@@ -59,12 +59,12 @@
         if (curTrain == undefined) return;
 
         const data: ITrainFunctionData = {
-          uuid: crypto.randomUUID(),
           value: "1",
           name: "Function 1",
           icon: "Speaker",
           mode: "toggle",
           visible: true,
+          position: 0,
         };
 
         fetch(

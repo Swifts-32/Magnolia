@@ -1,10 +1,9 @@
 import { toast } from "svelte-sonner";
 import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
-import { isTrainData, type ITrainData, type TrainAddress, type TrainUUID } from "$lib/types/Trains/Train";
+import { isTrainData, type ITrainData, type TrainUUID } from "$lib/types/Trains/Train";
 import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
-import { TrainClientFunction } from "./Trains/Functions/Function.svelte";
-import { isFunctionData, type ITrainFunctionData } from "$lib/types/Trains/Functions/Functions";
+import { isFunctionData } from "$lib/types/Trains/Functions/Functions";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -187,7 +186,7 @@ export class LayoutClient {
           // Update trains functions
           trainData.functions.forEach(func => {
             if (isFunctionData(func)) {
-              clientTrain.addFunction(func.uuid, func.value, func.name, func.icon, func.mode);
+              clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
             }
             else {
               console.log("Function data is invalid on train: ", clientTrain.name);
@@ -201,7 +200,7 @@ export class LayoutClient {
           // Add functions to the new train
           trainData.functions.forEach(func => {
             if (isFunctionData(func)) {
-              clientTrain.addFunction(func.uuid, func.value, func.name, func.icon, func.mode);
+              clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
             } else {
               console.log("Function data is invalid on train: ", clientTrain.name);
             }
