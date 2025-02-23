@@ -62,7 +62,7 @@
           value: "1",
           name: "Function 1",
           icon: "Speaker",
-          mode: "toggle",
+          mode: "Toggle",
           visible: true,
           position: 0,
         };

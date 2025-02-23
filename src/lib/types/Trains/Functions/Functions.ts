@@ -1,10 +1,11 @@
 
-export type TrainFunctionModes = "toggle" | "select";
-export type TrainFunctionIcons = "Speaker" | "Light1" | "Light2" | "Bell" | "Text";
-// export type TrainFunctionUUID = `${string}-${string}-${string}-${string}-${string}`;
+export const TrainFunctionModesList = ["Toggle", "Select"] as const;
+export type TrainFunctionModes = typeof TrainFunctionModesList[number];
+
+export const TrainFunctionIconsList = ["Speaker", "Light1", "Light2", "Bell", "Text"] as const;
+export type TrainFunctionIcons = typeof TrainFunctionIconsList[number];
 
 export interface ITrainFunctionData {
-	// uuid: TrainFunctionUUID;
 	value: string;
 	position: number;
 	name: string;

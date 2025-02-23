@@ -13,6 +13,7 @@
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
+  import FunctionViewer from "./Functions/FunctionViewer.svelte";
 
   interface Props {
     train: ClientTrain;
@@ -79,7 +80,6 @@
     };
 
     fetch(`/api/layout/${layout.uuid}/trains/delete`, {
-
       method: "POST",
 
       headers: {
@@ -87,7 +87,6 @@
       },
       body: JSON.stringify(data),
     })
-
       .then(async (response) => {
         if (response.ok) {
           toast.success("Train deleted successfully");
@@ -146,7 +145,9 @@
         bind:selectedConnectionUUID
       />
 
-      <!-- TODO Add functions -->
+      <Separator class="my-8" />
+
+      <FunctionViewer functions={train.functions} />
 
       <Separator class="mt-8" />
 

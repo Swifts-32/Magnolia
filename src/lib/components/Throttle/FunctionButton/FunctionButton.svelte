@@ -2,13 +2,12 @@
     import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
     import Button from "$lib/components/ui/button/button.svelte";
     import Toggle from "$lib/components/ui/toggle/toggle.svelte";
-    import type { TrainFunctionUUID } from "$lib/types/Trains/Functions/Functions";
     import { Bell, Lightbulb, Sun, Volume2 } from "lucide-svelte";
 
     interface Props {
         disabled?: boolean;
         trainFunction: TrainClientFunction;
-        onclick?: (uuid: TrainFunctionUUID, state: boolean) => void;
+        onclick?: (value: string, state: boolean) => void;
         [key: string]: any;
     }
 
@@ -47,18 +46,18 @@
     {/if}
 {/snippet}
 
-{#if trainFunction.mode == "toggle"}
+{#if trainFunction.mode == "Toggle"}
     <Toggle
         {disabled}
         size="icon"
         class="size-14 p-2 flex flex-col gap-1"
         bind:pressed={selected}
-        onclick={() => onclick?.(trainFunction.uuid, !selected)}
+        onclick={() => onclick?.(trainFunction.value, !selected)}
         {...props}
     >
         {@render body()}
     </Toggle>
-{:else if trainFunction.mode == "select"}
+{:else if trainFunction.mode == "Select"}
     <Button
         {disabled}
         size="icon"
@@ -66,11 +65,11 @@
         variant="default"
         onmousedown={() => {
             selected = true;
-            onclick?.(trainFunction.uuid, selected);
+            onclick?.(trainFunction.value, selected);
         }}
         onmouseup={() => {
             selected = false;
-            onclick?.(trainFunction.uuid, selected);
+            onclick?.(trainFunction.value, selected);
         }}
         {...props}
     >

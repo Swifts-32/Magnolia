@@ -31,11 +31,13 @@
     </Select.Trigger>
     <Select.Content>
       {#each connections as [connUUID, connection]}
-        <Select.Item value={connUUID}>
-          <div class="flex flex-col">
-            <p>{connection.name}</p>
-            <p class="text-sm">UID: {connUUID}</p>
-          </div>
+        <Select.Item
+          value={connUUID}
+          class={selectedConnection?.uuid === connUUID
+            ? "cursor-default"
+            : "cursor-pointer"}
+        >
+          <p class="text-md">{connection.name}</p>
         </Select.Item>
       {/each}
     </Select.Content>

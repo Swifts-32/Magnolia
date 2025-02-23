@@ -49,7 +49,7 @@ export class ServerTrain {
 	}
 
 
-	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number) {
+	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, visible: boolean = true) {
 		const funct = new ServerTrainFunctions(value, name, icon, mode, position);
 		this.functions.set(value, funct);
 	}
