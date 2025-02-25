@@ -1,13 +1,13 @@
 import type { ITrainFunctionData, TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
 
 export class TrainClientFunction {
-    value: string; // E.g. 1 for F1 or 1123.2434.35 LCC.
-    name: string; // User friendly display name
+    value: string = $state() as string; // E.g. 1 for F1 or 1123.2434.35 LCC.
+    name: string = $state() as string; // User friendly display name
 
-    icon: TrainFunctionIcons;
-    mode: TrainFunctionModes;
-    visible: boolean = true;
-    position: number;
+    icon: TrainFunctionIcons = $state() as TrainFunctionIcons;
+    mode: TrainFunctionModes = $state() as TrainFunctionModes;
+    visible: boolean = $state(true);
+    position: number = $state() as number;
 
     state: boolean = $state(false);
 

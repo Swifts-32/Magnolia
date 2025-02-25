@@ -15,12 +15,11 @@ export class ClientTrain {
     public address: TrainAddress = $state() as TrainAddress;
     public name: string = $state() as string;
     public connUUID: ConnectionUUID = $state() as ConnectionUUID;
-    public functions: Map<string, TrainClientFunction> = new Map();
+    public functions: Map<string, TrainClientFunction> = $state(new Map());
 
     // Non-Saveable Data
     public speed: number = $state(0);
     public direction: TrainDirection = $state(TrainDirection.Forward);
-
 
     constructor(uuid: TrainUUID, address: TrainAddress, name: string, connUUID: ConnectionUUID) {
         this.uuid = uuid;
