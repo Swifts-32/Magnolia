@@ -12,8 +12,11 @@
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
   import { onMount, type Snippet } from "svelte";
-    import type { ITrainData } from "$lib/types/Trains/Train";
-    import { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import type { ITrainData } from "$lib/types/Trains/Train";
+  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import Separator from "$lib/components/ui/separator/separator.svelte";
+  import FunctionViewer from "./Functions/FunctionViewer.svelte";
+  import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -24,26 +27,23 @@
 
   let editMode: boolean = $state(false);
 
-  let selectedConnectionUUID: ConnectionUUID | undefined = $state();
   let trainName: string | undefined = $state();
   let trainAddress: string | undefined = $state();
-
+  let trainConnUUID: ConnectionUUID | undefined = $state();
+  let trainFunctions: Map<string, TrainClientFunction> = $state(new Map());
 
   async function saveChanges() {
-    if (
-      trainName === undefined ||
-      trainAddress === undefined ||
-      selectedConnectionUUID === undefined
-    ) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+    if (!trainConnUUID?.trim())
+      return toast.error("Please fill in the train connection");
+    if (!trainName?.trim()) return toast.error("Please fill in the train name");
+    if (!trainAddress?.trim())
+      return toast.error("Please fill in the train address");
 
     const data: ITrainData = {
       name: trainName,
       address: trainAddress,
-      connUUID: selectedConnectionUUID,
-      functions: [],
+      connUUID: trainConnUUID,
+      functions: Array.from(trainFunctions.values()),
       uuid: crypto.randomUUID(),
     };
 
@@ -101,10 +101,14 @@
       <!-- Connection -->
       <ConnectionSelector
         connections={layout.connections}
-        bind:selectedConnectionUUID
+        bind:selectedConnectionUUID={trainConnUUID}
       />
 
-      <!-- TODO Add functions -->
+      <Separator class="my-4" />
+
+      <FunctionViewer bind:functions={trainFunctions} />
+
+      <Separator class="mt-4" />
     </div>
 
     <Dialog.Footer>

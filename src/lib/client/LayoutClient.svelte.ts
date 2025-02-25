@@ -15,6 +15,17 @@ export class LayoutClient {
   public uuid: LayoutUUID = $state() as LayoutUUID;
   public connections: Map<ConnectionUUID, ClientConnection> = $state(new Map());
 
+  public get trains() {
+    let trains: Map<TrainUUID, ClientTrain> = new Map();
+    
+    this.connections.forEach(connection => {
+      connection.trains.forEach((train, uuid) => {
+        trains.set(uuid, train);
+      });
+    })
+    return trains; 
+  }
+
   private constructor(name: string, uuid: LayoutUUID, connections: Map<ConnectionUUID, ClientConnection>) {
     this.name = name;
     this.uuid = uuid;
@@ -145,16 +156,6 @@ export class LayoutClient {
 
   public async refreshLayout() {
     this.connections = await LayoutClient.fetchConnections(this.uuid, fetch, this.connections);
-  }
-
-  public getTrains(): Map<TrainUUID, ClientTrain> {
-    let trains: Map<TrainUUID, ClientTrain> = new Map();
-    for (const connection of this.connections.values()) {
-      for (const train of connection.trains.values()) {
-        trains.set(train.uuid, train);
-      }
-    }
-    return trains;
   }
 
   private static async fetchTrains(layoutUUID: LayoutUUID, clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[]) {

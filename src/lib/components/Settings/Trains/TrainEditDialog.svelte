@@ -7,11 +7,11 @@
   import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { Trash2 } from "lucide-svelte";
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
-  import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
   import type { ITrainData } from "$lib/types/Trains/Train";
+    import { toast } from "svelte-sonner";
 
   interface Props {
     train: ClientTrain;
@@ -19,20 +19,13 @@
     editMode?: boolean;
   }
 
-  let {
-    train,
-    layout,
-    editMode = $bindable(false)
-  }: Props = $props();
+  let { train, layout, editMode = $bindable(false) }: Props = $props();
 
   // Save the state of the old train, incase the user cancels the editing
   const currentTrain = train;
-
   async function saveChanges() {
-    if (!train.name.trim())
-      return toast.error("Please fill in the train name");
-    if (!train.address)
-      return toast.error("Please fill in the train address");
+    if (!train.name.trim()) return toast.error("Please fill in the train name");
+    if (!train.address) return toast.error("Please fill in the train address");
     if (!train.connUUID.trim())
       return toast.error("Please fill in the train connection");
 
@@ -74,8 +67,8 @@
   }
 
   function deleteTrain() {
-    if (!train.connUUID)
-      return toast.error("Train needs a valid connection");
+    if (!train.connUUID.trim())
+      return toast.error("Please fill in the train connection");
 
     const data = {
       uuid: train.uuid,
@@ -93,11 +86,11 @@
       .then(async (response) => {
         const json = await response.json();
         if (response.ok) {
-          toast.success(json);
+          toast.success(json.message);
           editMode = false;
           layoutClientHandler.refreshLayouts();
         } else {
-          toast.error(json);
+          toast.error(json.message);
         }
       })
       .catch((error) => {
@@ -106,7 +99,7 @@
   }
 </script>
 
-<Dialog.Root open={editMode}>
+<Dialog.Root bind:open={editMode}>
   <Dialog.Content
     interactOutsideBehavior="ignore"
     escapeKeydownBehavior="ignore"
@@ -119,11 +112,7 @@
       <!-- Name -->
       <div class="grid grid-cols-4 my-2 items-center gap-4">
         <Label for="trainName" class="text-right">Name</Label>
-        <Input
-          id="trainName"
-          bind:value={train.name}
-          class="col-span-3"
-        />
+        <Input id="trainName" bind:value={train.name} class="col-span-3" />
       </div>
 
       <!-- Address -->

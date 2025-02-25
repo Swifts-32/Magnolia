@@ -6,13 +6,14 @@
   import type { LayoutData } from "../../$types";
 
   let { data }: { data: LayoutData } = $props();
+
 </script>
 
 <div class="m-4">
   <h1 class="text-4xl my-10">Trains</h1>
 
   <div class="flex flex-wrap gap-3">
-    {#each data.layout.getTrains().values() as train (train)}
+    {#each data.layout.trains.values() as train}
       <button
         class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
         onclick={() => (train.isEditMode = true)}
