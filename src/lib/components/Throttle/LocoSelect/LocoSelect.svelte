@@ -11,7 +11,7 @@
   import { Plus } from "lucide-svelte";
   
   import { type TrainUUID } from "$lib/types/Trains/Train";
-  import TrainAdd from "$lib/components/Settings/Trains/TrainAdd.svelte";
+  import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
 
   interface Props {
     curTrain: ClientTrain | undefined;

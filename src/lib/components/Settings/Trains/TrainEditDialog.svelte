@@ -12,42 +12,36 @@
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
   import type { ITrainData } from "$lib/types/Trains/Train";
-  import type { Snippet } from "svelte";
 
   interface Props {
     train: ClientTrain;
     layout: LayoutClient;
-    class?: string;
-    children?: Snippet;
+    editMode?: boolean;
   }
 
   let {
     train,
     layout,
-    children,
-    class: trainButtonClass = "",
-    ...restProps
+    editMode = $bindable(false)
   }: Props = $props();
 
-  let editMode: boolean = $state(false);
-
-  // Edited Properties
-  let editedTrain: ClientTrain = $state(train);
+  // Save the state of the old train, incase the user cancels the editing
+  const currentTrain = train;
 
   async function saveChanges() {
-    if (!editedTrain.name.trim())
+    if (!train.name.trim())
       return toast.error("Please fill in the train name");
-    if (!editedTrain.address)
+    if (!train.address)
       return toast.error("Please fill in the train address");
-    if (!editedTrain.connUUID.trim())
+    if (!train.connUUID.trim())
       return toast.error("Please fill in the train connection");
 
     const data: ITrainData = {
-      address: editedTrain.address,
-      connUUID: editedTrain.connUUID,
-      functions: Array.from(editedTrain.functions.values()),
-      name: editedTrain.name,
-      uuid: editedTrain.uuid,
+      address: train.address,
+      connUUID: train.connUUID,
+      functions: Array.from(train.functions.values()),
+      name: train.name,
+      uuid: train.uuid,
     };
 
     fetch(`/api/layout/${layout.uuid}/trains/edit`, {
@@ -73,13 +67,19 @@
       });
   }
 
+  function cancelChanges() {
+    editMode = false;
+    train = currentTrain;
+    layoutClientHandler.refreshLayouts();
+  }
+
   function deleteTrain() {
-    if (!editedTrain.connUUID)
+    if (!train.connUUID)
       return toast.error("Train needs a valid connection");
 
     const data = {
-      uuid: editedTrain.uuid,
-      connUUID: editedTrain.connUUID,
+      uuid: train.uuid,
+      connUUID: train.connUUID,
     };
 
     fetch(`/api/layout/${layout.uuid}/trains/delete`, {
@@ -106,14 +106,6 @@
   }
 </script>
 
-<button
-  class={trainButtonClass}
-  {...restProps}
-  onclick={() => (editMode = true)}
->
-  {@render children?.()}
-</button>
-
 <Dialog.Root open={editMode}>
   <Dialog.Content
     interactOutsideBehavior="ignore"
@@ -129,7 +121,7 @@
         <Label for="trainName" class="text-right">Name</Label>
         <Input
           id="trainName"
-          bind:value={editedTrain.name}
+          bind:value={train.name}
           class="col-span-3"
         />
       </div>
@@ -139,7 +131,7 @@
         <Label for="trainAddress" class="text-right">Address</Label>
         <Input
           id="trainAddress"
-          bind:value={editedTrain.address}
+          bind:value={train.address}
           class="col-span-3"
         />
       </div>
@@ -147,12 +139,12 @@
       <!-- Connection -->
       <ConnectionSelector
         connections={layout.connections}
-        bind:selectedConnectionUUID={editedTrain.connUUID}
+        bind:selectedConnectionUUID={train.connUUID}
       />
 
       <Separator class="my-4" />
 
-      <FunctionViewer bind:functions={editedTrain.functions} />
+      <FunctionViewer bind:functions={train.functions} />
 
       <Separator class="mt-8" />
 
@@ -171,7 +163,7 @@
         type="reset"
         class="w-28"
         variant="outline"
-        onclick={() => (editMode = false)}>Cancel</Button
+        onclick={cancelChanges}>Cancel</Button
       >
       <Button type="submit" class="w-28" onclick={saveChanges}>Save</Button>
     </Dialog.Footer>

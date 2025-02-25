@@ -11,20 +11,23 @@
   import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
-  import type { Snippet } from "svelte";
+  import { onMount, type Snippet } from "svelte";
     import type { ITrainData } from "$lib/types/Trains/Train";
+    import { ClientTrain } from "$lib/client/Trains/Train.svelte";
 
   interface Props {
     layout: LayoutClient;
+    class?: string;
     children?: Snippet;
   }
-  let { layout, children }: Props = $props();
+  let { layout, class: trainAddClass = "", children }: Props = $props();
 
   let editMode: boolean = $state(false);
 
   let selectedConnectionUUID: ConnectionUUID | undefined = $state();
   let trainName: string | undefined = $state();
   let trainAddress: string | undefined = $state();
+
 
   async function saveChanges() {
     if (
@@ -69,7 +72,7 @@
   }
 </script>
 
-<button class="w-full" onclick={() => (editMode = true)}>
+<button class={trainAddClass} onclick={() => (editMode = true)}>
   {@render children?.()}
 </button>
 

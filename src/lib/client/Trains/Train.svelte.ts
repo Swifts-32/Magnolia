@@ -18,6 +18,7 @@ export class ClientTrain {
     public functions: Map<string, TrainClientFunction> = $state(new Map());
 
     // Non-Saveable Data
+    public isEditMode: boolean = $state(false);
     public speed: number = $state(0);
     public direction: TrainDirection = $state(TrainDirection.Forward);
 
