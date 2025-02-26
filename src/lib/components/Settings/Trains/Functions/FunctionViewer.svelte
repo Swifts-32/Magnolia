@@ -3,25 +3,10 @@
 	import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
 	import * as Command from "$lib/components/ui/command/index.js";
 	import * as Popover from "$lib/components/ui/popover/index.js";
-	import Label from "$lib/components/ui/label/label.svelte";
-	import Input from "$lib/components/ui/input/input.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
-	import * as Select from "$lib/components/ui/select/index.js";
-	import {
-		TrainFunctionIconsList,
-		TrainFunctionModesList,
-		type TrainFunctionIcons,
-	} from "$lib/types/Trains/Functions/Functions";
-	import {
-		Bell,
-		Check,
-		Lightbulb,
-		Plus,
-		Sun,
-		Text,
-		Trash2,
-		Volume2,
-	} from "lucide-svelte";
+	import { Check, Plus } from "lucide-svelte";
+	import FunctionEditor from "./FunctionEditor.svelte";
+	import FunctionIcons from "./FunctionIcons.svelte";
 
 	interface Props {
 		functions: Map<string, TrainClientFunction>;
@@ -56,7 +41,14 @@
 					aria-expanded={functionSelectorOpen}
 				>
 					{#if selectedFunction}
-						{selectedFunction.name}
+						<div class="flex gap-2 align-middle">
+							<FunctionIcons
+								selectedIcon={selectedFunction.icon}
+								size={18}
+								text={false}
+							/>
+							{selectedFunction.name}
+						</div>
 					{:else}
 						Select a function
 					{/if}
@@ -96,7 +88,11 @@
 								{:else}
 									<div class="w-4" />
 								{/if}
-								{@render functionIcons(funct.icon, false)}
+								<FunctionIcons
+									selectedIcon={funct.icon}
+									text={false}
+									size={18}
+								/>
 								<div class="flex flex-col items-start">
 									<p class="text-md">
 										{funct.name}
@@ -113,7 +109,7 @@
 		</Popover.Content>
 	</Popover.Root>
 
-	<!-- Add Function -->
+	<!-- Add Function Button -->
 	<Button
 		class="w-full col-span-3"
 		variant="outline"
@@ -140,124 +136,13 @@
 	>
 </div>
 
-{#snippet functionIcons(icon: TrainFunctionIcons, text: boolean = true)}
-	<div class="flex items-center">
-		{#if icon === "Bell"}
-			<Bell size={18} />
-		{:else if icon === "Speaker"}
-			<Volume2 size={18} />
-		{:else if icon === "Light1"}
-			<Lightbulb size={18} />
-		{:else if icon === "Light2"}
-			<Sun size={18} />
-		{:else if icon === "Text"}
-			<Text size={18} />
-		{/if}
-
-		{#if text}
-			<p class="text-md ml-2">{icon}</p>
-		{/if}
-	</div>
-{/snippet}
-
 <!-- Function Editor -->
 {#if selectedFunction}
-	{#key selectedFunction}
-		<div class="flex flex-col gap-2">
-			<!-- Function Name -->
-			<div class="grid grid-cols-4 items-center gap-4 w-full">
-				<Label for="functionName" class="text-right">Name</Label>
-				<Input
-					id="functionName"
-					bind:value={selectedFunction.name}
-					class="col-span-3"
-				/>
-			</div>
-
-			<!-- Function Value -->
-			<div class="grid grid-cols-4 items-center gap-4 w-full">
-				<Label for="functionValue" class="text-right">Value</Label>
-				<Input
-					id="functionValue"
-					bind:value={selectedFunction.value}
-					class="col-span-3"
-				/>
-			</div>
-
-			<!-- Function Position -->
-			<div class="grid grid-cols-4 items-center gap-4 w-full">
-				<Label for="functionPosition" class="text-right">Position</Label
-				>
-				<Input
-					id="functionPosition"
-					bind:value={selectedFunction.position}
-					class="col-span-3"
-				/>
-			</div>
-
-			<!-- Function Icon -->
-			<div class="grid grid-cols-4 items-center gap-4 w-full">
-				<Label for="functionIcon" class="text-right">Icon</Label>
-				<Select.Root
-					type="single"
-					name="functionIcon"
-					bind:value={selectedFunction.icon}
-				>
-					<Select.Trigger class="col-span-3">
-						{@render functionIcons(selectedFunction.icon)}
-					</Select.Trigger>
-					<Select.Content>
-						{#each TrainFunctionIconsList as icon}
-							<Select.Item
-								value={icon}
-								class={icon === selectedFunction.icon
-									? "cursor-default"
-									: "cursor-pointer"}
-							>
-								{@render functionIcons(icon)}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
-
-			<!-- Function Mode -->
-			<div class="grid grid-cols-4 items-center gap-4 w-full">
-				<Label for="functionMode" class="text-right">Mode</Label>
-				<Select.Root
-					type="single"
-					name="functionMode"
-					bind:value={selectedFunction.mode}
-				>
-					<Select.Trigger class="col-span-3">
-						{selectedFunction.mode}
-					</Select.Trigger>
-					<Select.Content>
-						{#each TrainFunctionModesList as mode}
-							<Select.Item
-								value={mode}
-								class={mode === selectedFunction.mode
-									? "cursor-default"
-									: "cursor-pointer"}
-							>
-								{mode}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
-
-			<!-- Delete Function -->
-			<!-- TODO Add conformation dialog -->
-			<Button
-				class="w-full mt-1"
-				variant="destructive"
-				onclick={() => {
-					functions.delete(selectedFunction.value);
-					selectedFunctionValue = undefined;
-				}}
-				><Trash2 /> Delete Function
-			</Button>
-		</div>
-	{/key}
+	<FunctionEditor
+		{selectedFunction}
+		deleteFunction={() => {
+			functions.delete(selectedFunction.value);
+			selectedFunctionValue = undefined;
+		}}
+	/>
 {/if}

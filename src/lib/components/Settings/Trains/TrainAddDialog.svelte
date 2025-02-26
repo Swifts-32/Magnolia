@@ -65,6 +65,13 @@
         } else {
           toast.error(json.message);
         }
+
+
+        // Reset values
+        trainName = undefined;
+        trainAddress = undefined;
+        trainConnUUID = undefined;
+        trainFunctions = new Map();
       })
       .catch((error) => {
         toast.error("Error adding train: " + error);

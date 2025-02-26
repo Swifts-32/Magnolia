@@ -17,13 +17,13 @@ export class LayoutClient {
 
   public get trains() {
     let trains: Map<TrainUUID, ClientTrain> = new Map();
-    
+
     this.connections.forEach(connection => {
       connection.trains.forEach((train, uuid) => {
         trains.set(uuid, train);
       });
     })
-    return trains; 
+    return trains;
   }
 
   private constructor(name: string, uuid: LayoutUUID, connections: Map<ConnectionUUID, ClientConnection>) {
@@ -158,62 +158,57 @@ export class LayoutClient {
     this.connections = await LayoutClient.fetchConnections(this.uuid, fetch, this.connections);
   }
 
-  private static async fetchTrains(layoutUUID: LayoutUUID, clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[]) {
+  private static async fetchTrains(clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[]) {
 
     // Get all server train UUIDs for comparison
     const serverTrainUUIDs = new Set(serverTrains.map(train => train.uuid));
 
     // Remove trains that still exist on client but not on server
-    for (const [uuid, train] of clientTrains) {
-      if (!serverTrainUUIDs.has(uuid)) {
-        console.log(`Removing train ${train.name} (${uuid}) as it no longer exists on server`);
-        continue;
+    for (const train of clientTrains.values()) {
+      if (!serverTrainUUIDs.has(train.uuid)) {
+        console.log(`Removing train ${train.name} (${train.uuid}) as it no longer exists on server`);
+        clientTrains.delete(train.uuid);
       }
-      clientTrains.set(uuid, train);
     }
 
+    for (const train of serverTrains.values()) {
+      if (!isTrainData(train)) continue;
 
-    serverTrains.forEach(trainData => {
-      if (isTrainData(trainData)) {
+      let clientTrain = clientTrains.get(train.uuid);
+  
+      if (clientTrain) {
+        // Train exists on client, update it
+        clientTrain.name = train.name;
+        clientTrain.address = train.address;
+        clientTrain.connUUID = train.connUUID;
+  
+        // Update Train Functions
+        for (const func of train.functions.values()) {
+          if (!isFunctionData(func)) {
+            console.log("Function data is invalid on train: ", clientTrain.name);
+            continue
+          }
 
-        let clientTrain = clientTrains.get(trainData.uuid);
-
-        if (clientTrain) {
-          // Train exists on client, update it
-          clientTrain.name = trainData.name;
-          clientTrain.address = trainData.address;
-          clientTrain.connUUID = trainData.connUUID;
-
-          // Update trains functions
-          trainData.functions.forEach(func => {
-            if (isFunctionData(func)) {
-              clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
-            }
-            else {
-              console.log("Function data is invalid on train: ", clientTrain.name);
-            }
-          });
+          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
         }
-        else {
-          // Train does not exist on client, Create it.
-          let clientTrain = new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID);
-
-          // Add functions to the new train
-          trainData.functions.forEach(func => {
-            if (isFunctionData(func)) {
-              clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
-            } else {
-              console.log("Function data is invalid on train: ", clientTrain.name);
-            }
-          });
-
-          clientTrains.set(clientTrain.uuid, clientTrain);
-        }
-      } else {
-        console.log("Train data is invalid");
       }
-    });
+      else {
+        // Train does not exist on client, Create it.
+        let clientTrain = new ClientTrain(train.uuid, train.address, train.name, train.connUUID);
+  
+        // Update Train Functions
+        for (const func of train.functions.values()) {
+          if (!isFunctionData(func)) {
+            console.log("Function data is invalid on train: ", clientTrain.name);
+            continue
+          }
 
+          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
+        }
+
+        clientTrains.set(clientTrain.uuid, clientTrain);
+      }
+    }
 
     return clientTrains;
   }
@@ -248,19 +243,17 @@ export class LayoutClient {
       clientConnections.set(uuid, connection);
     }
 
-
-    serverConnections.forEach(async connData => {
+    for (const connData of serverConnections.values()) {
       if (clientConnections.has(connData.uuid)) {
-        // Connection exists, update it
         let clientConnection = clientConnections.get(connData.uuid);
+        if (!clientConnection) continue;
 
-        if (clientConnection) {
+        // Connection exists, update it
+        clientConnection.name = connData.name;
+        clientConnection.hardware = connData.hardware.connType;
+        clientConnection.isConnected = connData.isConnected;
+        clientConnection.trains = await LayoutClient.fetchTrains(clientConnection.trains, connData.trains);
 
-          clientConnection.name = connData.name;
-          clientConnection.hardware = connData.hardware.connType;
-          clientConnection.isConnected = connData.isConnected;
-          clientConnection.trains = await LayoutClient.fetchTrains(layoutUUID, clientConnection.trains, connData.trains);
-        }
       }
       else {
         let connection: ClientConnection | undefined;
@@ -270,14 +263,12 @@ export class LayoutClient {
         } else {
           console.log("Unknown protocol for new client connection: ", connData.name);
         }
+        if (!connection) continue;
 
-        if (connection) {
-          connection.trains = await LayoutClient.fetchTrains(layoutUUID, new Map(), connData.trains);
-          clientConnections.set(connData.uuid, connection);
-        }
+        connection.trains = await LayoutClient.fetchTrains(new Map(), connData.trains);
+        clientConnections.set(connData.uuid, connection);
       }
-    });
-
+    }
 
     return clientConnections;
   }

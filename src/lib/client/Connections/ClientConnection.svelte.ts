@@ -9,7 +9,7 @@ export class ClientConnection {
   public name: string = $state() as string;
   public uuid: ConnectionUUID;
   public layoutUUID: LayoutUUID;
-  public trains: Map<TrainUUID, ClientTrain> = new Map();
+  public trains: Map<TrainUUID, ClientTrain> = $state(new Map());
 
 
   public isConnected: boolean = $state(false);

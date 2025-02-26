@@ -2,7 +2,9 @@
 	import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 	import type { CarouselAPI } from "$lib/components/ui/carousel/context";
 	import * as Carousel from "$lib/components/ui/carousel/index";
+	import { Plus } from "lucide-svelte";
 	import FunctionButton from "./FunctionButton.svelte";
+    import FunctionViewer from "$lib/components/Settings/Trains/Functions/FunctionViewer.svelte";
 
 	interface Props {
 		disabled?: boolean;
@@ -36,7 +38,9 @@
 
 	let entriesArray: TrainClientFunction[] = [];
 	if (functions) {
-		entriesArray = Array.from(functions.values()).filter(func => func.visible);
+		entriesArray = Array.from(functions.values()).filter(
+			(func) => func.visible,
+		);
 	}
 
 	const chunkedEntries = chunkArray(entriesArray, 8);
@@ -60,7 +64,7 @@
 						{#each funcs as func}
 							<FunctionButton
 								{disabled}
-								trainFunction={func}							
+								trainFunction={func}
 								bind:selected={func.state}
 								{onclick}
 							/>
@@ -88,4 +92,15 @@
 			</div>
 		{/if}
 	</Carousel.Root>
+{:else}
+	<button
+		class="w-32 text-lg flex flex-col justify-center items-center"
+		onclick={() => {
+
+		}}
+	>
+		<Plus size={32} />
+		<p>Add a Function</p>
+	</button>
+	<FunctionViewer functions={new Map()}/>
 {/if}

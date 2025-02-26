@@ -52,47 +52,6 @@
 <Card class="p-5 max-w-fit h-[450px] flex flex-col select-none gap-4">
   <div>
     <h1 class="text-2xl">Throttle</h1>
-    <p class="text-[0.7rem]">Control the speed and direction of your train</p>
-    <Button
-      class="size-[54px] m-0"
-      onclick={() => {
-        if (curTrain == undefined) return;
-
-        const data: ITrainFunctionData = {
-          value: "1",
-          name: "Function 1",
-          icon: "Speaker",
-          mode: "Toggle",
-          visible: true,
-          position: 0,
-        };
-
-        fetch(
-          `/api/layout/${layout.uuid}/trains/${curTrain?.uuid}/functions/add`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          },
-        )
-          .then(async (res) => {
-            let json = await res.json();
-            if (res.ok) {
-              toast.success(json.message);
-              layoutClientHandler.refreshLayouts();
-            } else {
-              toast.error(json.message);
-            }
-          })
-          .catch((err) => {
-            toast.error(err);
-          });
-      }}
-      variant="destructive"
-      size="icon"
-    />
   </div>
 
   <!-- Loco Select -->
