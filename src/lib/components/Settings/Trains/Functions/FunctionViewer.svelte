@@ -78,8 +78,6 @@
 										// If not already selected, select it
 										selectedFunctionValue = funct.value;
 										functionSelectorOpen = false;
-
-										console.log("Selecting Function");
 									}
 								}}
 							>

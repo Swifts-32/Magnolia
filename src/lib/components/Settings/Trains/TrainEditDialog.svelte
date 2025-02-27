@@ -11,7 +11,7 @@
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
   import type { ITrainData } from "$lib/types/Trains/Train";
-    import { toast } from "svelte-sonner";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     train: ClientTrain;
@@ -21,8 +21,9 @@
 
   let { train, layout, editMode = $bindable(false) }: Props = $props();
 
-  // Save the state of the old train, incase the user cancels the editing
+  // Get a copy of the state of the old train, in case the user cancels the editing
   const currentTrain = train;
+
   async function saveChanges() {
     if (!train.name.trim()) return toast.error("Please fill in the train name");
     if (!train.address) return toast.error("Please fill in the train address");
@@ -61,8 +62,8 @@
   }
 
   function cancelChanges() {
-    editMode = false;
     train = currentTrain;
+    editMode = false;
     layoutClientHandler.refreshLayouts();
   }
 
@@ -97,6 +98,8 @@
         toast.error("Error deleting train: " + error);
       });
   }
+
+  $inspect(train);
 </script>
 
 <Dialog.Root bind:open={editMode}>
@@ -135,11 +138,12 @@
 
       <FunctionViewer bind:functions={train.functions} />
 
-      <Separator class="mt-8" />
+      <Separator class="my-4" />
 
       <div class="flex justify-end my-4">
         <Button
-          class="w-full bg-destructive text-destructive-foreground"
+        variant="destructive"
+          class="w-full"
           onclick={deleteTrain}><Trash2 /> Delete Train</Button
         >
       </div>

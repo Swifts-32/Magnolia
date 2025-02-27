@@ -13,7 +13,7 @@
   <h1 class="text-4xl my-10">Trains</h1>
 
   <div class="flex flex-wrap gap-3">
-    {#each data.layout.trains.values() as train}
+    {#each data.layout.trains.values() as train (train.uuid)}
       <button
         class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
         onclick={() => (train.isEditMode = true)}
