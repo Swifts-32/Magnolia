@@ -4,16 +4,16 @@ import { redirect } from "@sveltejs/kit";
 import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 import type { LayoutLoad } from "./$types";
 
-export const load: LayoutLoad = async ({ params, fetch }) => {
+export const load: LayoutLoad = async ({ params }) => {
     const { id } = params;
 
     const layout = layoutClientHandler.layouts.get(id as LayoutUUID);
-    if (!layout) return redirect(300, "/");
-
-
-    if (browser) {
-        layout.createSSE();
+    
+    if (!layout || !browser) {
+        redirect(307, "/");
     }
+
+    layout.createSSE();
 
     return {
         layout

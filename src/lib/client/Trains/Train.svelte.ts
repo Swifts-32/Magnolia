@@ -1,7 +1,8 @@
-import type { TrainAddress } from "$lib/server/Trains/Train.server";
-
-import type { TrainUUID } from "$lib/server/Trains/Train.server";
+import type { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
+import type { TrainAddress } from "$lib/types/Trains/Train";
+import type { TrainUUID } from "$lib/types/Trains/Train";
 import type { ConnectionUUID } from "../LayoutClient.svelte";
+import { TrainClientFunction } from "./Functions/Function.svelte";
 
 export enum TrainDirection {
     Reverse = 0,
@@ -9,26 +10,40 @@ export enum TrainDirection {
 }
 
 export class ClientTrain {
-
-
     // Train data
     public uuid: TrainUUID;
     public address: TrainAddress = $state() as TrainAddress;
     public name: string = $state() as string;
     public connUUID: ConnectionUUID = $state() as ConnectionUUID;
-
+    public functions: Map<string, TrainClientFunction> = $state(new Map());
 
     // Non-Saveable Data
+    public isEditMode: boolean = $state(false);
     public speed: number = $state(0);
     public direction: TrainDirection = $state(TrainDirection.Forward);
-
 
     constructor(uuid: TrainUUID, address: TrainAddress, name: string, connUUID: ConnectionUUID) {
         this.uuid = uuid;
         this.address = address;
         this.name = name;
         this.connUUID = connUUID;
+    }
 
+    public addFunctions(functions: TrainClientFunction[]) {
+        functions.forEach((func) => {
+            this.functions.set(func.value, func);
+        });
+    }
+
+    public addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number) {
+        this.functions.set(value, new TrainClientFunction(value, name, icon, mode, position));
+    }
+
+    public setFunction(value: string, state: boolean) {
+        const func = this.functions.get(value);
+        if (!func) return;
+
+        func.state = state;
     }
 }
 

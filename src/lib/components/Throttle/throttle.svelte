@@ -9,6 +9,9 @@
   import Button from "../ui/button/button.svelte";
   import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
   import { CircleAlert } from "lucide-svelte";
+  import { toast } from "svelte-sonner";
+  import { type ITrainFunctionData } from "$lib/types/Trains/Functions/Functions";
+  import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandler.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -29,7 +32,7 @@
   // - No train is selected
   // - Train is not connected to a connection
   let disabled: boolean = $derived(
-    disabledProp || curTrain == undefined || !curConnection?.isConnected
+    disabledProp || curTrain == undefined || !curConnection?.isConnected,
   );
 
   function handleDirectionChange(newDirection: number) {
@@ -40,11 +43,17 @@
     if (!curTrain || !curConnection) return;
     curConnection.setTrainSpeed(curTrain.uuid, newSpeed);
   }
+  function handleFunctionChange(value: string, state: boolean) {
+    if (!curTrain || !curConnection) return;
+    curConnection.setTrainFunction(curTrain.uuid, value, state);
+  }
 </script>
 
-
-
 <Card class="p-5 max-w-fit h-[450px] flex flex-col select-none gap-4">
+  <div>
+    <h1 class="text-2xl">Throttle</h1>
+  </div>
+
   <!-- Loco Select -->
   <LocoSelect bind:curTrain {layout} disabled={disabledProp} />
 
@@ -99,12 +108,12 @@
       {/if}
     </div>
 
-    <!-- {#key curAddr}
+    {#key curTrain}
       <FunctionCarousel
-        onclick={(id, state) => {}}
+        onclick={handleFunctionChange}
         functions={curTrain?.functions ?? null}
         disabled={disabled || curTrain == undefined}
       />
-    {/key} -->
+    {/key}
   </div>
 </Card>

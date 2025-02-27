@@ -1,8 +1,9 @@
 import { toast } from "svelte-sonner";
 import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
-import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
+import { isTrainData, type ITrainData, type TrainUUID } from "$lib/types/Trains/Train";
 import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
+import { isFunctionData } from "$lib/types/Trains/Functions/Functions";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -14,7 +15,18 @@ export class LayoutClient {
   public uuid: LayoutUUID = $state() as LayoutUUID;
   public connections: Map<ConnectionUUID, ClientConnection> = $state(new Map());
 
-  private constructor(name: string, uuid: LayoutUUID, trains: Map<TrainUUID, ClientTrain>, connections: Map<ConnectionUUID, ClientConnection>) {
+  public get trains() {
+    let trains: Map<TrainUUID, ClientTrain> = new Map();
+
+    this.connections.forEach(connection => {
+      connection.trains.forEach((train, uuid) => {
+        trains.set(uuid, train);
+      });
+    })
+    return trains;
+  }
+
+  private constructor(name: string, uuid: LayoutUUID, connections: Map<ConnectionUUID, ClientConnection>) {
     this.name = name;
     this.uuid = uuid;
 
@@ -29,9 +41,8 @@ export class LayoutClient {
     }));
 
     const connections = await LayoutClient.fetchConnections(layoutUUID, fetch, new Map());
-    const trains = await LayoutClient.fetchTrains(layoutUUID, fetch, new Map());
 
-    return new LayoutClient(layoutData.name, layoutUUID, trains, connections);
+    return new LayoutClient(layoutData.name, layoutUUID, connections);
   }
 
   createSSE() {
@@ -147,61 +158,57 @@ export class LayoutClient {
     this.connections = await LayoutClient.fetchConnections(this.uuid, fetch, this.connections);
   }
 
-  public getTrains(): Map<TrainUUID, ClientTrain> {
-    let trains: Map<TrainUUID, ClientTrain> = new Map();
-    for (const connection of this.connections.values()) {
-      for (const train of connection.trains.values()) {
-        trains.set(train.uuid, train);
-      }
-    }
-    return trains;
-  }
-
-  private static async fetchTrains(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch, trains: Map<TrainUUID, ClientTrain>) {
-    const trainData = await fetch(`/api/layout/${layoutUUID}/trains`).then(res => res.json().then(data => {
-      return data.message;
-    }));
-
-    const serverTrains: {
-      uuid: TrainUUID,
-      connUUID: ConnectionUUID,
-      address: TrainAddress,
-      name: string,
-      functions: any[],
-    }[] = Array.isArray(trainData) ? trainData : [];
-
+  private static async fetchTrains(clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[]) {
 
     // Get all server train UUIDs for comparison
     const serverTrainUUIDs = new Set(serverTrains.map(train => train.uuid));
-    let clientTrains: Map<TrainUUID, ClientTrain> = new Map();
 
-    // Remove trains that exist on client but not on server
-    for (const [uuid, train] of trains) {
-      if (!serverTrainUUIDs.has(uuid)) {
-        console.log(`Removing train ${train.name} (${uuid}) as it no longer exists on server`);
-        continue;
+    // Remove trains that still exist on client but not on server
+    for (const train of clientTrains.values()) {
+      if (!serverTrainUUIDs.has(train.uuid)) {
+        console.log(`Removing train ${train.name} (${train.uuid}) as it no longer exists on server`);
+        clientTrains.delete(train.uuid);
       }
-      clientTrains.set(uuid, train);
     }
 
+    for (const train of serverTrains.values()) {
+      if (!isTrainData(train)) continue;
 
-    serverTrains.forEach(trainData => {
-      if (clientTrains.has(trainData.uuid)) {
-        // Train exists, update it
-        let clientTrain = clientTrains.get(trainData.uuid);
-        if (clientTrain) {
-          clientTrain.address = trainData.address;
-          clientTrain.name = trainData.name;
-          clientTrain.connUUID = trainData.connUUID;
-          // TODO Add functions to the train
+      let clientTrain = clientTrains.get(train.uuid);
+  
+      if (clientTrain) {
+        // Train exists on client, update it
+        clientTrain.name = train.name;
+        clientTrain.address = train.address;
+        clientTrain.connUUID = train.connUUID;
+  
+        // Update Train Functions
+        for (const func of train.functions.values()) {
+          if (!isFunctionData(func)) {
+            console.log("Function data is invalid on train: ", clientTrain.name);
+            continue
+          }
+
+          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
         }
       }
       else {
-        // Train does not exist, create it
-        clientTrains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, trainData.connUUID));
-      }
-    });
+        // Train does not exist on client, Create it.
+        let clientTrain = new ClientTrain(train.uuid, train.address, train.name, train.connUUID);
+  
+        // Update Train Functions
+        for (const func of train.functions.values()) {
+          if (!isFunctionData(func)) {
+            console.log("Function data is invalid on train: ", clientTrain.name);
+            continue
+          }
 
+          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
+        }
+
+        clientTrains.set(clientTrain.uuid, clientTrain);
+      }
+    }
 
     return clientTrains;
   }
@@ -212,7 +219,6 @@ export class LayoutClient {
       return data.message;
     }));
 
-    // TODO: Add train functions to the connection
     const serverConnections: {
       name: string,
       protocol: ConnectionProtocols,
@@ -221,14 +227,8 @@ export class LayoutClient {
         connType: ConnectionTypes,
       },
       isConnected: boolean,
-      trains: {
-        uuid: TrainUUID,
-        connUUID: ConnectionUUID,
-        address: TrainAddress,
-        name: string,
-      }[],
+      trains: ITrainData[],
     }[] = Array.isArray(connectionData) ? connectionData : [];
-
 
     // Get all server connection UUIDs for comparison
     const serverConnectionUUIDs = new Set(serverConnections.map(conn => conn.uuid));
@@ -243,94 +243,32 @@ export class LayoutClient {
       clientConnections.set(uuid, connection);
     }
 
-
-    serverConnections.forEach(connData => {
+    for (const connData of serverConnections.values()) {
       if (clientConnections.has(connData.uuid)) {
-        // Connection exists, update it
         let clientConnection = clientConnections.get(connData.uuid);
-        if (clientConnection) {
+        if (!clientConnection) continue;
 
-          clientConnection.name = connData.name;
-          clientConnection.hardware = connData.hardware.connType;
-          clientConnection.isConnected = connData.isConnected;
+        // Connection exists, update it
+        clientConnection.name = connData.name;
+        clientConnection.hardware = connData.hardware.connType;
+        clientConnection.isConnected = connData.isConnected;
+        clientConnection.trains = await LayoutClient.fetchTrains(clientConnection.trains, connData.trains);
 
-          // TODO: Update the connection protocol
-
-          // Update the connections trains
-          // Get all server train UUIDs for comparison
-          const serverTrainUUIDs = new Set(connData.trains.map(train => train.uuid));
-          let clientTrains: Map<TrainUUID, ClientTrain> = new Map();
-
-          // Remove trains that exist on client but not on server
-          for (const [uuid, train] of clientConnection.trains) {
-            if (!serverTrainUUIDs.has(uuid)) {
-              console.log(`Removing train ${train.name} (${uuid}) as it no longer exists on server`);
-              continue;
-            }
-            clientTrains.set(uuid, train);
-          }
-
-
-          connData.trains.forEach(trainData => {
-            if (clientTrains.has(trainData.uuid)) {
-              // Train exists, update it
-              let clientTrain = clientTrains.get(trainData.uuid);
-              if (clientTrain) {
-                clientTrain.address = trainData.address;
-                clientTrain.name = trainData.name;
-                // TODO Add functions to the train
-              }
-            }
-            else {
-              // Train does not exist, create it
-              clientTrains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, clientConnection.uuid));
-            }
-          });
-
-          clientConnection.trains = clientTrains;
-        }
       }
       else {
-        let connection: ClientConnection | undefined = undefined;
+        let connection: ClientConnection | undefined;
         // Connection does not exist, create it
-        switch (connData.protocol) {
-          case ConnectionProtocols.DCCEX:
-            connection = new ClientConnection(connData.protocol, connData.hardware.connType, connData.name, connData.uuid, layoutUUID);
-            break;
-
-          default:
-            console.log("Unknown protocol for connection: ", connData.name);
-            break;
+        if (connData.protocol === ConnectionProtocols.DCCEX) {
+          connection = new ClientConnection(connData.protocol, connData.hardware.connType, connData.name, connData.uuid, layoutUUID);
+        } else {
+          console.log("Unknown protocol for new client connection: ", connData.name);
         }
+        if (!connection) continue;
 
-        if (connection) {
-          // Add trains to the connection
-          // Update the connections trains
-          // Get all server train UUIDs for comparison
-          let clientTrains: Map<TrainUUID, ClientTrain> = new Map();
-
-          connData.trains.forEach(trainData => {
-            if (clientTrains.has(trainData.uuid)) {
-              // Train exists, update it
-              let clientTrain = clientTrains.get(trainData.uuid);
-              if (clientTrain) {
-                clientTrain.address = trainData.address;
-                clientTrain.name = trainData.name;
-                // TODO Add functions to the train
-              }
-            }
-            else {
-              // Train does not exist, create it
-              clientTrains.set(trainData.uuid, new ClientTrain(trainData.uuid, trainData.address, trainData.name, connData.uuid));
-            }
-          });
-
-          connection.trains = clientTrains;
-          clientConnections.set(connData.uuid, connection);
-        }
+        connection.trains = await LayoutClient.fetchTrains(new Map(), connData.trains);
+        clientConnections.set(connData.uuid, connection);
       }
-    });
-
+    }
 
     return clientConnections;
   }

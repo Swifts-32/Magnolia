@@ -75,10 +75,10 @@ export class EmulatorConnection implements IEmulatorConnection {
           const match = command.match(/<F (\d+) (\d|[0-6][0-8]) ([01])>/);
           if (match) {
             const cab = match[1];
-            const functionID = match[2];
+            const functionID = match[2] as unknown as number;
             const state = match[3];
 
-            this.dataReceived(`<F ${cab} ${functionID} ${state}>`);
+            this.dataReceived(`<l ${cab} 0 56 ${state === "1" ? 1 << functionID : 0}>`);
           }
           break;
         }
@@ -100,7 +100,7 @@ export class EmulatorConnection implements IEmulatorConnection {
 
         // ✅ Default Case: Unknown Command
         default:
-          this.dataReceived("<X Unknown Command>"); // DCC-EX convention: <X Error Message>
+          this.dataReceived("<X Unknown Command>" + command); // DCC-EX convention: <X Error Message>
           break;
       }
     }

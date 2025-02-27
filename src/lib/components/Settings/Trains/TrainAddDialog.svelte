@@ -11,34 +11,40 @@
   import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
-  import type { Snippet } from "svelte";
+  import { onMount, type Snippet } from "svelte";
+  import type { ITrainData } from "$lib/types/Trains/Train";
+  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import Separator from "$lib/components/ui/separator/separator.svelte";
+  import FunctionViewer from "./Functions/FunctionViewer.svelte";
+  import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 
   interface Props {
     layout: LayoutClient;
+    class?: string;
     children?: Snippet;
   }
-  let { layout, children }: Props = $props();
+  let { layout, class: trainAddClass = "", children }: Props = $props();
 
   let editMode: boolean = $state(false);
 
-  let selectedConnectionUUID: ConnectionUUID | undefined = $state();
   let trainName: string | undefined = $state();
   let trainAddress: string | undefined = $state();
+  let trainConnUUID: ConnectionUUID | undefined = $state();
+  let trainFunctions: Map<string, TrainClientFunction> = $state(new Map());
 
   async function saveChanges() {
-    if (
-      trainName === undefined ||
-      trainAddress === undefined ||
-      selectedConnectionUUID === undefined
-    ) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+    if (!trainConnUUID?.trim())
+      return toast.error("Please fill in the train connection");
+    if (!trainName?.trim()) return toast.error("Please fill in the train name");
+    if (!trainAddress?.trim())
+      return toast.error("Please fill in the train address");
 
-    const data: any = {
+    const data: ITrainData = {
       name: trainName,
       address: trainAddress,
-      connUUID: selectedConnectionUUID,
+      connUUID: trainConnUUID,
+      functions: Array.from(trainFunctions.values()),
+      uuid: crypto.randomUUID(),
     };
 
     fetch(`/api/layout/${layout.uuid}/trains/add`, {
@@ -49,14 +55,23 @@
       body: JSON.stringify(data),
     })
       .then(async (response) => {
+        const json = await response.json();
+
         if (response.ok) {
           editMode = false; // Close the dialog on success
-          toast.success("Train added successfully");
+          toast.success(json.message);
 
           layoutClientHandler.refreshLayouts();
         } else {
-          toast.error("Failed to add train");
+          toast.error(json.message);
         }
+
+
+        // Reset values
+        trainName = undefined;
+        trainAddress = undefined;
+        trainConnUUID = undefined;
+        trainFunctions = new Map();
       })
       .catch((error) => {
         toast.error("Error adding train: " + error);
@@ -64,7 +79,7 @@
   }
 </script>
 
-<button class="w-full" onclick={() => (editMode = true)}>
+<button class={trainAddClass} onclick={() => (editMode = true)}>
   {@render children?.()}
 </button>
 
@@ -93,10 +108,14 @@
       <!-- Connection -->
       <ConnectionSelector
         connections={layout.connections}
-        bind:selectedConnectionUUID
+        bind:selectedConnectionUUID={trainConnUUID}
       />
 
-      <!-- TODO Add functions -->
+      <Separator class="my-4" />
+
+      <FunctionViewer bind:functions={trainFunctions} />
+
+      <Separator class="mt-4" />
     </div>
 
     <Dialog.Footer>

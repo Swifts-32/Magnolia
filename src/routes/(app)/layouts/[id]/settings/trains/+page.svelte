@@ -1,28 +1,50 @@
 <script lang="ts">
-  import TrainAdd from "$lib/components/Settings/Trains/TrainAdd.svelte";
-  import TrainEdit from "$lib/components/Settings/Trains/TrainEdit.svelte";
+  import TrainAddDialog from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
+  import TrainEditDialog from "$lib/components/Settings/Trains/TrainEditDialog.svelte";
   import { Toaster } from "$lib/components/ui/sonner";
-  import { Plus } from "lucide-svelte";
+  import { Plus, TrainFront } from "lucide-svelte";
   import type { LayoutData } from "../../$types";
 
   let { data }: { data: LayoutData } = $props();
+
 </script>
 
 <div class="m-4">
   <h1 class="text-4xl my-10">Trains</h1>
 
   <div class="flex flex-wrap gap-3">
-    {#each data.layout.getTrains().values() as train (train.uuid)}
-      <TrainEdit {train} layout={data.layout} />
-    {/each}
-    <TrainAdd layout={data.layout}>
-      <div
+    {#each data.layout.trains.values() as train (train.uuid)}
+      <button
         class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
+        onclick={() => (train.isEditMode = true)}
       >
-        <Plus size={40} strokeWidth={1} />
-        <p class="text-2xl text-start">Add Train</p>
-      </div>
-    </TrainAdd>
+        <TrainFront size={40} strokeWidth={1} />
+
+        <p class="text-2xl text-start">{train.name}</p>
+        <div class="flex-col flex items-start">
+          <p class="text-sm text-gray-400">Addr: {train.address}</p>
+          <p class="text-sm text-gray-400">
+            Connection: {data.layout.connections.get(train.connUUID)?.name ??
+              "None"}
+          </p>
+        </div>
+      </button>
+
+      <!-- Display the dialog, When the selected train is this train -->
+      <TrainEditDialog
+        bind:editMode={train.isEditMode}
+        {train}
+        layout={data.layout}
+      />
+    {/each}
+    <TrainAddDialog
+      layout={data.layout}
+      class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
+    >
+      <Plus size={40} strokeWidth={1} />
+      <p class="text-2xl text-start">Add Train</p>
+    </TrainAddDialog>
   </div>
 </div>
+
 <Toaster />

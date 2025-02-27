@@ -65,7 +65,7 @@
   <div class="flex flex-1 justify-start items-center gap-2">
     <p>{port.path ?? "Undefined Path"}</p>
     <div
-      class="flex flex-col justify-center items-start text-[0.6rem] leading-3 text-gray-400"
+      class="flex flex-col justify-center items-start leading-3 text-xs text-gray-400"
     >
       {#if port.isCustom}
         <p>Custom Port</p>

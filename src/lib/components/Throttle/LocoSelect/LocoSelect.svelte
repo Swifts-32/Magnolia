@@ -9,8 +9,7 @@
   import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import { Plus } from "lucide-svelte";
-  import { type TrainUUID } from "$lib/server/Trains/Train.server";
-  import TrainAdd from "$lib/components/Settings/Trains/TrainAdd.svelte";
+    import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
 
   interface Props {
     curTrain: ClientTrain | undefined;
@@ -67,7 +66,7 @@
       <Command.List>
         <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
-          {#each layout.getTrains().values() as train}
+          {#each layout.trains.values() as train}
             <Command.Item
               {disabled}
               value={train.uuid}
@@ -83,7 +82,7 @@
               <div class="flex items-center gap-2">
                 <p class="text-md">{train.name}</p>
                 <div
-                  class="flex flex-col justify-center items-start text-[0.6rem] leading-3 text-gray-400"
+                  class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
                 >
                   <p>Address: {train.address}</p>
                   <p>

@@ -2,6 +2,7 @@
     import { goto } from "$app/navigation";
     import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler.svelte";
     import LayoutAdd from "$lib/components/Settings/Layouts/LayoutAdd.svelte";
+    import Button from "$lib/components/ui/button/button.svelte";
 </script>
 
 <div class="mx-10 flex flex-col justify-center">
@@ -20,4 +21,6 @@
         {/each}
         <LayoutAdd/>
     </div>
+
+    <Button onclick={() => layoutClientHandler.refreshLayouts()}>Refresh</Button>
 </div>

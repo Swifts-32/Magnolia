@@ -1,5 +1,6 @@
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
+import { isTrainData } from "$lib/types/Trains/Train.js";
 
 export const POST = async ({ request, params }) => {
     const { id } = params;
@@ -9,36 +10,32 @@ export const POST = async ({ request, params }) => {
         return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
     }
 
-    try {
-        const data = await request.json();
+    const data = await request.json();
 
-        // Validate required fields
-        if (data.address === undefined || data.name === undefined || data.connUUID === undefined) {
-            return new Response(
-                JSON.stringify({ message: 'Missing required fields: address, name, and connUUID are required' }),
-                { status: 400 }
-            );
-        }
-
-        let train = layout.addTrain(data.address, data.name, data.connUUID);
-
-        // Add functions to the train
-        //TODO Add functions
-        if (data.functions) {}
-
-
+    // Validate required fields
+    if (!isTrainData(data)) {
         return new Response(
-            JSON.stringify({
-                message: `Train created successfully on layout: ${layout.name}`,
-            }),
-            { status: 201 }
-
-        );
-    } catch (error) {
-        return new Response(
-            JSON.stringify({ message: `Invalid request body: ${error}` }),
+            JSON.stringify({ message: 'Failed to create train: Invalid data' }),
             { status: 400 }
         );
-
     }
+
+    let train = layout.addTrain(data.address, data.name, data.connUUID);
+    if (!train) {
+        return new Response(
+            JSON.stringify({ message: 'Failed to create train: Train was null' }), { status: 404 }
+        );
+    }
+
+    data.functions.forEach(funct => {
+        train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position);
+    });
+
+
+    return new Response(
+        JSON.stringify({
+            message: `Train created successfully on layout: ${layout.name}`,
+        }),
+        { status: 201 }
+    );
 }

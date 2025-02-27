@@ -1,47 +1,56 @@
 import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
-import type { FunctionIcons, FunctionModes } from "../../../services/train.svelte";
 import { ServerTrainFunctions } from "./Functions.server";
-
-export type TrainUUID = `${string}-${string}-${string}-${string}-${string}`;
-export type TrainAddress = string | number;
+import { isFunctionData, type TrainFunctionIcons, type TrainFunctionModes } from "../../types/Trains/Functions/Functions";
+import { type TrainUUID, type TrainAddress, type ITrainData, isTrainData } from "$lib/types/Trains/Train";
 
 export class ServerTrain {
-    public uuid: TrainUUID;
-    public connUUID: ConnectionUUID;
-    public address: TrainAddress;
-    public name: string;
-    public functions: Map<number, ServerTrainFunctions> = new Map();
+	public uuid: TrainUUID;
+	public connUUID: ConnectionUUID;
+	public address: TrainAddress;
+	public name: string;
+	public functions: Map<string, ServerTrainFunctions> = new Map();
 
-    constructor(address: TrainAddress, name: string, connUUID: ConnectionUUID, uuid: TrainUUID | undefined = undefined) {
-        this.address = address;
-        this.name = name;
-        this.uuid = uuid ?? crypto.randomUUID();
-        this.connUUID = connUUID;
-    }
-    
-    toJSON() {
-        return {
-            uuid: this.uuid,
-            connUUID: this.connUUID,
-            address: this.address,
-            name: this.name,
-            functions: Array.from(this.functions.entries()).map(([id, funct]) => funct.toJSON()),
-        };
-    }
+	constructor(address: TrainAddress, name: string, connUUID: ConnectionUUID, uuid: TrainUUID | undefined = undefined) {
+		this.address = address;
+		this.name = name;
+		this.uuid = uuid ?? crypto.randomUUID();
+		this.connUUID = connUUID;
+	}
 
-    public static fromJSON(json: any): ServerTrain | null {
-        if (json.uuid == undefined || json.connUUID == undefined || json.address == undefined || json.name == undefined) {
-            console.log(`Invalid train data`);
-            return null;
-        }
+	toJSON(): ITrainData {
+		return {
+			uuid: this.uuid,
+			connUUID: this.connUUID,
+			address: this.address,
+			name: this.name,
+			functions: Array.from(this.functions.values()).map(funct => funct.toJSON()),
+		};
+	}
 
-        // TODO: Recreate functions when loading trains
+	public static fromJSON(json: any): ServerTrain | null {
 
-        return new ServerTrain(json.address, json.name, json.connUUID, json.uuid);
-    }
+		if (!isTrainData(json)) {
+			console.log(`Invalid train data`);
+			return null;
+		}
 
-    
-    addFunction(id: number, icon: FunctionIcons, mode: FunctionModes) {
-        this.functions.set(id, new ServerTrainFunctions(id, icon, mode));
-    }
+		let serverTrain = new ServerTrain(json.address, json.name, json.connUUID, json.uuid);
+
+		for (const funct of json.functions) {
+			if (!isFunctionData(funct)) {
+				console.log(`Invalid train function data`);
+				continue;
+			}
+
+			serverTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position);
+		}
+
+		return serverTrain;
+	}
+
+
+	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, visible: boolean = true) {
+		const funct = new ServerTrainFunctions(value, name, icon, mode, position);
+		this.functions.set(value, funct);
+	}
 }

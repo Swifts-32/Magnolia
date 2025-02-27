@@ -1,4 +1,4 @@
-import type { TrainAddress, TrainUUID } from "$lib/server/Trains/Train.server";
+import type { TrainAddress, TrainUUID } from "$lib/types/Trains/Train";
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "../Protocols/protocols";
 import { TrainDirection, type ClientTrain } from "../Trains/Train.svelte";
@@ -9,7 +9,7 @@ export class ClientConnection {
   public name: string = $state() as string;
   public uuid: ConnectionUUID;
   public layoutUUID: LayoutUUID;
-  public trains: Map<TrainUUID, ClientTrain> = new Map();
+  public trains: Map<TrainUUID, ClientTrain> = $state(new Map());
 
 
   public isConnected: boolean = $state(false);
@@ -103,15 +103,14 @@ export class ClientConnection {
           train.direction = direction;
 
           // TODO: Implement function states
-          // functionStates.forEach(funct => {
-          //   train.setFunction(funct.index, funct.state);
-          // });
+          functionStates.forEach(funct => {
+            train.setFunction(funct.index.toString(), funct.state);
+          });
         }
         else {
           console.log("Train not found: " + cab);
         }
       }
-
     } else {
       console.log("Unknown command: " + command);
     }
@@ -136,17 +135,17 @@ export class ClientConnection {
 
   setTrainSpeed(trainUUID: TrainUUID, speed: number) {
     const train = this.trains.get(trainUUID);
-    if (train) {
-      train.speed = speed;
+    if (!train) return;
 
-      switch (this.protocol) {
-        case ConnectionProtocols.DCCEX:
-          fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
-          break;
-        default:
-          console.log("Unknown protocol: " + this.protocol);
-          break;
-      }
+    train.speed = speed;
+
+    switch (this.protocol) {
+      case ConnectionProtocols.DCCEX:
+        fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
+        break;
+      default:
+        console.log("Unknown protocol: " + this.protocol);
+        break;
     }
   }
 
@@ -168,6 +167,26 @@ export class ClientConnection {
       }
     }
     return undefined;
+  }
+
+  setTrainFunction(trainUUID: TrainUUID, functionValue: string, state: boolean) {
+    const train = this.trains.get(trainUUID);
+    if (!train) return;
+
+    const funct = train.functions.get(functionValue);
+    if (!funct) return
+
+    funct.state = state;
+
+    switch (this.protocol) {
+      case ConnectionProtocols.DCCEX:
+        fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<F ${train.address} ${funct.value} ${funct.state ? 1 : 0}>`);
+        break;
+      default:
+        console.log("Unknown protocol: " + this.protocol);
+        break;
+
+    }
   }
 }
 

@@ -17,15 +17,17 @@ class LayoutClientHandler {
         for (const uuid of this.layouts.keys()) {
             if (!serverLayoutUUIDs.has(uuid)) {
                 this.layouts.delete(uuid);
+                console.log(`Layout ${uuid} removed from client`);
             }
         }
-
 
         for (const layout of layouts) {
             if (!this.layouts.has(layout.uuid)) {
                 // Layout does not exist, create it
                 const layoutClient = await LayoutClient.create(layout.uuid, fetch);
                 this.layouts.set(layout.uuid, layoutClient);
+
+                console.log(`Layout ${layout.uuid} added to client`);
             } else {
                 // Layout exists, update it
                 let layoutClient = this.layouts.get(layout.uuid);
@@ -36,15 +38,14 @@ class LayoutClientHandler {
 
                 layoutClient.name = layout.name;
                 await layoutClient.refreshLayout();
+
+                console.log(`Layout ${layout.uuid} updated on client`);
             }
         }
 
         // Trigger reactivity by reassigning the map
         this.layouts = new Map(this.layouts);
     }
-
 }
-
-
 
 export const layoutClientHandler = new LayoutClientHandler();
