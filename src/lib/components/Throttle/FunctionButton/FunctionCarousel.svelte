@@ -96,7 +96,7 @@
 	<button
 		class="w-32 text-lg flex flex-col justify-center items-center"
 		onclick={() => {
-
+			render
 		}}
 	>
 		<Plus size={32} />

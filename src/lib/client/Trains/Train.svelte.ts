@@ -18,7 +18,6 @@ export class ClientTrain {
     public functions: Map<string, TrainClientFunction> = $state(new Map());
 
     // Non-Saveable Data
-    public isEditMode: boolean = $state(false);
     public speed: number = $state(0);
     public direction: TrainDirection = $state(TrainDirection.Forward);
 
@@ -44,6 +43,19 @@ export class ClientTrain {
         if (!func) return;
 
         func.state = state;
+    }
+
+
+    // Create a deep copy of the train
+    public clone(): ClientTrain {
+        const clonedTrain = new ClientTrain(this.uuid, this.address, this.name, this.connUUID);
+
+        // Clone the functions Map
+        this.functions.forEach((func) => {
+            clonedTrain.functions.set(func.value, func.clone());
+        });
+
+        return clonedTrain;
     }
 }
 

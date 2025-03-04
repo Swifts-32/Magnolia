@@ -6,7 +6,6 @@
   import type { LayoutData } from "../../$types";
 
   let { data }: { data: LayoutData } = $props();
-
 </script>
 
 <div class="m-4">
@@ -14,9 +13,11 @@
 
   <div class="flex flex-wrap gap-3">
     {#each data.layout.trains.values() as train (train.uuid)}
-      <button
+      <!-- Display the dialog, When the selected train is this train -->
+      <TrainEditDialog
+        {train}
+        layout={data.layout}
         class="border-primary border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
-        onclick={() => (train.isEditMode = true)}
       >
         <TrainFront size={40} strokeWidth={1} />
 
@@ -28,14 +29,7 @@
               "None"}
           </p>
         </div>
-      </button>
-
-      <!-- Display the dialog, When the selected train is this train -->
-      <TrainEditDialog
-        bind:editMode={train.isEditMode}
-        {train}
-        layout={data.layout}
-      />
+      </TrainEditDialog>
     {/each}
     <TrainAddDialog
       layout={data.layout}

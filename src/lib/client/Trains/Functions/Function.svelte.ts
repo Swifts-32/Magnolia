@@ -31,4 +31,11 @@ export class TrainClientFunction {
             position: this.position,
         };
     }
+
+    public clone(): TrainClientFunction {
+        const clonedFunction = new TrainClientFunction(this.value, this.name, this.icon, this.mode, this.position);
+        clonedFunction.state = this.state;
+
+        return clonedFunction;
+    }
 }
