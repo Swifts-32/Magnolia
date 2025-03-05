@@ -4,12 +4,13 @@
 	import * as Carousel from "$lib/components/ui/carousel/index";
 	import { Plus } from "lucide-svelte";
 	import FunctionButton from "./FunctionButton.svelte";
-    import FunctionViewer from "$lib/components/Settings/Trains/Functions/FunctionViewer.svelte";
+	import { goto } from "$app/navigation";
+	import { page } from "$app/state";
 
 	interface Props {
 		disabled?: boolean;
 		functions: Map<string, TrainClientFunction> | null;
-		onclick?: (value: string, state: boolean) => void;
+		onclick?: (func: TrainClientFunction) => void;
 	}
 
 	let { functions, onclick, disabled }: Props = $props();
@@ -44,9 +45,10 @@
 	}
 
 	const chunkedEntries = chunkArray(entriesArray, 8);
+
 </script>
 
-{#if functions}
+{#if functions && functions.size >= 8}
 	<Carousel.Root
 		class="w-32 max-w-fit h-full"
 		opts={{
@@ -58,14 +60,11 @@
 		<Carousel.Content>
 			{#each chunkedEntries as funcs}
 				<Carousel.Item>
-					<div
-						class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full"
-					>
-						{#each funcs as func}
+					<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
+						{#each funcs as trainFunction}
 							<FunctionButton
 								{disabled}
-								trainFunction={func}
-								bind:selected={func.state}
+								{trainFunction}
 								{onclick}
 							/>
 						{/each}
@@ -92,15 +91,28 @@
 			</div>
 		{/if}
 	</Carousel.Root>
+{:else if functions && functions.size > 0 && functions.size < 8}
+	<div class="w-32 max-w-fit h-full">
+		{#each chunkedEntries as funcs}
+			<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
+				{#each funcs as trainFunction}
+					<FunctionButton
+						{disabled}
+						{trainFunction}
+						{onclick}
+					/>
+				{/each}
+			</div>
+		{/each}
+	</div>
 {:else}
 	<button
 		class="w-32 text-lg flex flex-col justify-center items-center"
 		onclick={() => {
-			render
+			goto(`/layouts/${page.params.id}/settings/trains`);
 		}}
 	>
 		<Plus size={32} />
 		<p>Add a Function</p>
 	</button>
-	<FunctionViewer functions={new Map()}/>
 {/if}

@@ -15,24 +15,32 @@
   </button>
 {/snippet}
 
-<div class="flex">
-  <div class="w-max m-4 p-4 h-full border-primary border-2 rounded-md">
+<div class="flex size-full p-4">
+  <div class="w-max p-4 h-full border-primary border-2 rounded-md">
     <h1 class="text-4xl my-10">Settings</h1>
 
     <div class="flex flex-col gap-3">
+      <!-- Layout -->
       {@render layoutButton("Layout", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/layout`)
+        goto(`/layouts/${data.layout.uuid}/settings/layout`),
       )}
+
+      <!-- Trains -->
       {@render layoutButton("Trains", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/trains`)
+        goto(`/layouts/${data.layout.uuid}/settings/trains`),
       )}
+
+      <!-- Accessories -->
       {@render layoutButton("Accessories", () => {})}
 
+      <!-- Connections -->
       {@render layoutButton("Connections", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/connections`)
+        goto(`/layouts/${data.layout.uuid}/settings/connections`),
       )}
+
+      <!-- Automations -->
+      {@render layoutButton("Automations", () => {})}
     </div>
   </div>
   {@render children()}
-
 </div>

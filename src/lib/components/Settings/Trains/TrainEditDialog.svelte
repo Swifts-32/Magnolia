@@ -13,6 +13,7 @@
   import type { ITrainData } from "$lib/types/Trains/Train";
   import { toast } from "svelte-sonner";
   import { type Snippet } from "svelte";
+  import ConformationDialog from "../Common/ConformationDialog/ConformationDialog.svelte";
 
   interface Props {
     train: ClientTrain;
@@ -169,13 +170,24 @@
 
         <Separator class="my-4" />
 
-        <div class="flex justify-end my-4">
-          <Button variant="destructive" class="w-full" onclick={deleteTrain}
-            ><Trash2 /> Delete Train</Button
-          >
-        </div>
+        <ConformationDialog title="Delete Train">
+          {#snippet trigger()}
+            <Button variant="destructive" class="w-full"
+              ><Trash2 /> Delete Train</Button
+            >
+          {/snippet}
+          {#snippet primaryButton()}
+            <Button variant="destructive" class="w-28" onclick={deleteTrain}
+              >Delete Train</Button
+            >
+          {/snippet}
+          {#snippet secondaryButton()}
+            <Button variant="outline" class="w-28">Cancel</Button>
+          {/snippet}
+          <p>Are you sure you want to delete this train?</p>
+        </ConformationDialog>
 
-        <Separator />
+        <Separator class="mt-4" />
       </div>
     {/if}
 

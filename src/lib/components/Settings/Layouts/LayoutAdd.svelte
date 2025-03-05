@@ -3,12 +3,11 @@
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
-  import * as Accordion from "$lib/components/ui/accordion/index.js";
   import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import { Toaster } from "$lib/components/ui/sonner";
-  import { fade, fly, slide } from "svelte/transition";
+  import {  fly } from "svelte/transition";
   import {
     backOut,
     circOut,

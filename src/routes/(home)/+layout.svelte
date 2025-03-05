@@ -1,11 +1,11 @@
 <script>
+	import { page } from "$app/state";
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
 	import { NavBarData } from "../../lib/components/NavBar/linkUtils.svelte";
-	import { page } from "$app/stores";
 
 	let { children } = $props();
 
-	const curLink = $page.url.pathname;
+	const curLink = page.url.pathname;
 	const links = [
 		{
 			linkText: "Home",
@@ -13,12 +13,6 @@
 			displayInNav: true,
 			displayInFooter: false,
 		},
-		// {
-		// 	linkText: "Settings",
-		// 	url: "/settings",
-		// 	displayInNav: true,
-		// 	displayInFooter: false,
-		// },
 	];
 
 	const navbarData = new NavBarData(links, curLink);

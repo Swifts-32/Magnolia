@@ -12,6 +12,7 @@
   import { toast } from "svelte-sonner";
   import { type ITrainFunctionData } from "$lib/types/Trains/Functions/Functions";
   import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandler.svelte";
+    import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -43,9 +44,10 @@
     if (!curTrain || !curConnection) return;
     curConnection.setTrainSpeed(curTrain.uuid, newSpeed);
   }
-  function handleFunctionChange(value: string, state: boolean) {
+  function handleFunctionChange(func: TrainClientFunction) {
     if (!curTrain || !curConnection) return;
-    curConnection.setTrainFunction(curTrain.uuid, value, state);
+    console.log("Function change")
+    curConnection.setTrainFunction(curTrain.uuid, func.value, func.state);
   }
 </script>
 

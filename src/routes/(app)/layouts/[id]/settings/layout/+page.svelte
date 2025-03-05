@@ -8,6 +8,8 @@
   import { onDestroy, onMount } from "svelte";
   import { Toaster } from "$lib/components/ui/sonner";
   import { toast } from "svelte-sonner";
+  import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
+  import { Trash2 } from "lucide-svelte";
 
   let { data }: { data: LayoutData } = $props();
   let layoutName: string | undefined = $state(data.layout.name);
@@ -28,9 +30,7 @@
     };
 
     // Don't update the layout if nothing has changed
-    if (layoutName === data.layout.name) {
-      return;
-    }
+    if (layoutName === data.layout.name) return;
 
     fetch(`/api/layout/${data.layout.uuid}/edit`, {
       method: "POST",
@@ -51,6 +51,12 @@
         toast.error(`Error updating layout: ${error}`);
       });
   });
+
+  function deleteLayout() {
+    fetch(`/api/layout/${data.layout.uuid}/delete`);
+    layoutClientHandler.refreshLayouts();
+    goto("/");
+  }
 </script>
 
 <div class="m-4">
@@ -63,17 +69,22 @@
   </div>
 
   <!-- Delete Layout -->
-  <Button
-    class="w-96"
-    variant="destructive"
-    onclick={() => {
-      fetch(`/api/layout/${data.layout.uuid}/delete`);
-      layoutClientHandler.refreshLayouts();
-      goto("/");
-    }}
-  >
-    <p>Delete Layout</p>
-  </Button>
+  <ConformationDialog title="Delete Layout">
+    {#snippet trigger()}
+      <Button variant="destructive" class="w-96"
+        ><Trash2 /> Delete Layout</Button
+      >
+    {/snippet}
+    {#snippet primaryButton()}
+      <Button variant="destructive" class="w-28" onclick={deleteLayout}
+        >Delete Train</Button
+      >
+    {/snippet}
+    {#snippet secondaryButton()}
+      <Button variant="outline" class="w-28">Cancel</Button>
+    {/snippet}
+    <p>Are you sure you want to delete this layout?</p>
+  </ConformationDialog>
 </div>
 
 <Toaster />

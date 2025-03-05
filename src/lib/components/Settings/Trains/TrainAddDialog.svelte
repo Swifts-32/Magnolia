@@ -66,7 +66,6 @@
           toast.error(json.message);
         }
 
-
         // Reset values
         trainName = undefined;
         trainAddress = undefined;
@@ -85,6 +84,7 @@
 
 <Dialog.Root open={editMode}>
   <Dialog.Content
+    onOpenAutoFocus={(e) => e.preventDefault()}
     interactOutsideBehavior="ignore"
     escapeKeydownBehavior="ignore"
   >

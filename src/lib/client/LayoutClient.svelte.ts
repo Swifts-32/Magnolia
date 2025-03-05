@@ -4,6 +4,7 @@ import { isTrainData, type ITrainData, type TrainUUID } from "$lib/types/Trains/
 import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
 import { isFunctionData } from "$lib/types/Trains/Functions/Functions";
+import { SvelteMap } from "svelte/reactivity";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -13,7 +14,7 @@ export class LayoutClient {
   eventSource: EventSource | null = null;
   public name: string = $state() as string;
   public uuid: LayoutUUID = $state() as LayoutUUID;
-  public connections: Map<ConnectionUUID, ClientConnection> = $state(new Map());
+  public connections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
 
   public get trains() {
     let trains: Map<TrainUUID, ClientTrain> = new Map();
@@ -26,11 +27,11 @@ export class LayoutClient {
     return trains;
   }
 
-  private constructor(name: string, uuid: LayoutUUID, connections: Map<ConnectionUUID, ClientConnection>) {
+  private constructor(name: string, uuid: LayoutUUID, connections: SvelteMap<ConnectionUUID, ClientConnection>) {
     this.name = name;
     this.uuid = uuid;
 
-    this.addConnections(connections);
+    this.connections = connections;
     this.refreshLayout();
   }
 
@@ -40,7 +41,7 @@ export class LayoutClient {
       return data.message;
     }));
 
-    const connections = await LayoutClient.fetchConnections(layoutUUID, fetch, new Map());
+    const connections = await LayoutClient.fetchConnections(layoutUUID, fetch, new SvelteMap());
 
     return new LayoutClient(layoutData.name, layoutUUID, connections);
   }
@@ -141,21 +142,8 @@ export class LayoutClient {
     }
   }
 
-
-  getConnections(): Map<ConnectionUUID, ClientConnection> {
-    return this.connections;
-  }
-
-  public addConnections(connections: Map<ConnectionUUID, ClientConnection>) {
-    for (const connection of connections.values()) {
-      this.connections.set(connection.uuid, connection);
-    }
-  }
-
-
-
   public async refreshLayout() {
-    this.connections = await LayoutClient.fetchConnections(this.uuid, fetch, this.connections);
+    this.connections = new SvelteMap(await LayoutClient.fetchConnections(this.uuid, fetch, this.connections));
   }
 
   private static async fetchTrains(clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[]) {
@@ -175,13 +163,13 @@ export class LayoutClient {
       if (!isTrainData(train)) continue;
 
       let clientTrain = clientTrains.get(train.uuid);
-  
+
       if (clientTrain) {
         // Train exists on client, update it
         clientTrain.name = train.name;
         clientTrain.address = train.address;
         clientTrain.connUUID = train.connUUID;
-  
+
         // Update Train Functions
         for (const func of train.functions.values()) {
           if (!isFunctionData(func)) {
@@ -195,7 +183,7 @@ export class LayoutClient {
       else {
         // Train does not exist on client, Create it.
         let clientTrain = new ClientTrain(train.uuid, train.address, train.name, train.connUUID);
-  
+
         // Update Train Functions
         for (const func of train.functions.values()) {
           if (!isFunctionData(func)) {
@@ -213,7 +201,7 @@ export class LayoutClient {
     return clientTrains;
   }
 
-  private static async fetchConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch, connections: Map<ConnectionUUID, ClientConnection>) {
+  private static async fetchConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch, connections: SvelteMap<ConnectionUUID, ClientConnection>): Promise<SvelteMap<ConnectionUUID, ClientConnection>> {
     // Fetch connection data
     const connectionData = await fetch(`/api/layout/${layoutUUID}/connections`).then(res => res.json().then(data => {
       return data.message;
@@ -232,7 +220,7 @@ export class LayoutClient {
 
     // Get all server connection UUIDs for comparison
     const serverConnectionUUIDs = new Set(serverConnections.map(conn => conn.uuid));
-    let clientConnections: Map<ConnectionUUID, ClientConnection> = new Map();
+    let clientConnections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
 
     // Remove connections that exist on client but not on server
     for (const [uuid, connection] of connections) {

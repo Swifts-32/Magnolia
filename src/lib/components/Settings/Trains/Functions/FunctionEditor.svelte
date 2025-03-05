@@ -8,9 +8,9 @@
 	import {
 		TrainFunctionIconsList,
 		TrainFunctionModesList,
-		type TrainFunctionIcons,
 	} from "$lib/types/Trains/Functions/Functions";
 	import FunctionIcons from "./FunctionIcons.svelte";
+	import ConformationDialog from "../../Common/ConformationDialog/ConformationDialog.svelte";
 
 	interface Props {
 		selectedFunction: TrainClientFunction;
@@ -70,10 +70,7 @@
 							? "cursor-default"
 							: "cursor-pointer"}
 					>
-						<FunctionIcons
-							selectedIcon={icon}
-							size={18}
-						/>
+						<FunctionIcons selectedIcon={icon} size={18} />
 					</Select.Item>
 				{/each}
 			</Select.Content>
@@ -107,8 +104,20 @@
 	</div>
 
 	<!-- Delete Function -->
-	<!-- TODO Add conformation dialog -->
-	<Button class="w-full mt-1" variant="destructive" onclick={deleteFunction}>
-		<Trash2 />Delete Function
-	</Button>
+	<ConformationDialog title="Delete Function">
+		{#snippet trigger()}
+			<Button class="w-full mt-1" variant="destructive">
+				<Trash2 />Delete Function
+			</Button>
+		{/snippet}
+		{#snippet primaryButton()}
+			<Button variant="destructive" class="w-28" onclick={deleteFunction}
+				>Delete Train</Button
+			>
+		{/snippet}
+		{#snippet secondaryButton()}
+			<Button variant="outline" class="w-28">Cancel</Button>
+		{/snippet}
+		<p>Are you sure you want to delete this function?</p>
+	</ConformationDialog>
 </div>
