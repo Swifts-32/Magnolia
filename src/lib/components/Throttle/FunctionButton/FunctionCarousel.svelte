@@ -9,7 +9,7 @@
 
 	interface Props {
 		disabled?: boolean;
-		functions: Map<string, TrainClientFunction> | null;
+		functions: Map<string, TrainClientFunction>;
 		onclick?: (func: TrainClientFunction) => void;
 	}
 
@@ -37,15 +37,31 @@
 		return chunks;
 	}
 
-	let entriesArray: TrainClientFunction[] = [];
-	if (functions) {
-		entriesArray = Array.from(functions.values()).filter(
-			(func) => func.visible,
-		);
+	let functionArray: TrainClientFunction[] = Array.from(
+		functions.values(),
+	).filter((func) => func.visible);
+
+	let chunkedFunctions: any = $state([]);
+
+	// chunkedFunctions = functionArray.reduce((acc, _i) => {
+	// 	if (i % 8 === 0) acc.push(functionArray.slice(i, i + 8));
+	// 	return acc;
+	// }, []);
+
+	// Create a reactive chunked array (groups of 8)
+	for (let i = 0; i < functionArray.length; i += 8) {
+		chunkedFunctions.push(functionArray.slice(i, i + 8));
 	}
 
-	const chunkedEntries = chunkArray(entriesArray, 8);
+	const chunkedEntries = chunkArray(functionArray, 8);
 
+// Function to return a reactive binding
+	function createTrainFunctionBinding(chunkIndex, index) {
+		return {
+			get: () => chunkedFunctions[chunkIndex]?.[index],
+			set: (value) => (chunkedFunctions[chunkIndex][index] = value),
+		};
+	}
 </script>
 
 {#if functions && functions.size >= 8}
@@ -62,11 +78,7 @@
 				<Carousel.Item>
 					<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
 						{#each funcs as trainFunction}
-							<FunctionButton
-								{disabled}
-								{trainFunction}
-								{onclick}
-							/>
+							<FunctionButton {disabled} {trainFunction} {onclick} />
 						{/each}
 					</div>
 				</Carousel.Item>
@@ -93,18 +105,17 @@
 	</Carousel.Root>
 {:else if functions && functions.size > 0 && functions.size < 8}
 	<div class="w-32 max-w-fit h-full">
-		{#each chunkedEntries as funcs}
+		{#each chunkedFunctions as chunk, chunkIndex}
 			<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
-				{#each funcs as trainFunction}
+				{#each chunk as trainFunction, index}
+
 					<FunctionButton
-						{disabled}
-						{trainFunction}
-						{onclick}
+						bind:trainFunction={createTrainFunctionBinding(chunkIndex, index)}
 					/>
 				{/each}
 			</div>
 		{/each}
-	</div>
+	</div>	
 {:else}
 	<button
 		class="w-32 text-lg flex flex-col justify-center items-center"

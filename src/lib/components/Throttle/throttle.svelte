@@ -12,7 +12,7 @@
   import { toast } from "svelte-sonner";
   import { type ITrainFunctionData } from "$lib/types/Trains/Functions/Functions";
   import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandler.svelte";
-    import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
+  import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -46,7 +46,7 @@
   }
   function handleFunctionChange(func: TrainClientFunction) {
     if (!curTrain || !curConnection) return;
-    console.log("Function change")
+    console.log("Function change");
     curConnection.setTrainFunction(curTrain.uuid, func.value, func.state);
   }
 </script>
@@ -110,12 +110,14 @@
       {/if}
     </div>
 
-    {#key curTrain}
+    {#if curTrain}
       <FunctionCarousel
         onclick={handleFunctionChange}
-        functions={curTrain?.functions ?? null}
+        functions={curTrain.functions}
         disabled={disabled || curTrain == undefined}
       />
-    {/key}
+    {:else}
+      <p>No train selected</p>
+    {/if}
   </div>
 </Card>
