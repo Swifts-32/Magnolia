@@ -60,6 +60,7 @@
 					<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
 						{#each chunk, index}
 							<FunctionButton
+								{disabled}
 								bind:trainFunction={
 									() => chunkedFunctions[chunkIndex]?.[index],
 									(funct) => (chunkedFunctions[chunkIndex][index] = funct)
@@ -93,6 +94,7 @@
 			<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
 				{#each chunk, index}
 					<FunctionButton
+						{disabled}
 						bind:trainFunction={
 							() => chunkedFunctions[chunkIndex]?.[index],
 							(funct) => (chunkedFunctions[chunkIndex][index] = funct)

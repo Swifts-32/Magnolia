@@ -87,7 +87,7 @@
 
     <FunctionCarousel
       functions={curTrain?.functions ?? new Map()}
-      disabled={disabled || curTrain == undefined}
+      disabled={disabled}
     />
   </div>
 </Card>

@@ -67,79 +67,57 @@ export class LayoutClient {
     data = data.trim();
     const match = data.match(/^Cid:([^:]+)/);
 
-    if (match) {
-      const connUUID: ConnectionUUID = match[1] as ConnectionUUID;
-      let connection = this.connections.get(connUUID);
+    if (!match) return;
 
-      if (connection) {
-        switch (connection.protocol) {
-          case ConnectionProtocols.DCCEX:
-            connection.processCommand(data);
-            break;
-          case ConnectionProtocols.LCC:
-            console.log("LCC protocol is not defined yet");
-            break;
+    const connUUID: ConnectionUUID = match[1] as ConnectionUUID;
+    let connection = this.connections.get(connUUID);
 
-          default:
-            console.log("Protocol is not defined yet");
-            break;
-        }
-      }
-      else {
-        console.log("Connection does not exist");
-      }
-
-    }
+    if (!connection) return console.log("Connection does not exist");
+    connection.processCommand(data);
   }
 
   async connect(connUUID: ConnectionUUID) {
     let connection = this.connections.get(connUUID);
+    if (!connection) return;
 
-    if (connection) {
-      const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/connect`);
-      const json = await res.json();
+    const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/connect`);
+    const json = await res.json();
 
-      if (res.ok) {
-        toast.success(json.message);
-        connection.isConnected = true;
-      } else {
-        toast.error(json.message);
-        connection.isConnected = false;
-      }
+    if (res.ok) {
+      toast.success(json.message);
+      connection.isConnected = true;
+    } else {
+      toast.error(json.message);
+      connection.isConnected = false;
     }
   }
 
 
   async disconnect(connUUID: ConnectionUUID) {
     let connection = this.connections.get(connUUID);
+    if (!connection) return;
 
-    if (connection) {
+    const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/disconnect`);
+    const json = await res.json();
 
-      const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/disconnect`);
-      const json = await res.json();
+    connection.isConnected = false;
 
-      connection.isConnected = false;
-
-      if (res.ok) {
-        toast.success(json.message);
-      } else {
-        toast.error(json.message);
-      }
+    if (res.ok) {
+      toast.success(json.message);
+    } else {
+      toast.error(json.message);
     }
   }
 
 
   async write(connUUID: ConnectionUUID, data: string) {
     let connection = this.connections.get(connUUID);
+    if (!connection) return;
 
-    if (connection) {
-      const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/write?data=${data}`);
-      const json = await res.json();
+    const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/write?data=${data}`);
+    const json = await res.json();
 
-      if (!res.ok) {
-        toast.error(json.message);
-      }
-    }
+    if (!res.ok) toast.error(json.message);
   }
 
   public async refreshLayout() {
