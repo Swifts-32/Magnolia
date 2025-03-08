@@ -112,7 +112,7 @@
 		{/snippet}
 		{#snippet primaryButton()}
 			<Button variant="destructive" class="w-28" onclick={deleteFunction}
-				>Delete Train</Button
+				>Delete Function</Button
 			>
 		{/snippet}
 		{#snippet secondaryButton()}

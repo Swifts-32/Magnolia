@@ -167,7 +167,12 @@
 
         <Separator class="my-4" />
 
-        <FunctionViewer bind:functions={editableTrain.functions} />
+        <FunctionViewer
+          bind:functions={editableTrain.functions}
+          layoutUUID={editableTrain.layoutUUID}
+          connUUID={editableTrain.connUUID}
+          trainUUID={editableTrain.uuid}
+        />
 
         <Separator class="my-4" />
 

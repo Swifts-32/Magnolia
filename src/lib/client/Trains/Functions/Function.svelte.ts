@@ -90,7 +90,7 @@ export class TrainClientFunction {
 
 	public clone(): TrainClientFunction {
 		const clonedFunction = new TrainClientFunction(this.value, this.name, this.icon, this.mode, this.position, this.trainUUID, this.connUUID, this.layoutUUID);
-		clonedFunction.state = this.state;
+		clonedFunction.updateStateLocal(this.state); // Don't send a request to the server
 
 		return clonedFunction;
 	}
