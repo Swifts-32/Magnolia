@@ -99,12 +99,16 @@ export class ClientConnection {
         let train = this.getTrain(cab);
 
         if (train) {
-          train.speed = speed;
-          train.direction = direction;
+          train.updateSpeedLocal(speed);
+          train.updateDirectionLocal(direction);
 
-          // TODO: Implement function states
+          // Update function states
           functionStates.forEach(funct => {
-            train.setFunction(funct.index.toString(), funct.state);
+            let trainFunct = train.functions.get(funct.index.toString());
+
+            if (trainFunct) {
+              trainFunct.updateStateLocal(funct.state);
+            }
           });
         }
         else {
@@ -116,38 +120,6 @@ export class ClientConnection {
     }
   }
 
-
-  setTrainDirection(trainUUID: TrainUUID, direction: TrainDirection) {
-    const train = this.trains.get(trainUUID);
-    if (train) {
-      train.direction = direction;
-
-      switch (this.protocol) {
-        case ConnectionProtocols.DCCEX:
-          fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
-          break;
-        default:
-          console.log("Unknown protocol: " + this.protocol);
-          break;
-      }
-    }
-  }
-
-  setTrainSpeed(trainUUID: TrainUUID, speed: number) {
-    const train = this.trains.get(trainUUID);
-    if (!train) return;
-
-    train.speed = speed;
-
-    switch (this.protocol) {
-      case ConnectionProtocols.DCCEX:
-        fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<t ${train.address} ${train.speed} ${train.direction}>`);
-        break;
-      default:
-        console.log("Unknown protocol: " + this.protocol);
-        break;
-    }
-  }
 
   emergencyStop() {
     switch (this.protocol) {
@@ -167,26 +139,6 @@ export class ClientConnection {
       }
     }
     return undefined;
-  }
-
-  setTrainFunction(trainUUID: TrainUUID, functionValue: string, state: boolean) {
-    const train = this.trains.get(trainUUID);
-    if (!train) return;
-
-    const funct = train.functions.get(functionValue);
-    if (!funct) return
-
-    funct.state = state;
-
-    switch (this.protocol) {
-      case ConnectionProtocols.DCCEX:
-        fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=<F ${train.address} ${funct.value} ${funct.state ? 1 : 0}>`);
-        break;
-      default:
-        console.log("Unknown protocol: " + this.protocol);
-        break;
-
-    }
   }
 }
 

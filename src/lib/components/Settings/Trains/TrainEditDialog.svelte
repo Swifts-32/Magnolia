@@ -41,6 +41,7 @@
       return toast.error("Please fill in the train connection");
 
     const data: ITrainData = {
+      layoutUUID: layout.uuid,
       address: editableTrain.address,
       connUUID: editableTrain.connUUID,
       functions: Array.from(editableTrain.functions.values()),

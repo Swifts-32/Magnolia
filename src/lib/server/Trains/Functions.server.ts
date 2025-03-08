@@ -1,3 +1,5 @@
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import type { TrainUUID } from "$lib/types/Trains/Train";
 import type { TrainFunctionIcons, TrainFunctionModes, ITrainFunctionData } from "../../types/Trains/Functions/Functions";
 
 export class ServerTrainFunctions {
@@ -8,13 +10,21 @@ export class ServerTrainFunctions {
     visible: boolean = true;
     position: number;
 
-    constructor(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number) {
+    trainUUID: TrainUUID;
+    connUUID: ConnectionUUID;
+    layoutUUID: LayoutUUID;
+
+    constructor(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, trainUUID: TrainUUID, connUUID: ConnectionUUID, layoutUUID: LayoutUUID) {
         this.value = value;
         this.name = name;
 
         this.mode = mode;
         this.icon = icon;
         this.position = position;
+
+        this.trainUUID = trainUUID;
+        this.connUUID = connUUID;
+        this.layoutUUID = layoutUUID;
     }
 
 
@@ -27,6 +37,10 @@ export class ServerTrainFunctions {
             mode: this.mode,
             visible: this.visible,
             position: this.position,
+
+            trainUUID: this.trainUUID,
+            connUUID: this.connUUID,
+            layoutUUID: this.layoutUUID,
         };
     }
 }

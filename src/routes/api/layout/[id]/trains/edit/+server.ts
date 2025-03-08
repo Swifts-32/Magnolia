@@ -40,7 +40,7 @@ export const POST = async ({ request, params }) => {
 
         // Update trains functions
         data.functions.forEach(funct => {
-            train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position);
+            train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, layout.uuid);
         });
 
         newConn.trains.set(train.uuid, train);

@@ -66,11 +66,11 @@ export class Layout {
   }
 
 
-  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
+  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, layoutUUID: LayoutUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
     const connection = this.connections.get(connUUID);
     
     if (connection) {
-      const train = new ServerTrain(address, trainName, connUUID, trainUUID);
+      const train = new ServerTrain(address, trainName, connUUID, layoutUUID, trainUUID);
       connection.trains.set(train.uuid, train);
       return train;
     }   

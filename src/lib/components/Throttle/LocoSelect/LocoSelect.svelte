@@ -9,7 +9,7 @@
   import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import { Plus } from "lucide-svelte";
-    import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
+  import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
 
   interface Props {
     curTrain: ClientTrain | undefined;
@@ -52,7 +52,7 @@
       filter={(value, search, keywords) => {
         if (value === "create-train") return 1;
         return keywords?.some((k) =>
-          k.toLowerCase().includes(search.trim().toLowerCase())
+          k.toLowerCase().includes(search.trim().toLowerCase()),
         )
           ? 1
           : 0;
@@ -70,7 +70,11 @@
             <Command.Item
               {disabled}
               value={train.uuid}
-              keywords={[train.name, train.address.toString()]}
+              keywords={[
+                train.name,
+                train.address.toString(),
+                layout.connections.get(train.connUUID)?.name ?? "Undefined",
+              ]}
               onSelect={() => {
                 curTrain = train;
                 closeAndFocusTrigger();
@@ -94,24 +98,25 @@
               <Check
                 class={cn(
                   "mr-2 size-4",
-                  curTrain?.uuid !== train.uuid && "text-transparent"
+                  curTrain?.uuid !== train.uuid && "text-transparent",
                 )}
               />
             </Command.Item>
           {/each}
 
-          <Command.Separator class="my-1" />
+          <Command.Separator class="my-1 h-[0.5px]" />
 
           <Command.Item
             {disabled}
             value="create-train"
-            class="h-10 flex justify-center"
+            class="h-10 w-full flex-col justify-center"
           >
-            <TrainAdd {layout}>
-              <div class="flex items-center justify-center gap-2">
-                <Plus class="size-6" />
-                <p>Create Train</p>
-              </div>
+            <TrainAdd
+              {layout}
+              class="flex size-full items-center justify-center gap-2"
+            >
+              <Plus class="size-6" />
+              <p>Create Train</p>
             </TrainAdd>
           </Command.Item>
         </Command.Group>

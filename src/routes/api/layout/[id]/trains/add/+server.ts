@@ -20,7 +20,7 @@ export const POST = async ({ request, params }) => {
         );
     }
 
-    let train = layout.addTrain(data.address, data.name, data.connUUID);
+    let train = layout.addTrain(data.address, data.name, data.connUUID, data.layoutUUID);
     if (!train) {
         return new Response(
             JSON.stringify({ message: 'Failed to create train: Train was null' }), { status: 404 }
@@ -28,7 +28,7 @@ export const POST = async ({ request, params }) => {
     }
 
     data.functions.forEach(funct => {
-        train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position);
+        train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, layout.uuid,);
     });
 
 

@@ -26,7 +26,7 @@ export const POST = async ({ request, params }) => {
     }
 
 
-    train.addFunction(data.value, data.name, data.icon, data.mode, data.position, data.visible);
+    train.addFunction(data.value, data.name, data.icon, data.mode, data.position, data.layoutUUID, data.visible);
 
     LayoutServerHandler.saveLayouts();
 

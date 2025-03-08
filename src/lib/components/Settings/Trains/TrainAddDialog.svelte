@@ -8,12 +8,10 @@
     LayoutClient,
   } from "$lib/client/LayoutClient.svelte";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
-  import { Plus } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
-  import { onMount, type Snippet } from "svelte";
+  import { type Snippet } from "svelte";
   import type { ITrainData } from "$lib/types/Trains/Train";
-  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
   import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
@@ -40,6 +38,7 @@
       return toast.error("Please fill in the train address");
 
     const data: ITrainData = {
+      layoutUUID: layout.uuid,
       name: trainName,
       address: trainAddress,
       connUUID: trainConnUUID,

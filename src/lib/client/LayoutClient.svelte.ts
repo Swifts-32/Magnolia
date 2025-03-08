@@ -146,7 +146,7 @@ export class LayoutClient {
     this.connections = new SvelteMap(await LayoutClient.fetchConnections(this.uuid, fetch, this.connections));
   }
 
-  private static async fetchTrains(clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[]) {
+  private static async fetchTrains(clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[], layoutUUID: LayoutUUID): Promise<Map<TrainUUID, ClientTrain>> {
 
     // Get all server train UUIDs for comparison
     const serverTrainUUIDs = new Set(serverTrains.map(train => train.uuid));
@@ -177,12 +177,12 @@ export class LayoutClient {
             continue
           }
 
-          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
+          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position, layoutUUID);
         }
       }
       else {
         // Train does not exist on client, Create it.
-        let clientTrain = new ClientTrain(train.uuid, train.address, train.name, train.connUUID);
+        let clientTrain = new ClientTrain(train.uuid, train.address, train.name, train.connUUID, layoutUUID);
 
         // Update Train Functions
         for (const func of train.functions.values()) {
@@ -191,7 +191,7 @@ export class LayoutClient {
             continue
           }
 
-          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position);
+          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position, layoutUUID);
         }
 
         clientTrains.set(clientTrain.uuid, clientTrain);
@@ -240,7 +240,7 @@ export class LayoutClient {
         clientConnection.name = connData.name;
         clientConnection.hardware = connData.hardware.connType;
         clientConnection.isConnected = connData.isConnected;
-        clientConnection.trains = await LayoutClient.fetchTrains(clientConnection.trains, connData.trains);
+        clientConnection.trains = await LayoutClient.fetchTrains(clientConnection.trains, connData.trains, layoutUUID);
 
       }
       else {
@@ -253,33 +253,12 @@ export class LayoutClient {
         }
         if (!connection) continue;
 
-        connection.trains = await LayoutClient.fetchTrains(new Map(), connData.trains);
+        connection.trains = await LayoutClient.fetchTrains(new Map(), connData.trains, layoutUUID);
         clientConnections.set(connData.uuid, connection);
       }
     }
 
     return clientConnections;
-  }
-
-  public setTrainDirection(connUUID: ConnectionUUID, trainUUID: TrainUUID, direction: TrainDirection) {
-    let connection = this.connections.get(connUUID);
-    if (!connection) return;
-
-    connection.setTrainDirection(trainUUID, direction);
-  }
-
-  public setTrainSpeed(connUUID: ConnectionUUID, trainUUID: TrainUUID, speed: number) {
-    let connection = this.connections.get(connUUID);
-    if (!connection) return;
-
-    connection.setTrainSpeed(trainUUID, speed);
-  }
-
-  public getTrain(connUUID: ConnectionUUID, trainUUID: TrainUUID): ClientTrain | undefined {
-    let connection = this.connections.get(connUUID);
-    if (!connection) return;
-
-    return connection.trains.get(trainUUID);
   }
 }
 
