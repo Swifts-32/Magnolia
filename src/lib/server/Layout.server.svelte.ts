@@ -18,7 +18,7 @@ export class Layout {
     this.name = name;
     this.uuid = uuid;
   }
-  
+
   toJSON() {
     return {
       name: this.name,
@@ -39,15 +39,17 @@ export class Layout {
 
     // Recreate connections
     for (const conn of json.connections) {
-      const connection = Connection.fromJSON(conn);
-      if (connection) {
-        layout.createConnection(connection);
-      }
+      let connection = Connection.fromJSON(conn);
+      if (!connection) continue;
+
+      layout.createConnection(connection);
+
+      console.log("Recreated connection", connection.name);
     }
 
     return layout;
   }
-  
+
   createStream(): ReadableStream {
     let streamController: ReadableStreamDefaultController;
 
@@ -68,12 +70,12 @@ export class Layout {
 
   addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, layoutUUID: LayoutUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
     const connection = this.connections.get(connUUID);
-    
+
     if (connection) {
       const train = new ServerTrain(address, trainName, connUUID, layoutUUID, trainUUID);
       connection.trains.set(train.uuid, train);
       return train;
-    }   
+    }
   }
 
 
@@ -86,14 +88,7 @@ export class Layout {
     const hardware = new SerialConnection(path, baudRate);
     const connUUID = crypto.randomUUID();
 
-    hardware.onDataReceived((data: string) => {
-      const message = `data: Cid:${connUUID}: ${data}\n\n`;
-      this.controllers.forEach(controller => controller.enqueue(message));
-    });
-
-    const connection = new Connection(hardware, connName, protocol, connUUID);
-    this.connections.set(connUUID, connection);
-
+    const connection = this.createConnection(new Connection(hardware, connName, protocol, connUUID));
     return connection;
   }
 
@@ -103,25 +98,19 @@ export class Layout {
   createEmulatorConnection(protocol: ConnectionProtocols, connName: string): Connection {
     const hardware = new EmulatorConnection();
     const connUUID = crypto.randomUUID();
-    
-    hardware.onDataReceived((data: string) => {
-      const message = `data: Cid:${connUUID}: ${data}\n\n`;
-      this.controllers.forEach(controller => controller.enqueue(message));
-    });
-    
-    const connection = new Connection(hardware, connName, protocol, connUUID);
-    this.connections.set(connUUID, connection);
 
+    const connection = this.createConnection(new Connection(hardware, connName, protocol, connUUID));
     return connection;
   }
 
   createConnection(connection: Connection): Connection {
-    connection.hardware.onDataReceived((data: string) => {
+    connection.onDataRecieved((data: string) => {
       const message = `data: Cid:${connection.uuid}: ${data}\n\n`;
       this.controllers.forEach(controller => controller.enqueue(message));
     });
 
     this.connections.set(connection.uuid, connection);
+    console.log(`Created connection ${connection.name}`);
     return connection;
   }
 

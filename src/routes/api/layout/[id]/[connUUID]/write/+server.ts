@@ -15,7 +15,7 @@ export const GET = async ({ params, url }) => {
         return new Response(JSON.stringify({ message: `Connection does not exist on layout: ${id}` }), { status: 406 });
     }
 
-    else if (!connection.hardware.isConnected) {
+    else if (!connection.isConnected) {
         return new Response(JSON.stringify({ message: `Connection ${connection.name} is not connected on layout ${id}` }), { status: 406 });
     }
 

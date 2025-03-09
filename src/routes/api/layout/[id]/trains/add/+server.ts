@@ -31,6 +31,8 @@ export const POST = async ({ request, params }) => {
         train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, layout.uuid,);
     });
 
+    LayoutServerHandler.saveLayouts();
+
 
     return new Response(
         JSON.stringify({

@@ -42,6 +42,8 @@ export const POST = async ({ request, params }) => {
 
         }
 
+        LayoutServerHandler.saveLayouts();
+
         return new Response(
             JSON.stringify({
                 message: `Connection created successfully on layout: ${layout.name}`,

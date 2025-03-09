@@ -33,27 +33,23 @@
   );
 </script>
 
-<Card class="p-5 max-w-fit h-[450px] flex flex-col select-none gap-4">
-  <div>
-    <h1 class="text-2xl">Throttle</h1>
-  </div>
-
+<Card class="p-5 max-w-fit h-[375px] flex flex-col select-none gap-4">
   <!-- Loco Select -->
   <LocoSelect bind:curTrain {layout} disabled={disabledProp} />
 
   <div class="flex gap-4 justify-between items-center flex-1 grow">
     <!-- Speed Slider -->
+    <!-- Useing onValueCommit to prevent spamming the server with speed updates -->
     <div class="w-16 h-full pb-8 pt-4">
       <Slider
         type="single"
-        bind:value={
-          () => (curTrain != undefined ? curTrain.speed : 9),
-          (speed) => curTrain != undefined && (curTrain.speed = speed)
-        }
+        value={curTrain != undefined ? curTrain.speed : 9}
         max={128}
         orientation="vertical"
         step={1}
         {disabled}
+        onValueCommit={(value) =>
+          curTrain != undefined && (curTrain.speed = value)}
       />
 
       <h1 class="text-xl text-center mt-2">
@@ -85,9 +81,6 @@
       />
     </div>
 
-    <FunctionCarousel
-      functions={curTrain?.functions ?? new Map()}
-      disabled={disabled}
-    />
+    <FunctionCarousel functions={curTrain?.functions ?? new Map()} {disabled} />
   </div>
 </Card>

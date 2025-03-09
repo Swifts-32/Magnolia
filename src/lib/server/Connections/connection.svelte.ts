@@ -10,8 +10,12 @@ export class Connection {
     public name: string;
     public protocol: ConnectionProtocols;
     public uuid: ConnectionUUID;
-    public hardware: HardwareTypes;
+    private hardware: HardwareTypes;
     public trains: Map<TrainUUID, ServerTrain> = new Map();
+
+    public get isConnected(): boolean {
+        return this.hardware.isConnected
+    };
 
     constructor(connection: HardwareTypes, name: string, protocol: ConnectionProtocols, uuid: ConnectionUUID, trains: Map<TrainUUID, ServerTrain> = new Map()) {
         this.hardware = connection;
@@ -27,7 +31,7 @@ export class Connection {
             protocol: this.protocol,
             uuid: this.uuid,
             hardware: this.hardware.toJSON(),
-            isConnected: this.hardware.isConnected,
+            isConnected: this.isConnected,
             trains: Array.from(this.trains.values()).map(train => train.toJSON())
         };
     }
@@ -80,6 +84,18 @@ export class Connection {
 
     write(data: string) {
         this.hardware.write(data);
+    }
+
+    public onDataRecieved(data: (data: string) => void) {
+        console.log("1");
+        this.hardware.onDataReceived((d) => {
+            console.log("2");
+            data(d);
+        });
+    }
+
+    public addHardware(hardware: HardwareTypes) {
+        this.hardware = hardware;
     }
 
 }
