@@ -45,15 +45,15 @@ export class ServerTrain {
 				continue;
 			}
 
-			serverTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, funct.layoutUUID, funct.visible);
+			serverTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, funct.visible);
 		}
 
 		return serverTrain;
 	}
 
 
-	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, layoutUUID: LayoutUUID, visible: boolean = true) {
-		const funct = new ServerTrainFunctions(value, name, icon, mode, position, this.uuid, this.connUUID, layoutUUID);
+	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, visible: boolean = true) {
+		const funct = new ServerTrainFunctions(value, name, icon, mode, position, this.uuid, this.connUUID, this.layoutUUID);
 		this.functions.set(value, funct);
 	}
 }

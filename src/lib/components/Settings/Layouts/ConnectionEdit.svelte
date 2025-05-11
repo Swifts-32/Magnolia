@@ -60,7 +60,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Connection updated successfully");
-          layoutClientHandler.refreshLayouts();
         } else {
           toast.error("Failed to update connection");
         }

@@ -4,13 +4,12 @@ import { isTrainData } from "$lib/types/Trains/Train.js";
 
 export const POST = async ({ request, params }) => {
     const { id } = params;
-
-    const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
-    if (!layout) {
-        return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
-    }
-
     const data = await request.json();
+
+    const connection = LayoutServerHandler.layouts.get(id as LayoutUUID)?.connections.get(data.connUUID);
+    if (!connection) {
+        return new Response(JSON.stringify({ message: `${id} is not a valid connection.` }), { status: 404 });
+    }
 
     // Validate required fields
     if (!isTrainData(data)) {
@@ -20,7 +19,7 @@ export const POST = async ({ request, params }) => {
         );
     }
 
-    let train = layout.addTrain(data.address, data.name, data.connUUID, data.layoutUUID);
+    let train = connection.addTrain(data.address, data.name, data.layoutUUID);
     if (!train) {
         return new Response(
             JSON.stringify({ message: 'Failed to create train: Train was null' }), { status: 404 }
@@ -28,15 +27,16 @@ export const POST = async ({ request, params }) => {
     }
 
     data.functions.forEach(funct => {
-        train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, layout.uuid,);
+        train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, true);
     });
 
+    LayoutServerHandler.layouts.get(id as LayoutUUID)?.updateConnection(connection);
     LayoutServerHandler.saveLayouts();
 
 
     return new Response(
         JSON.stringify({
-            message: `Train created successfully on layout: ${layout.name}`,
+            message: `Train created successfully`,
         }),
         { status: 201 }
     );

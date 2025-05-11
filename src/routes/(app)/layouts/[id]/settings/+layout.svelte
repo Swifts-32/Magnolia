@@ -38,6 +38,11 @@
         goto(`/layouts/${data.layout.uuid}/settings/connections`),
       )}
 
+      <!-- Sensors -->
+      {@render layoutButton("Sensors", () =>
+        goto(`/layouts/${data.layout.uuid}/settings/sensors`),
+      )}
+
       <!-- Automations -->
       {@render layoutButton("Automations", () => {})}
     </div>

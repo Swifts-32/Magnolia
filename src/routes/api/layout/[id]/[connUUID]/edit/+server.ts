@@ -59,7 +59,7 @@ export const POST = async ({ request, params }) => {
     }
 
     // Update the connection in the layout
-    layout.connections.set(connUUID as ConnectionUUID, connection);
+    layout.updateConnection(connection);
     LayoutServerHandler.saveLayouts();
 
     return new Response(

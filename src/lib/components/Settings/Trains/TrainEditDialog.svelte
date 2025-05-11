@@ -63,8 +63,6 @@
           Object.assign(train, editableTrain);
           closeDialog();
           toast.success(json.message);
-
-          layoutClientHandler.refreshLayouts();
         } else {
           toast.error(json.message);
         }
@@ -96,7 +94,6 @@
         if (response.ok) {
           toast.success(json.message);
           editMode = false;
-          layoutClientHandler.refreshLayouts();
         } else {
           toast.error(json.message);
         }

@@ -1,7 +1,7 @@
-import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { ConnectionTypes, type ConnectionProtocols } from "$lib/client/Protocols/protocols";
 import { ServerTrain } from "../Trains/Train.server";
-import type { TrainUUID } from "$lib/types/Trains/Train";
+import type { TrainAddress, TrainUUID } from "$lib/types/Trains/Train";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 import type { HardwareTypes } from "./Hardware/hardware";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
@@ -72,6 +72,13 @@ export class Connection {
         return new Connection(hardware, json.name, json.protocol, json.uuid, trains);
     }
 
+    addTrain(address: TrainAddress, trainName: string, layoutUUID: LayoutUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
+        const train = new ServerTrain(address, trainName, this.uuid, layoutUUID, trainUUID);
+        this.trains.set(train.uuid, train);
+        return train;
+    }
+
+
     async connect(): Promise<string> {
         return await this.hardware.connect();
     }
@@ -87,9 +94,7 @@ export class Connection {
     }
 
     public onDataRecieved(data: (data: string) => void) {
-        console.log("1");
         this.hardware.onDataReceived((d) => {
-            console.log("2");
             data(d);
         });
     }

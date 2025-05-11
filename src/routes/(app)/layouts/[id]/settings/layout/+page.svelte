@@ -42,7 +42,6 @@
       .then((response) => {
         if (response.ok) {
           toast.success("Layout updated successfully");
-          layoutClientHandler.refreshLayouts();
         } else {
           toast.error("Failed to update layout");
         }
@@ -54,7 +53,6 @@
 
   function deleteLayout() {
     fetch(`/api/layout/${data.layout.uuid}/delete`);
-    layoutClientHandler.refreshLayouts();
     goto("/");
   }
 </script>

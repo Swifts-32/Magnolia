@@ -1,4 +1,5 @@
 import type { TrainAddress, TrainUUID } from "$lib/types/Trains/Train";
+import { toast } from "svelte-sonner";
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "../Protocols/protocols";
 import { TrainDirection, type ClientTrain } from "../Trains/Train.svelte";
@@ -22,11 +23,47 @@ export class ClientConnection {
     this.layoutUUID = layoutUUID;
   }
 
+  public async connect() {
+    const res = await fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/connect`);
+    const json = await res.json();
+
+    if (res.ok) {
+      toast.success(json.message);
+      this.isConnected = true;
+    } else {
+      toast.error(json.message);
+      this.isConnected = false;
+    }
+  }
+
+  public async disconnect() {
+    const res = await fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/disconnect`);
+    const json = await res.json();
+
+    this.isConnected = false;
+
+    if (res.ok) {
+      toast.success(json.message);
+    } else {
+      toast.error(json.message);
+    }
+  }
+
+  public async write(data: string) {
+    const res = await fetch(`/api/layout/${this.layoutUUID}/${this.uuid}/write?data=${data}`);
+    const json = await res.json();
+
+    if (!res.ok) toast.error(json.message);
+  }
+
 
   processCommand(command: string) {
     switch (this.protocol) {
       case ConnectionProtocols.DCCEX:
         this.processDCCEXCommand(command);
+        break;
+      case ConnectionProtocols.LCC:
+        this.processLCCCommand(command);
         break;
       default:
         console.log("Unknown protocol: " + this.protocol);
@@ -119,6 +156,65 @@ export class ClientConnection {
       console.log("Unknown command: " + command);
     }
   }
+
+  private processLCCCommand(command: string) {
+    // Commonly, LCC messages come in hex or structured forms. Simulate a parsed message.
+    try {
+      // Example: "LCC:EVT:NNNNNNNNNN" or "LCC:PRODUCER:active:NNNNNNNNNN"
+      if (command.startsWith("LCC:EVT:")) {
+        const eventId = command.slice(8).trim();
+        console.log("Received Event:", eventId);
+        this.handleLccEvent(eventId);
+      } else if (command.startsWith("LCC:PRODUCER:")) {
+        const parts = command.split(":");
+        const state = parts[2];
+        const eventId = parts[3];
+        console.log(`Producer Event: ${eventId}, State: ${state}`);
+        this.handleProducerEvent(eventId, state === "active");
+      } else if (command.startsWith("LCC:CONSUMER:")) {
+        const parts = command.split(":");
+        const state = parts[2];
+        const eventId = parts[3];
+        console.log(`Consumer Event: ${eventId}, State: ${state}`);
+        this.handleConsumerEvent(eventId, state === "active");
+      } else if (command.startsWith("LCC:NODEID:")) {
+        const nodeId = command.slice(11).trim();
+        console.log("Discovered Node:", nodeId);
+        this.registerNode(nodeId);
+      } else {
+        console.warn("Unknown LCC Command:", command);
+      }
+    } catch (e) {
+      console.error("Failed to parse LCC command:", command, e);
+    }
+  }
+
+  private handleLccEvent(eventId: string) {
+    // Map eventId to known turnout, sensor, etc.
+    // const device = this.lccRegistry.get(eventId);
+    // if (device) {
+    //   device.trigger(); // or some other action
+    // } else {
+    //   console.warn("Unknown LCC event ID:", eventId);
+    // }
+  }
+
+  private handleProducerEvent(eventId: string, active: boolean) {
+    // Could trigger track occupancy or signal update, etc.
+    console.log(`Producer event ${eventId} is now ${active ? "active" : "inactive"}`);
+  }
+
+  private handleConsumerEvent(eventId: string, active: boolean) {
+    // Consumers may reflect turnout movement, lights, etc.
+    console.log(`Consumer event ${eventId} is now ${active ? "active" : "inactive"}`);
+  }
+
+  private registerNode(nodeId: string) {
+    // Save or initialize new node on the layout
+    // this.lccNodes.set(nodeId, { lastSeen: Date.now() });
+  }
+
+
 
 
   emergencyStop() {

@@ -9,19 +9,15 @@
 
   let { data }: { data: LayoutData } = $props();
 
-  async function disconnect() {
+  function disconnect() {
     for (const connection of data.layout.connections.values()) {
-      if (connection.isConnected) {
-        await data.layout.disconnect(connection.uuid);
-      }
+      connection.disconnect();
     }
   }
 
-  async function connect() {
+  function connect() {
     for (const connection of data.layout.connections.values()) {
-      if (!connection.isConnected) {
-        await data.layout.connect(connection.uuid);
-      }
+      connection.connect();
     }
   }
 </script>
@@ -29,11 +25,11 @@
 {#if data.layout}
   <main class="m-5">
     <div class="flex gap-2 content-center mb-5">
-      <Button class="w-40" onclick={async () => await connect()}>
+      <Button class="w-40" onclick={() => connect()}>
         <Power />
         Connect
       </Button>
-      <Button class="w-40" onclick={async () => await disconnect()}>
+      <Button class="w-40" onclick={() => disconnect()}>
         <PowerOff />
         Disconnect
       </Button>

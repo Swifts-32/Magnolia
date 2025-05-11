@@ -14,8 +14,6 @@
     ConnectionTypes,
   } from "$lib/client/Protocols/protocols";
   import { toast } from "svelte-sonner";
-  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
-  import { onMount } from "svelte";
   import SerialConnection from "../Connections/Serial/SerialConnection.svelte";
 
   interface Props {
@@ -40,11 +38,13 @@
     }
 
     // Check if the connection type is serial and if the serial path and baud rate are filled in
-    if (connType === ConnectionTypes.Serial.toString() && (serialPath === undefined || serialBaudRate === undefined)) {
+    if (
+      connType === ConnectionTypes.Serial.toString() &&
+      (serialPath === undefined || serialBaudRate === undefined)
+    ) {
       toast.error("Please fill in all serial connection fields");
       return;
     }
-
 
     const data: any = {
       connName: connName,
@@ -54,7 +54,6 @@
       serialPath: serialPath,
       serialBaudRate: serialBaudRate,
     };
-
 
     fetch(`/api/layout/${layout.uuid}/connections/add`, {
       method: "POST",
@@ -67,9 +66,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Connection added successfully");
-
-          // Refresh the layout
-          layoutClientHandler.refreshLayouts();
         } else {
           toast.error("Failed to add connection");
         }
@@ -107,7 +103,7 @@
           {getProtocolName(Number(connProtocol) as ConnectionProtocols)}
         </Select.Trigger>
         <Select.Content>
-          {#each Object.keys(ConnectionProtocols).filter( (key) => isNaN(Number(key)) ) as protocolName, i}
+          {#each Object.keys(ConnectionProtocols).filter( (key) => isNaN(Number(key)), ) as protocolName, i}
             <Select.Item
               value={ConnectionProtocols[
                 protocolName as keyof typeof ConnectionProtocols
@@ -116,7 +112,7 @@
               {getProtocolName(
                 ConnectionProtocols[
                   protocolName as keyof typeof ConnectionProtocols
-                ]
+                ],
               )}
             </Select.Item>
           {/each}
@@ -134,14 +130,14 @@
           {getConnectionTypeName(Number(connType) as ConnectionTypes)}
         </Select.Trigger>
         <Select.Content>
-          {#each Object.keys(ConnectionTypes).filter( (key) => isNaN(Number(key)) ) as connType, i}
+          {#each Object.keys(ConnectionTypes).filter( (key) => isNaN(Number(key)), ) as connType, i}
             <Select.Item
               value={ConnectionTypes[
                 connType as keyof typeof ConnectionTypes
               ].toString()}
             >
               {getConnectionTypeName(
-                ConnectionTypes[connType as keyof typeof ConnectionTypes]
+                ConnectionTypes[connType as keyof typeof ConnectionTypes],
               )}
             </Select.Item>
           {/each}

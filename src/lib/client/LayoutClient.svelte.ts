@@ -1,20 +1,21 @@
-import { toast } from "svelte-sonner";
-import { ConnectionProtocols, ConnectionTypes } from "./Protocols/protocols";
-import { isTrainData, type ITrainData, type TrainUUID } from "$lib/types/Trains/Train";
-import { ClientTrain, TrainDirection } from "./Trains/Train.svelte";
+import { isTrainData, type TrainUUID } from "$lib/types/Trains/Train";
+import { ClientTrain } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
 import { isFunctionData } from "$lib/types/Trains/Functions/Functions";
 import { SvelteMap } from "svelte/reactivity";
+import type { SensorClient, SensorUuid } from "./Sensors/SensorClient.svelte";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
 
 export class LayoutClient {
 
-  eventSource: EventSource | null = null;
+  private eventSource: EventSource | null = null;
   public name: string = $state() as string;
   public uuid: LayoutUUID = $state() as LayoutUUID;
+
   public connections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
+  public sensors: SvelteMap<SensorUuid, SensorClient> = new SvelteMap();
 
   public get trains() {
     let trains: Map<TrainUUID, ClientTrain> = new Map();
@@ -27,217 +28,143 @@ export class LayoutClient {
     return trains;
   }
 
-  private constructor(name: string, uuid: LayoutUUID, connections: SvelteMap<ConnectionUUID, ClientConnection>) {
+  constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
-
-    this.connections = connections;
-    this.refreshLayout();
   }
 
-  static async create(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch): Promise<LayoutClient> {
-    // Fetch layout data
-    const layoutData = await fetch(`/api/layout/${layoutUUID}`).then(res => res.json().then(data => {
-      return data.message;
-    }));
-
-    const connections = await LayoutClient.fetchConnections(layoutUUID, fetch, new SvelteMap());
-
-    return new LayoutClient(layoutData.name, layoutUUID, connections);
-  }
-
-  createSSE() {
+  public createSSE() {
     this.eventSource = new EventSource(`/api/layout/${this.uuid}/stream`);
 
+    this.eventSource.onmessage = (event) => {
+      const data = event.data.trim();
 
-    this.eventSource.onmessage = (event) => this.handleData(event.data);
+
+      // Update Connections
+      const updateConnMatch = data.match(/^UpdateConn:(.+)/);
+      if (updateConnMatch) {
+        try {
+          this.loadConnectionsFromJson(JSON.parse(updateConnMatch[1]));
+        } catch (error) {
+          console.error("Failed to parse JSON:", error);
+        }
+        return;
+      }
+
+      // TODO Update Sensors
+      const updateSensorMatch = data.match(/^UpdateSensor:(.+)/);
+      if (updateConnMatch) {
+        try {
+          this.loadConnectionsFromJson(JSON.parse(updateConnMatch[1]));
+        } catch (error) {
+          console.error("Failed to parse JSON:", error);
+        }
+        return;
+      }
+
+      // If it is a connection command, process it
+      const connMatch = data.match(/^Cid:([^:]+)/);
+      if (connMatch) {
+        const connUUID = connMatch[1] as ConnectionUUID;
+        const connection = this.connections.get(connUUID);
+  
+        if (!connection) {
+          console.warn(`SSE processing failed on ${this.name}: Connection ${connUUID} does not exist`);
+          return;
+        }
+  
+        connection.processCommand(data);
+      };
+    };
 
     this.eventSource.onerror = (error) => {
       console.error('EventSource error:', error);
       this.eventSource?.close();
     }
-
-    console.log(`SSE for ${this.name} is ready to recieve data`);
   }
 
-  // Logs data recieved from the server.
-  private handleData(data: string) {
-    console.log("SSE Rx: ", data);
+  public loadConnectionsFromJson(json: any) {
+    const serverConnectionUUIDs = new Set();
 
-    data = data.trim();
-    const match = data.match(/^Cid:([^:]+)/);
-
-    if (!match) return;
-
-    const connUUID: ConnectionUUID = match[1] as ConnectionUUID;
-    let connection = this.connections.get(connUUID);
-
-    if (!connection) return console.log("Connection does not exist");
-    connection.processCommand(data);
-  }
-
-  async connect(connUUID: ConnectionUUID) {
-    let connection = this.connections.get(connUUID);
-    if (!connection) return;
-
-    const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/connect`);
-    const json = await res.json();
-
-    if (res.ok) {
-      toast.success(json.message);
-      connection.isConnected = true;
-    } else {
-      toast.error(json.message);
-      connection.isConnected = false;
-    }
-  }
-
-
-  async disconnect(connUUID: ConnectionUUID) {
-    let connection = this.connections.get(connUUID);
-    if (!connection) return;
-
-    const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/disconnect`);
-    const json = await res.json();
-
-    connection.isConnected = false;
-
-    if (res.ok) {
-      toast.success(json.message);
-    } else {
-      toast.error(json.message);
-    }
-  }
-
-
-  async write(connUUID: ConnectionUUID, data: string) {
-    let connection = this.connections.get(connUUID);
-    if (!connection) return;
-
-    const res = await fetch(`/api/layout/${this.uuid}/${connUUID}/write?data=${data}`);
-    const json = await res.json();
-
-    if (!res.ok) toast.error(json.message);
-  }
-
-  public async refreshLayout() {
-    this.connections = new SvelteMap(await LayoutClient.fetchConnections(this.uuid, fetch, this.connections));
-  }
-
-  private static async fetchTrains(clientTrains: Map<TrainUUID, ClientTrain>, serverTrains: ITrainData[], layoutUUID: LayoutUUID): Promise<Map<TrainUUID, ClientTrain>> {
-
-    // Get all server train UUIDs for comparison
-    const serverTrainUUIDs = new Set(serverTrains.map(train => train.uuid));
-
-    // Remove trains that still exist on client but not on server
-    for (const train of clientTrains.values()) {
-      if (!serverTrainUUIDs.has(train.uuid)) {
-        console.log(`Removing train ${train.name} (${train.uuid}) as it no longer exists on server`);
-        clientTrains.delete(train.uuid);
+    // Add all server connections to the client
+    for (const conn of json.connections) {
+      if (conn.uuid === undefined) {
+        console.log("Invalid connection uuid");
+        return;
       }
-    }
-
-    for (const train of serverTrains.values()) {
-      if (!isTrainData(train)) continue;
-
-      let clientTrain = clientTrains.get(train.uuid);
-
-      if (clientTrain) {
-        // Train exists on client, update it
-        clientTrain.name = train.name;
-        clientTrain.address = train.address;
-        clientTrain.connUUID = train.connUUID;
-
-        // Update Train Functions
-        for (const func of train.functions.values()) {
-          if (!isFunctionData(func)) {
-            console.log("Function data is invalid on train: ", clientTrain.name);
-            continue
-          }
-
-          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position, layoutUUID);
-        }
+      else if (conn.name === undefined) {
+        console.log("Invalid connection name");
+        return;
       }
-      else {
-        // Train does not exist on client, Create it.
-        let clientTrain = new ClientTrain(train.uuid, train.address, train.name, train.connUUID, layoutUUID);
+      else if (conn.protocol === undefined) {
+        console.log("Invalid connection protocol");
+        return;
+      }
+      else if (conn.hardware === undefined) {
+        console.log("Invalid connection hardware");
+        return;
+      }
+      else if (conn.hardware.connType === undefined) {
+        console.log("Invalid connection hardware type");
+        return;
+      }
 
-        // Update Train Functions
-        for (const func of train.functions.values()) {
-          if (!isFunctionData(func)) {
-            console.log("Function data is invalid on train: ", clientTrain.name);
-            continue
-          }
+      // TODO Maybe update instead of create if it already exists
+      if (this.connections.has(conn.uuid)) {
+        console.log(`Connection ${conn.name} (${conn.uuid}) already exists on client`);
+      }
 
-          clientTrain.addFunction(func.value, func.name, func.icon, func.mode, func.position, layoutUUID);
+      serverConnectionUUIDs.add(conn.uuid);
+
+      const connection = new ClientConnection(conn.protocol, conn.hardware.connType, conn.name, conn.uuid, this.uuid);
+
+      // Add trains to connection
+      const serverTrainUuids = new Set();
+
+      for (const train of conn.trains) {
+        if (!isTrainData(train)) {
+          console.log("Invalid train data");
+          continue;
         }
 
-        clientTrains.set(clientTrain.uuid, clientTrain);
+        serverTrainUuids.add(train.uuid);
+
+        const clientTrain = new ClientTrain(train.uuid, train.address, train.name, conn.uuid, this.uuid);
+
+        // Add functions to train
+        for (const funct of train.functions) {
+          if (!isFunctionData(funct)) {
+            console.log("Invalid function data");
+            continue;
+          }
+
+          clientTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, this.uuid);
+        }
+
+        connection.trains.set(clientTrain.uuid, clientTrain);
       }
+
+      // Remove trains that still exist on client but not on server
+      for (const [uuid, train] of connection.trains) {
+        if (!serverTrainUuids.has(uuid)) {
+          console.log(`Removing train ${train.name} (${uuid}) as it no longer exists on server`);
+          connection.trains.delete(uuid);
+        }
+      }
+
+      this.connections.set(conn.uuid, connection);
     }
 
-    return clientTrains;
-  }
-
-  private static async fetchConnections(layoutUUID: LayoutUUID, fetch: typeof globalThis.fetch, connections: SvelteMap<ConnectionUUID, ClientConnection>): Promise<SvelteMap<ConnectionUUID, ClientConnection>> {
-    // Fetch connection data
-    const connectionData = await fetch(`/api/layout/${layoutUUID}/connections`).then(res => res.json().then(data => {
-      return data.message;
-    }));
-
-    const serverConnections: {
-      name: string,
-      protocol: ConnectionProtocols,
-      uuid: ConnectionUUID,
-      hardware: {
-        connType: ConnectionTypes,
-      },
-      isConnected: boolean,
-      trains: ITrainData[],
-    }[] = Array.isArray(connectionData) ? connectionData : [];
-
-    // Get all server connection UUIDs for comparison
-    const serverConnectionUUIDs = new Set(serverConnections.map(conn => conn.uuid));
-    let clientConnections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
-
-    // Remove connections that exist on client but not on server
-    for (const [uuid, connection] of connections) {
+    // Remove connections that still exist on client but not on server
+    for (const [uuid, connection] of this.connections) {
       if (!serverConnectionUUIDs.has(uuid)) {
         console.log(`Removing connection ${connection.name} (${uuid}) as it no longer exists on server`);
-        continue;
-      }
-      clientConnections.set(uuid, connection);
-    }
-
-    for (const connData of serverConnections.values()) {
-      if (clientConnections.has(connData.uuid)) {
-        let clientConnection = clientConnections.get(connData.uuid);
-        if (!clientConnection) continue;
-
-        // Connection exists, update it
-        clientConnection.name = connData.name;
-        clientConnection.hardware = connData.hardware.connType;
-        clientConnection.isConnected = connData.isConnected;
-        clientConnection.trains = await LayoutClient.fetchTrains(clientConnection.trains, connData.trains, layoutUUID);
-
-      }
-      else {
-        let connection: ClientConnection | undefined;
-        // Connection does not exist, create it
-        if (connData.protocol === ConnectionProtocols.DCCEX) {
-          connection = new ClientConnection(connData.protocol, connData.hardware.connType, connData.name, connData.uuid, layoutUUID);
-        } else {
-          console.log("Unknown protocol for new client connection: ", connData.name);
-        }
-        if (!connection) continue;
-
-        connection.trains = await LayoutClient.fetchTrains(new Map(), connData.trains, layoutUUID);
-        clientConnections.set(connData.uuid, connection);
+        this.connections.delete(uuid);
       }
     }
+  }
 
-    return clientConnections;
+  public loadSensorsFromJson(json: any) {
+    console.log("Layout client, Load Sensors - Not yet implemented");
   }
 }
-
-export let LayoutC: LayoutClient | null = null;

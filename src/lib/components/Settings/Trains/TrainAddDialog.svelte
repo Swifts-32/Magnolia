@@ -59,8 +59,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success(json.message);
-
-          layoutClientHandler.refreshLayouts();
         } else {
           toast.error(json.message);
         }

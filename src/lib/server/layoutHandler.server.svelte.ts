@@ -1,16 +1,21 @@
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { Layout } from './Layout.server.svelte';
+import { Layout, type LayoutServerJsonWeb } from './Layout.server.svelte';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { type LayoutUUID } from '$lib/client/LayoutClient.svelte';
+import { SvelteMap } from 'svelte/reactivity';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-class LayoutServerHandlerClass {
-  public layouts: Map<LayoutUUID, Layout> = new Map();
+export interface LayoutServerHandlerWebJson {
+  layouts: LayoutServerJsonWeb[];
+}
 
-  private static LAYOUTS_DIR = join(process.cwd(), `data/layouts`);
+class LayoutServerHandlerClass {
+  public layouts: SvelteMap<LayoutUUID, Layout> = new SvelteMap();
+
+  private static LAYOUTS_DIR = join(process.cwd(), `data`);
   private saveInterval: ReturnType<typeof setInterval>;
 
   constructor() {
@@ -25,7 +30,6 @@ class LayoutServerHandlerClass {
   public shutdown() {
     this.saveLayouts();
     clearInterval(this.saveInterval);
-    console.log("Shutting down LayoutServerHandler");
   }
 
   public addNewLayout(name: string): Layout {
@@ -43,26 +47,22 @@ class LayoutServerHandlerClass {
       mkdirSync(LayoutServerHandlerClass.LAYOUTS_DIR, { recursive: true });
     }
 
-    const layoutsData = Array.from(this.layouts.values()).map(layout => layout.toJSON());
-
     const filePath = join(LayoutServerHandlerClass.LAYOUTS_DIR, 'layouts.json');
-    writeFileSync(filePath, JSON.stringify(layoutsData, null, 2));
+    writeFileSync(filePath, this.toSaveJson(), 'utf-8');
 
     console.log(`Saved ${this.layouts.size} layouts`);
   }
 
   private loadSavedLayouts() {
     const filePath = join(LayoutServerHandlerClass.LAYOUTS_DIR, 'layouts.json');
-    if (!existsSync(filePath)) {
-      return;
-    }
+    if (!existsSync(filePath)) return;
 
     try {
-      const layoutsData = JSON.parse(readFileSync(filePath, 'utf-8'));
+      const layoutHandlerJson = JSON.parse(readFileSync(filePath, 'utf-8'));
 
-      for (const layoutData of layoutsData) {
+      for (const layoutJson of layoutHandlerJson.layouts) {
+        const layout = Layout.fromJSON(layoutJson);
 
-        const layout = Layout.fromJSON(layoutData);
         if (layout) {
           this.layouts.set(layout.uuid, layout);
         }
@@ -75,8 +75,33 @@ class LayoutServerHandlerClass {
   }
 
   public deleteLayout(uuid: LayoutUUID) {
+    console.log(`Deleting layout ${uuid}`);
+
     this.layouts.delete(uuid);
     this.saveLayouts();
+  }
+
+  public getLayout(uuid: LayoutUUID): Layout | undefined {
+    return this.layouts.get(uuid);
+  }
+
+
+  public toWebJson(): string {
+
+    const data: LayoutServerHandlerWebJson = {
+      layouts: Array.from(this.layouts.values()).map(layout => layout.toJSON()),
+    }
+
+    return JSON.stringify(data, null, 2);
+  }
+
+  public toSaveJson(): string {
+
+    const data: LayoutServerHandlerWebJson = {
+      layouts: Array.from(this.layouts.values()).map(layout => layout.toJSON()),
+    }
+
+    return JSON.stringify(data, null, 2);
   }
 }
 

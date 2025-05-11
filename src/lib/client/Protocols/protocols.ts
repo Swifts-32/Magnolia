@@ -1,6 +1,7 @@
 export enum ConnectionTypes {
     Serial = 0,
     Emulator = 5,
+    SSE = 10,
 }
 
 export enum ConnectionProtocols {
@@ -26,6 +27,8 @@ export function getConnectionTypeName(connType: ConnectionTypes): string {
             return "Serial";
         case ConnectionTypes.Emulator:
             return "Emulator";
+        case ConnectionTypes.SSE:
+            return "Server-Sent Events (SSE)";
         default:
             return "Unknown Connection Type";
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Label from "$lib/components/ui/label/label.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
@@ -7,16 +6,8 @@
   import { toast } from "svelte-sonner";
   import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
   import { Toaster } from "$lib/components/ui/sonner";
-  import {  fly } from "svelte/transition";
-  import {
-    backOut,
-    circOut,
-    cubicOut,
-    elasticIn,
-    elasticOut,
-    expoOut,
-    sineOut,
-  } from "svelte/easing";
+  import { fly } from "svelte/transition";
+  import { circOut, cubicOut } from "svelte/easing";
   import { Tween } from "svelte/motion";
 
   let editMode: boolean = $state(false);
@@ -45,10 +36,6 @@
         if (response.ok) {
           editMode = false; // Close the dialog on success
           toast.success("Layout created successfully");
-
-          // Refresh the layout list
-          layoutClientHandler.refreshLayouts();
-
           // Clear the dialog data
           layoutName = undefined;
         } else {
@@ -131,7 +118,7 @@
         >
           <h1 class="text-4xl mb-5">Add New Layout</h1>
           <h1 class="text-2xl mb-10">Add New Connections</h1>
-          <Button class="w-32" onclick={() => (page = 0)}>Save</Button>
+          <Button class="w-32" onclick={saveChanges}>Save</Button>
         </div>
       {/if}
     {/key}
