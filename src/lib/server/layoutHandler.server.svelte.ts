@@ -14,6 +14,7 @@ export interface LayoutServerHandlerWebJson {
 
 class LayoutServerHandlerClass {
   public layouts: SvelteMap<LayoutUUID, Layout> = new SvelteMap();
+  private streamControllers: Set<ReadableStreamDefaultController> = new Set();
 
   private static LAYOUTS_DIR = join(process.cwd(), `data`);
   private saveInterval: ReturnType<typeof setInterval>;
@@ -25,6 +26,24 @@ class LayoutServerHandlerClass {
     this.saveInterval = setInterval(() => {
       this.saveLayouts();
     }, 5 * (60 * 1000)); // 5 minutes
+  }
+
+  public createStream(): ReadableStream {
+    let streamController: ReadableStreamDefaultController;
+
+    return new ReadableStream({
+      start: (controller) => {
+        streamController = controller;
+        this.streamControllers.add(controller);
+      },
+      cancel: (reason) => {
+        this.streamControllers.delete(streamController);
+      }
+    });
+  }
+
+  public sendClientMessage(event: string, data: string) {
+    this.streamControllers.forEach(controller => controller.enqueue(`event: ${event}\ndata: ${data}\n\n`));
   }
 
   public shutdown() {
@@ -50,6 +69,8 @@ class LayoutServerHandlerClass {
     const filePath = join(LayoutServerHandlerClass.LAYOUTS_DIR, 'layouts.json');
     writeFileSync(filePath, this.toSaveJson(), 'utf-8');
 
+    // Notify clients
+    this.sendClientMessage('Update', "Layouts");
     console.log(`Saved ${this.layouts.size} layouts`);
   }
 

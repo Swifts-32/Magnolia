@@ -9,6 +9,7 @@ import { SvelteMap } from "svelte/reactivity";
 import { Sensor } from "./Sensors/Sensor";
 import type { SensorUuid } from "$lib/client/Sensors/SensorClient.svelte";
 import { LccSensor } from "./Sensors/LccSensor";
+import { LayoutServerHandler } from "./layoutHandler.server.svelte";
 
 export interface LayoutServerJsonWeb {
 
@@ -21,8 +22,6 @@ export class Layout {
 
   public connections: Map<ConnectionUUID, Connection> = new Map();
   public sensors: SvelteMap<SensorUuid, Sensor> = new SvelteMap();
-
-  private controllers: Set<ReadableStreamDefaultController> = new Set();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
@@ -114,26 +113,6 @@ export class Layout {
     }
   }
 
-  /**
-   * Creates a new stream for the layout
-   * @returns ReadableStream
-   */
-  createStream(): ReadableStream {
-    let streamController: ReadableStreamDefaultController;
-
-    console.log("Creating stream");
-    return new ReadableStream({
-      start: (controller) => {
-        streamController = controller;
-        this.controllers.add(controller);
-      },
-      cancel: (reason) => {
-        this.controllers.delete(streamController);
-      }
-    });
-  }
-
-
   addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, layoutUUID: LayoutUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
     const connection = this.connections.get(connUUID);
 
@@ -171,13 +150,19 @@ export class Layout {
 
   createConnection(connection: Connection): Connection {
     connection.onDataRecieved((data: string) => {
-      const message = `data: Cid:${connection.uuid}: ${data}\n\n`;
-      this.controllers.forEach(controller => controller.enqueue(message));
+      const message = `LayoutUuid:${this.uuid}:ConnectionUuid:${connection.uuid}:${data}`
+
+      if (LayoutServerHandler) {
+        LayoutServerHandler.sendClientMessage("LayoutConnectionDataReceived", message);
+      }
+      else {
+        console.log("Layout Server handler is undefined");
+      }
     });
 
     this.connections.set(connection.uuid, connection);
-
     this.updateClientConnections();
+
     return connection;
   }
 
@@ -188,8 +173,14 @@ export class Layout {
 
   private updateClientConnections() {
     const json = `{"connections": ${JSON.stringify(Array.from(this.connections.values()).map(conn => conn.toJSON()))}}`;
-    const message = `data: UpdateConn:${json}\n\n`;
-    this.controllers.forEach(controller => controller.enqueue(message));
+    const message = `LayoutUuid:${this.uuid}:${json}`;
+
+    if (LayoutServerHandler) {
+      LayoutServerHandler.sendClientMessage("UpdateLayoutConnections", message);
+    }
+    else {
+      console.log("Layout Server handler is undefined");
+    }
   }
 
   getTrain(trainUUID: TrainUUID): ServerTrain | undefined {

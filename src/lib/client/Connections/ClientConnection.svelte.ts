@@ -12,7 +12,6 @@ export class ClientConnection {
   public layoutUUID: LayoutUUID;
   public trains: Map<TrainUUID, ClientTrain> = $state(new Map());
 
-
   public isConnected: boolean = $state(false);
 
   constructor(protocol: ConnectionProtocols, hardware: ConnectionTypes, name: string, uuid: ConnectionUUID, layoutUUID: LayoutUUID) {

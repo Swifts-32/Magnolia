@@ -9,8 +9,6 @@ export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
 
 export class LayoutClient {
-
-  private eventSource: EventSource | null = null;
   public name: string = $state() as string;
   public uuid: LayoutUUID = $state() as LayoutUUID;
 
@@ -31,56 +29,6 @@ export class LayoutClient {
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
-  }
-
-  public createSSE() {
-    this.eventSource = new EventSource(`/api/layout/${this.uuid}/stream`);
-
-    this.eventSource.onmessage = (event) => {
-      const data = event.data.trim();
-
-
-      // Update Connections
-      const updateConnMatch = data.match(/^UpdateConn:(.+)/);
-      if (updateConnMatch) {
-        try {
-          this.loadConnectionsFromJson(JSON.parse(updateConnMatch[1]));
-        } catch (error) {
-          console.error("Failed to parse JSON:", error);
-        }
-        return;
-      }
-
-      // TODO Update Sensors
-      const updateSensorMatch = data.match(/^UpdateSensor:(.+)/);
-      if (updateConnMatch) {
-        try {
-          this.loadConnectionsFromJson(JSON.parse(updateConnMatch[1]));
-        } catch (error) {
-          console.error("Failed to parse JSON:", error);
-        }
-        return;
-      }
-
-      // If it is a connection command, process it
-      const connMatch = data.match(/^Cid:([^:]+)/);
-      if (connMatch) {
-        const connUUID = connMatch[1] as ConnectionUUID;
-        const connection = this.connections.get(connUUID);
-  
-        if (!connection) {
-          console.warn(`SSE processing failed on ${this.name}: Connection ${connUUID} does not exist`);
-          return;
-        }
-  
-        connection.processCommand(data);
-      };
-    };
-
-    this.eventSource.onerror = (error) => {
-      console.error('EventSource error:', error);
-      this.eventSource?.close();
-    }
   }
 
   public loadConnectionsFromJson(json: any) {

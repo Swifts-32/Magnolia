@@ -13,8 +13,6 @@ export const load: LayoutLoad = async ({ params }) => {
         redirect(307, "/");
     }
 
-    layout.createSSE();
-
     return {
         layout
     };
