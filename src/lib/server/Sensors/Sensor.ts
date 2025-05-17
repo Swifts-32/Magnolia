@@ -3,7 +3,7 @@ import type { SensorState, SensorType, SensorUuid } from "$lib/client/Sensors/Se
 
 export interface SensorJsonWeb {
   uuid: SensorUuid;
-  connUUID: ConnectionUUID;
+  connUUID: ConnectionUUID | undefined;
   layoutUUID: LayoutUUID;
   name: string;
   delayToActivate: number;
@@ -18,9 +18,9 @@ export class Sensor {
   public type: SensorType = "basic";
 
   public uuid: SensorUuid;
-  public connUuid: ConnectionUUID;
   public layoutUuid: LayoutUUID;
 
+  public connUuid: ConnectionUUID | undefined;
   public name: string = "";
   public delayToActivate: number = 0;
   public delayToDeactivate: number = 0;
@@ -28,8 +28,7 @@ export class Sensor {
   public comment: string = "";
   public inverted: boolean = false;
 
-  constructor(connUuid: ConnectionUUID, layoutUuid: LayoutUUID, uuid?: SensorUuid) {
-    this.connUuid = connUuid;
+  constructor(layoutUuid: LayoutUUID, uuid?: SensorUuid) {
     this.layoutUuid = layoutUuid;
     this.uuid = uuid ?? crypto.randomUUID() as SensorUuid;
   }

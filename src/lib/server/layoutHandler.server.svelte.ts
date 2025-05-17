@@ -106,7 +106,6 @@ class LayoutServerHandlerClass {
     return this.layouts.get(uuid);
   }
 
-
   public toWebJson(): string {
 
     const data: LayoutServerHandlerWebJson = {

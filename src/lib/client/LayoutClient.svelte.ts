@@ -3,7 +3,7 @@ import { ClientTrain } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
 import { isFunctionData } from "$lib/types/Trains/Functions/Functions";
 import { SvelteMap } from "svelte/reactivity";
-import type { SensorClient, SensorUuid } from "./Sensors/SensorClient.svelte";
+import { SensorClient, type SensorUuid } from "./Sensors/SensorClient.svelte";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -111,8 +111,32 @@ export class LayoutClient {
       }
     }
   }
-
+  
   public loadSensorsFromJson(json: any) {
-    console.log("Layout client, Load Sensors - Not yet implemented");
+    const serverSensorUuids = new Set();
+  
+    for (const sensorJson of json.sensors) {
+      if (sensorJson.uuid === undefined) {
+        console.log("Invalid sensor uuid");
+        return;
+      }
+  
+      // TODO Maybe update instead of create if it already exists
+
+      const sensor = new SensorClient(sensorJson.layoutUUID, sensorJson.uuid);  
+      sensor.name = sensorJson.name;
+      
+
+      
+      serverSensorUuids.add(sensor.uuid);
+      this.sensors.set(sensor.uuid, sensor);
+    }
+  
+    for (const [uuid, sensor] of this.sensors) {
+      if (!serverSensorUuids.has(uuid)) {
+        console.log(`Removing senser ${sensor.name} (${uuid}) as it no longer exists on server`);
+        this.sensors.delete(uuid);
+      }
+    }
   }
 }

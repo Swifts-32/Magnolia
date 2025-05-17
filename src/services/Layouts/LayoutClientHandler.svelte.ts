@@ -71,6 +71,23 @@ class LayoutClientHandler {
       }
     });
     
+    this.appEventSource.addEventListener("UpdateLayoutSensors", (event) => {
+      const message = event.data.trim().match(/^LayoutUuid:([^:]+):(.+)/);
+      
+      const layoutUuid = message[1] as LayoutUUID;
+      const layout = this.layouts.get(layoutUuid);
+      if (!layout) return;
+
+      const data = message[2];
+      if (!data) return;
+
+      try {
+        layout.loadSensorsFromJson(JSON.parse(data));
+      } catch (error) {
+        console.error("Failed to parse JSON:", error);
+      }
+    });
+    
     this.appEventSource.addEventListener("LayoutConnectionDataReceived", (event) => {
       const message = event.data.trim().match(/^LayoutUuid:([^:]+):ConnectionUuid:([^:]+):(.+)/);
       

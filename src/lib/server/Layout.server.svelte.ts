@@ -21,7 +21,7 @@ export class Layout {
   public position: number = 0;
 
   public connections: Map<ConnectionUUID, Connection> = new Map();
-  public sensors: SvelteMap<SensorUuid, Sensor> = new SvelteMap();
+  private sensors: SvelteMap<SensorUuid, Sensor> = new SvelteMap();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
@@ -83,7 +83,9 @@ export class Layout {
     this.sensors.clear();
 
     for (const sensor of json.sensors) {
-      let newSensor = new Sensor(sensor.connUUID, sensor.layoutUUID, sensor.uuid);
+      let newSensor = new Sensor(sensor.layoutUUID, sensor.uuid);
+
+      newSensor.connUuid = sensor.connUUID;
       newSensor.name = sensor.name;
       newSensor.delayToActivate = sensor.delayToActivate;
       newSensor.delayToDeactivate = sensor.delayToDeactivate;
@@ -182,6 +184,19 @@ export class Layout {
       console.log("Layout Server handler is undefined");
     }
   }
+  
+  private updateClientSensors() {
+    const json = `{"sensors": ${JSON.stringify(Array.from(this.sensors.values()).map(sensor => sensor.toJsonWeb()))}}`;
+    const message = `LayoutUuid:${this.uuid}:${json}`;
+  
+    if (LayoutServerHandler) {
+      LayoutServerHandler.sendClientMessage("UpdateLayoutSensors", message);
+    }
+    else {
+      console.log("Layout Server handler is undefined");
+    }
+
+  }
 
   getTrain(trainUUID: TrainUUID): ServerTrain | undefined {
     for (const connection of this.connections.values()) {
@@ -191,4 +206,17 @@ export class Layout {
       }
     }
   }
+
+  public createSensor(name: string) {
+    const sensor = new Sensor(this.uuid);
+    sensor.name = name;
+    this.sensors.set(sensor.uuid, sensor);
+
+    this.updateClientSensors();
+  }
+
+  public deleteSensor(uuid: SensorUuid) {
+    this.sensors.delete(uuid);
+  }
+
 }
