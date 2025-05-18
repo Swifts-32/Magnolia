@@ -1,20 +1,29 @@
 <script lang="ts">
-  import ConnectionAdd from "$lib/components/Settings/Layouts/ConnectionAdd.svelte";
-  import ConnectionEdit from "$lib/components/Settings/Layouts/ConnectionEdit.svelte";
+  import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
+  import { page } from "$app/state";
   import { Toaster } from "$lib/components/ui/sonner";
-  import type { LayoutData } from "../../$types";
+  import { layoutClientHandler } from "../../../../../../services/Layouts/LayoutClientHandler.svelte";
+  import ConnectionEdit from "$lib/components/Settings/Layouts/ConnectionEdit.svelte";
+  import AddConnectionDialog from "$lib/components/Settings/Connections/AddConnectionDialog.svelte";
 
-  let { data }: { data: LayoutData } = $props();
+  const layout = $derived(
+    layoutClientHandler.layouts.get(page.params.id as LayoutUUID),
+  );
 </script>
 
-<div class="m-4">
-  <h1 class="text-4xl my-10">Connections</h1>
+{#if layout}
+  <div class="m-4">
+    <h1 class="text-4xl my-10">Connections</h1>
 
-  <div class="flex flex-wrap gap-3">
-    {#each data.layout.connections.values() as connection}
-      <ConnectionEdit {connection} />
-    {/each}
-    <ConnectionAdd layout={data.layout} />
+    <div class="flex flex-wrap gap-3">
+      {#each layout.connections.values() as connection}
+        <ConnectionEdit {connection} />
+      {/each}
+
+      <AddConnectionDialog {layout} />
+    </div>
   </div>
-</div>
+{:else}
+  <p>Error</p>
+{/if}
 <Toaster />

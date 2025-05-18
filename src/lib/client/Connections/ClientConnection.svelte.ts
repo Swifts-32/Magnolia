@@ -3,10 +3,10 @@ import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "../Protocols/protocols";
 
 export class ClientConnection {
+  public uuid: ConnectionUUID;
+  public name: string = $state() as string;
   public protocol: ConnectionProtocols = $state() as ConnectionProtocols;
   public hardware: ConnectionTypes = $state() as ConnectionTypes;
-  public name: string = $state() as string;
-  public uuid: ConnectionUUID;
   public layoutUuid: LayoutUUID;
 
   public isConnected: boolean = $state(false);
@@ -17,6 +17,35 @@ export class ClientConnection {
     this.name = name;
     this.uuid = uuid;
     this.layoutUuid = layoutUUID;
+  }
+
+  public toJsonWeb(): string {
+    return JSON.stringify({
+      uuid: this.uuid,
+      name: this.name,
+      protocol: this.protocol,
+      hardwareType: this.hardware,
+      layoutUuid: this.layoutUuid,
+    })
+  }
+
+  public static fromJsonWeb(json: any): ClientConnection | null {
+    json = JSON.parse(json);
+
+    const connUuid = json.uuid;
+    const connName = json.name;
+    const connProtocol = json.protocol;
+    const connHardwareType = json.hardwareType;
+    const connLayoutUuid = json.layoutUuid;
+
+    if (!connUuid || !connName || !connProtocol || !connHardwareType || !connLayoutUuid) {
+      console.error("Failed to load connection from json web: Undefined uuid, name, protocol, layoutUuid or hardware type");
+      return null;
+    }
+
+    const connection = new ClientConnection(connProtocol, connHardwareType, connName, connUuid, connLayoutUuid);
+
+    return connection;
   }
 
   public async connect() {

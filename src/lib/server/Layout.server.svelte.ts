@@ -31,13 +31,14 @@ export class Layout {
     this.uuid = uuid;
   }
 
+  // TODO web and file
   toJSON() {
     return {
       name: this.name,
       uuid: this.uuid,
       position: this.position,
 
-      connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
+      connections: Array.from(this.connections.values()).map(conn => conn.toJsonWeb()),
       sensors: Array.from(this.sensors.values()).map(sensor => sensor.toJsonWeb()),
       trains: Array.from(this.trains.values()).map(train => train.toJsonWeb()),
     };
@@ -148,7 +149,7 @@ export class Layout {
   }
 
   private updateClientConnections() {
-    const json = `{"connections": ${JSON.stringify(Array.from(this.connections.values()).map(conn => conn.toJSON()))}}`;
+    const json = `{"connections": ${JSON.stringify(Array.from(this.connections.values()).map(conn => conn.toJsonWeb()))}}`;
     const message = `LayoutUuid:${this.uuid}:${json}`;
 
     if (LayoutServerHandler) {

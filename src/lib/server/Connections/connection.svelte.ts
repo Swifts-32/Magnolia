@@ -1,5 +1,5 @@
 import type { HardwareClass } from "./Hardware/hardware";
-import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { ConnectionProtocols, ConnectionTypes } from "$lib/client/Protocols/protocols";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
@@ -8,6 +8,8 @@ import { LayoutServerHandler } from "../layoutHandler.server.svelte";
 
 export class Connection {
   public uuid: ConnectionUUID;
+  public layoutUuid: LayoutUUID;
+
   public name: string;
   public protocol: ConnectionProtocols;
   private hardware: HardwareClass;
@@ -16,33 +18,84 @@ export class Connection {
     return this.hardware.isConnected
   };
 
-  constructor(uuid: ConnectionUUID, name: string, protocol: ConnectionProtocols, hardware: HardwareClass) {
+  constructor(uuid: ConnectionUUID, layoutUuid: LayoutUUID, name: string, protocol: ConnectionProtocols, hardware: HardwareClass) {
     this.uuid = uuid;
+    this.layoutUuid = layoutUuid;
     this.name = name;
     this.protocol = protocol;
     this.hardware = hardware;
   }
 
-  toJSON() {
+  public toJsonWeb() {
     return {
       name: this.name,
+      layoutUuid: this.layoutUuid,
+      protocol: this.protocol,
+      uuid: this.uuid,
+      hardwareType: this.hardware.connType,
+    };
+  }
+
+  public toJsonFile() {
+    return {
+      name: this.name,
+      layoutUuid: this.layoutUuid,
       protocol: this.protocol,
       uuid: this.uuid,
       hardware: this.hardware.toJson(),
-      isConnected: this.isConnected,
     };
   }
 
   public static fromJsonWeb(json: any): Connection | null {
+    console.log(json);
+
+    const connUuid = json.uuid;
+    const connName = json.name;
+    const connProtocol = parseInt(json.protocol);
+    const connHardwareType = parseInt(json.hardwareType);
+    const connLayoutUuid = json.layoutUuid;
+
+    console.log(!connUuid, !connName, !connProtocol, !connHardwareType, !connLayoutUuid);
+
+    if (connUuid === undefined || connName === undefined || connProtocol === undefined || connHardwareType === undefined || connLayoutUuid || connLayoutUuid === undefined) {
+      console.error("Failed to load connection from json web: Undefined uuid, name, protocol, layoutUuid or hardware type");
+      return null;
+    }
+
+    let hardware: HardwareClass;
+
+    switch (connHardwareType) {
+      case ConnectionTypes.Emulator:
+        hardware = new EmulatorConnection();
+        break;
+      case ConnectionTypes.Serial:
+        if (json.hardware.path == undefined || json.hardware.baudRate == undefined) {
+          console.log(`Invalid serial connection data`);
+          return null;
+        }
+        hardware = new SerialConnection(json.hardware.path, json.hardware.baudRate);
+        break;
+
+      default:
+        console.log(`Unknown hardware type: ${json.hardware.connType}`);
+        return null;
+    }
+
+    return new Connection(connUuid, connLayoutUuid, connName, connProtocol, hardware);
+  }
+
+  public static fromJsonFile(json: any): Connection | null {
     json = JSON.parse(json);
 
     const connUuid = json.uuid;
     const connName = json.name;
     const connProtocol = json.protocol;
-    const connHardwareJson = json.hardware;
+    const connHardware = json.hardware;
+    const connLayoutUuid = json.layoutUuid;
 
-    if (!connUuid || !connName || !connProtocol || !connHardwareJson) {
-      console.error("Failed to load connection from json: Undefined uuid, name, protocol or hardware json");
+
+    if (!connUuid || !connName || !connProtocol || !connHardware || !connLayoutUuid) {
+      console.error("Failed to load connection from json file: Undefined uuid, name, protocol, layoutUuid or hardware");
       return null;
     }
 
@@ -65,7 +118,7 @@ export class Connection {
         return null;
     }
 
-    return new Connection(connUuid, connName, connProtocol, hardware);
+    return new Connection(connUuid, connLayoutUuid, connName, connProtocol, hardware);
   }
 
 
@@ -103,19 +156,19 @@ export class Connection {
   }
 
   private processDccExCommand(command: string) {
+
     if (/<p0>/.test(command)) { // Power Off
       console.log("Power Off");
       return;
-    } else if (/<p1>/.test(command)) { // Power On
+    }
+
+    if (/<p1>/.test(command)) { // Power On
       console.log("Power On");
       return;
-    } else if (/<l (\d+) (\d+) ([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (\d+)>/.test(command)) {
-      const match = command.match(/<l (\d+) (\d+) ([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (\d+)>/);
-      if (!match) {
-        console.log("Invalid command: " + command);
-        return;
-      }
+    }
 
+    const match = command.match(/<l (\d+) (\d+) ([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]) (\d+)>/);
+    if (match) {
       const cabId = parseInt(match[1]);
       const slot = parseInt(match[2]);
       const speedByte = parseInt(match[3]);
@@ -144,6 +197,8 @@ export class Connection {
           trainFunct.state = state;
         }
       });
+
+      return;
     }
   }
 
