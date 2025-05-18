@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { page } from "$app/state";
+	import { page } from "$app/state";
 	import { NavBarData } from "$lib/components/NavBar/linkUtils.svelte";
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
 

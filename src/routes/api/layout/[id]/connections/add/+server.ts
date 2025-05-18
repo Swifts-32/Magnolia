@@ -1,63 +1,68 @@
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte.js";
-import { ConnectionProtocols, ConnectionTypes } from "$lib/client/Protocols/protocols";
-import type { Connection } from "$lib/server/Connections/connection.svelte.js";
+import { ConnectionTypes } from "$lib/client/Protocols/protocols";
+import { Connection } from "$lib/server/Connections/connection.svelte.js";
+import { EmulatorConnection } from "$lib/server/Connections/Hardware/Emulator/Emulator.server.js";
+import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
 
 export const POST = async ({ request, params }) => {
-    const { id } = params;
+  const { id } = params;
 
-    const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
-    if (!layout) {
-        return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
+  const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
+  if (!layout) {
+    return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
+  }
+
+  try {
+    const data = await request.json();
+
+    const connName = data.connName;
+    const protocol = data.protocol;
+    const connType = data.connType;
+
+    // Validate required fields
+    if (!connName || !protocol || !connType) {
+      return new Response(
+        JSON.stringify({ message: 'Failed to crate connection - Undefined fields: connName, protocol, and/or connType' }),
+        { status: 400 }
+      );
     }
 
-    try {
-        const data = await request.json();
+    const connection: Connection = new Connection(crypto.randomUUID(), data.connName, data.protocol, new EmulatorConnection())
 
-        // Validate required fields
-        if (data.connName === undefined || data.protocol === undefined || data.connType === undefined) {
-            return new Response(
-                JSON.stringify({ message: 'Missing required fields: connName, protocol, and connType are required' }),
-                { status: 400 }
-            );
+    switch (data.connType) {
+      case ConnectionTypes.Serial:
+        const serialPath = data.serialPath;
+        const serialBaudRate = data.serialBaudRate;
+
+        if (!serialPath || !serialBaudRate) {
+          return new Response(JSON.stringify({ message: 'Missing required fields: serialPath and serialBaudRate are required for serial connections' }), { status: 400 });
         }
 
-        let connection: Connection;
+        connection.addHardware(new SerialConnection(serialPath, serialBaudRate));
+        break;
 
-        switch (data.connType) {
-            case ConnectionTypes.Emulator:
-                connection = layout.createEmulatorConnection(data.protocol as ConnectionProtocols, data.connName);
-                break;
-
-            case ConnectionTypes.Serial:
-                if (data.serialPath === undefined || data.serialBaudRate === undefined) {
-                    return new Response(JSON.stringify({ message: 'Missing required fields: serialPath and serialBaudRate are required for serial connections' }), { status: 400 });
-                }
-
-                connection = layout.createSerialConnection(data.protocol, data.path, data.baudRate, data.connName);
-                break;
-
-            default:
-                return new Response(JSON.stringify({ message: 'Invalid connection type' }), { status: 400 });
-
-        }
-
-        LayoutServerHandler.saveLayouts();
-
-        return new Response(
-            JSON.stringify({
-                message: `Connection created successfully on layout: ${layout.name}`,
-                connUUID: connection.uuid
-            }),
-
-            { status: 201 }
-
-        );
-    } catch (error) {
-        return new Response(
-            JSON.stringify({ message: `Invalid request body: ${error}` }),
-            { status: 400 }
-        );
-
+      default:
+        return new Response(JSON.stringify({ message: 'Invalid connection type' }), { status: 400 });
     }
+
+    layout.createConnection(connection);
+    LayoutServerHandler.saveLayouts();
+
+    return new Response(
+      JSON.stringify({
+        message: `Connection created successfully on layout: ${layout.name}`,
+        connUUID: connection.uuid
+      }),
+
+      { status: 201 }
+
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ message: `Invalid request body: ${error}` }),
+      { status: 400 }
+    );
+
+  }
 }

@@ -1,59 +1,113 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import type { TrainAddress, TrainUuid } from "$lib/types/Trains/Train";
 import { ServerTrainFunctions } from "./Functions.server";
-import { isFunctionData, type TrainFunctionIcons, type TrainFunctionModes } from "../../types/Trains/Functions/Functions";
-import { type TrainUUID, type TrainAddress, type ITrainData, isTrainData } from "$lib/types/Trains/Train";
+import { TrainDirection } from "$lib/client/Trains/Train.svelte";
 
 export class ServerTrain {
-	public uuid: TrainUUID;
-	public connUUID: ConnectionUUID;
-	public layoutUUID: LayoutUUID;
-	public address: TrainAddress;
-	public name: string;
+	public uuid: TrainUuid;
+	public layoutUuid: LayoutUUID;
+
+	public address: TrainAddress | undefined;
+	public connUuid: ConnectionUUID | undefined;
+
+	public name: string = "New Train";
+	public comment: string = "";
+
 	public functions: Map<string, ServerTrainFunctions> = new Map();
+	public speed: number = 0;
+	public direction: TrainDirection = TrainDirection.Unknown;
 
-	constructor(address: TrainAddress, name: string, connUUID: ConnectionUUID, layoutUUID: LayoutUUID, uuid: TrainUUID | undefined = undefined) {
-		this.address = address;
-		this.name = name;
-		this.uuid = uuid ?? crypto.randomUUID();
-		this.connUUID = connUUID;
-		this.layoutUUID = layoutUUID;
+	constructor(uuid: TrainUuid, layoutUuid: LayoutUUID) {
+		this.uuid = uuid;
+		this.layoutUuid = layoutUuid;
 	}
 
-	toJSON(): ITrainData {
-		return {
+	public toJsonWeb(): string {
+		return JSON.stringify({
 			uuid: this.uuid,
-			connUUID: this.connUUID,
-			layoutUUID: this.layoutUUID,
+			layoutUuid: this.layoutUuid,
 			address: this.address,
+			connUuid: this.connUuid,
 			name: this.name,
-			functions: Array.from(this.functions.values()).map(funct => funct.toJSON()),
-		};
+			comment: this.comment,
+			functions: Array.from(this.functions.values()).map(funct => funct.toJson()),
+			speed: this.speed,
+			direction: this.direction,
+		});
 	}
 
-	public static fromJSON(json: any): ServerTrain | null {
+	public toJsonFile(): string {
+		return JSON.stringify({
+			uuid: this.uuid,
+			layoutUuid: this.layoutUuid,
+			address: this.address,
+			connUuid: this.connUuid,
+			name: this.name,
+			comment: this.comment,
+			functions: Array.from(this.functions.values()).map(funct => funct.toJson()),
+		});
+	}
 
-		if (!isTrainData(json)) {
-			console.log(`Invalid train data`);
-			return null;
+	public static fromJsonWeb(json: any): ServerTrain | null {
+		try {
+			const uuid = json.uuid;
+			const layoutUuid = json.layoutUuid;
+
+			if (!uuid || !layoutUuid) return null;
+
+			const serverTrain = new ServerTrain(uuid, layoutUuid);
+
+			serverTrain.address = json.address;
+			serverTrain.connUuid = json.connUuid;
+			serverTrain.name = json.name;
+			serverTrain.comment = json.comment;
+			serverTrain.functions = ServerTrain.parseFunctionsFromJson(json.functions);
+			serverTrain.speed = json.speed;
+			serverTrain.direction = json.direction;
+
+			return serverTrain;
+		}
+		catch (e) {
+			console.warn(`Failed to parse train data from api: ${e}`);
 		}
 
-		let serverTrain = new ServerTrain(json.address, json.name, json.connUUID, json.layoutUUID, json.uuid);
+		return null;
+	}
 
-		for (const funct of json.functions) {
-			if (!isFunctionData(funct)) {
-				console.log(`Invalid train function data`);
-				continue;
+	public static fromJsonFile(json: any): ServerTrain | null {
+		try {
+			const uuid = json.uuid;
+			const layoutUuid = json.layoutUuid;
+
+			if (!uuid || !layoutUuid) return null;
+
+			const serverTrain = new ServerTrain(uuid, layoutUuid);
+
+			serverTrain.address = json.address;
+			serverTrain.connUuid = json.connUuid;
+			serverTrain.name = json.name;
+			serverTrain.comment = json.comment;
+			serverTrain.functions = ServerTrain.parseFunctionsFromJson(json.functions);
+
+			return serverTrain;
+		}
+		catch (e) {
+			console.warn(`Failed to parse train data from file: ${e}`);
+		}
+
+		return null;
+	}
+
+	private static parseFunctionsFromJson(json: any): Map<string, ServerTrainFunctions> {
+		const functions = new Map<string, ServerTrainFunctions>();
+
+		for (const funct of json) {
+			const serverTrainFunctions = ServerTrainFunctions.fromJson(funct);
+			if (serverTrainFunctions) {
+				functions.set(serverTrainFunctions.value, serverTrainFunctions);
 			}
-
-			serverTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, funct.visible);
 		}
 
-		return serverTrain;
-	}
-
-
-	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, visible: boolean = true) {
-		const funct = new ServerTrainFunctions(value, name, icon, mode, position, this.uuid, this.connUUID, this.layoutUUID);
-		this.functions.set(value, funct);
+		return functions;
 	}
 }

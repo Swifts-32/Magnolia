@@ -1,43 +1,22 @@
-import type { LayoutUUID } from "$lib/client/LayoutClient.svelte.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
-import { isTrainData } from "$lib/types/Trains/Train.js";
+import { ServerTrain } from "$lib/server/Trains/Train.server.js";
 
-export const POST = async ({ request, params }) => {
-    const { id } = params;
-    const data = await request.json();
+export const POST = async ({ request }) => {
+  const data = await request.json();
 
-    const connection = LayoutServerHandler.layouts.get(id as LayoutUUID)?.connections.get(data.connUUID);
-    if (!connection) {
-        return new Response(JSON.stringify({ message: `${id} is not a valid connection.` }), { status: 404 });
-    }
+  const train = ServerTrain.fromJsonWeb(data);
+  if (!train) return new Response("Invalid train data", { status: 400 });
 
-    // Validate required fields
-    if (!isTrainData(data)) {
-        return new Response(
-            JSON.stringify({ message: 'Failed to create train: Invalid data' }),
-            { status: 400 }
-        );
-    }
+  const layout = LayoutServerHandler.getLayout(train.layoutUuid);
+  if (!layout) return new Response("Layout not found", { status: 404 });
 
-    let train = connection.addTrain(data.address, data.name, data.layoutUUID);
-    if (!train) {
-        return new Response(
-            JSON.stringify({ message: 'Failed to create train: Train was null' }), { status: 404 }
-        );
-    }
+  layout.addTrain(train);
+  LayoutServerHandler.saveLayouts();
 
-    data.functions.forEach(funct => {
-        train.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, true);
-    });
-
-    LayoutServerHandler.layouts.get(id as LayoutUUID)?.updateConnection(connection);
-    LayoutServerHandler.saveLayouts();
-
-
-    return new Response(
-        JSON.stringify({
-            message: `Train created successfully`,
-        }),
-        { status: 201 }
-    );
+  return new Response(
+    JSON.stringify({
+      message: `Train created successfully`,
+    }),
+    { status: 201 }
+  );
 }

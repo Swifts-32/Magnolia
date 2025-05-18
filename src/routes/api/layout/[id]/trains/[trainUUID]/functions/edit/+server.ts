@@ -1,6 +1,6 @@
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
-import type { TrainUUID } from "$lib/types/Trains/Train";
+import type { TrainUuid } from "$lib/types/Trains/Train";
 import { isFunctionData } from "$lib/types/Trains/Functions/Functions.js";
 
 export const POST = async ({ request, params }) => {
@@ -11,7 +11,7 @@ export const POST = async ({ request, params }) => {
         return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
     }
 
-    let train = layout.getTrain(trainUUID as TrainUUID);
+    let train = layout.getTrain(trainUUID as TrainUuid);
     if (!train) {
         return new Response(JSON.stringify({ message: `${trainUUID} is not a valid train.` }), { status: 404 });
     }

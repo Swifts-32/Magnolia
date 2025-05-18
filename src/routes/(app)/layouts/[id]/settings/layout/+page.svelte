@@ -1,6 +1,5 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button/button.svelte";
-  import type { LayoutData } from "../../$types";
   import { layoutClientHandler } from "../../../../../../services/Layouts/LayoutClientHandler.svelte";
   import { beforeNavigate, goto } from "$app/navigation";
   import Input from "$lib/components/ui/input/input.svelte";
@@ -10,11 +9,20 @@
   import { toast } from "svelte-sonner";
   import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import { Trash2 } from "lucide-svelte";
+  import type {
+    LayoutClient,
+    LayoutUUID,
+  } from "$lib/client/LayoutClient.svelte";
+  import { page } from "$app/state";
 
-  let { data }: { data: LayoutData } = $props();
-  let layoutName: string | undefined = $state(data.layout.name);
+  const layout: LayoutClient | undefined = $derived(
+    layoutClientHandler.layouts.get(page.params.id as LayoutUUID),
+  );
+  let layoutName: string = $state("");
 
   onMount(() => {
+    layoutName = layout?.name ?? "";
+
     beforeNavigate(({ cancel }) => {
       if (!layoutName?.trim()) {
         toast.error("Layout name is required");
@@ -25,14 +33,16 @@
 
   onDestroy(() => {
     // Save layout
+    if (!layout) return;
+
     const layoutData = {
       layoutName: layoutName,
     };
 
     // Don't update the layout if nothing has changed
-    if (layoutName === data.layout.name) return;
+    if (layoutName === layout.name) return;
 
-    fetch(`/api/layout/${data.layout.uuid}/edit`, {
+    fetch(`/api/layout/${layout.uuid}/edit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,7 +62,9 @@
   });
 
   function deleteLayout() {
-    fetch(`/api/layout/${data.layout.uuid}/delete`);
+    if (!layout) return;
+
+    fetch(`/api/layout/${layout.uuid}/delete`);
     goto("/");
   }
 </script>

@@ -1,12 +1,12 @@
 import { SerialPort, ReadlineParser } from 'serialport';
-import type { ISerialConnection } from "../hardware";
+import type { HardwareClass } from "../hardware";
 import { ConnectionTypes } from '$lib/client/Protocols/protocols';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const { autoDetect } = require('@serialport/bindings-cpp');
 
-export class SerialConnection implements ISerialConnection {
+export class SerialConnection implements HardwareClass {
 
 
 	private serialPort: SerialPort | null = null;
@@ -95,11 +95,11 @@ export class SerialConnection implements ISerialConnection {
 		}
 	}
 
-	toJSON() {
-		return {
+	toJson() {
+		return JSON.stringify({
 			path: this.path,
 			baudRate: this.baudRate,
 			connType: this.connType
-		};
+		});
 	}
 }

@@ -36,7 +36,7 @@ export const POST = async ({ request, params }) => {
         // Update the train
         train.address = data.address;
         train.name = data.name;
-        train.connUUID = data.connUUID;
+        train.connUuid = data.connUUID;
 
         // Update trains functions
         data.functions.forEach(funct => {

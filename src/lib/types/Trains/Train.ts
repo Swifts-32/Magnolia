@@ -1,11 +1,11 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { isFunctionData, type ITrainFunctionData } from "./Functions/Functions";
+import { type ITrainFunctionData } from "./Functions/Functions";
 
-export type TrainUUID = `${string}-${string}-${string}-${string}-${string}`;
-export type TrainAddress = string | number;
+export type TrainUuid = `${string}-${string}-${string}-${string}-${string}`;
+export type TrainAddress = string; // e.g.Dcc - 120 or LCC - 12.334.62.8
 
 export interface ITrainData {
-    uuid: TrainUUID;
+    uuid: TrainUuid;
     connUUID: ConnectionUUID;
     layoutUUID: LayoutUUID;
     name: string;

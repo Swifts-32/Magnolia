@@ -49,7 +49,7 @@
     };
 
 
-    fetch(`/api/layout/${connection.layoutUUID}/${connection.uuid}/edit`, {
+    fetch(`/api/layout/${connection.layoutUuid}/${connection.uuid}/edit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,5 +1,5 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import type { TrainUUID } from "../Train";
+import type { TrainAddress, TrainUuid } from "../Train";
 
 export const TrainFunctionModesList = ["Toggle", "Select"] as const;
 export type TrainFunctionModes = typeof TrainFunctionModesList[number];
@@ -14,7 +14,7 @@ export interface ITrainFunctionData {
 	icon: TrainFunctionIcons;
 	mode: TrainFunctionModes;
 	visible: boolean;
-	trainUUID: TrainUUID;
+	trainUUID: TrainAddress;
 	connUUID: ConnectionUUID;
 	layoutUUID: LayoutUUID;
 }

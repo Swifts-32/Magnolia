@@ -1,20 +1,11 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import Label from "$lib/components/ui/label/label.svelte";
-  import Input from "$lib/components/ui/input/input.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
-  import {
-    type ConnectionUUID,
-    LayoutClient,
-  } from "$lib/client/LayoutClient.svelte";
-  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
+  import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { toast } from "svelte-sonner";
-  import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
   import { type Snippet } from "svelte";
-  import type { ITrainData } from "$lib/types/Trains/Train";
-  import Separator from "$lib/components/ui/separator/separator.svelte";
-  import FunctionViewer from "./Functions/FunctionViewer.svelte";
-  import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
+  import TrainEditor from "./TrainEditor.svelte";
+  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
 
   interface Props {
     layout: LayoutClient;
@@ -24,54 +15,46 @@
   let { layout, class: trainAddClass = "", children }: Props = $props();
 
   let editMode: boolean = $state(false);
+  let train: ClientTrain | undefined = $state();
 
-  let trainName: string | undefined = $state();
-  let trainAddress: string | undefined = $state();
-  let trainConnUUID: ConnectionUUID | undefined = $state();
-  let trainFunctions: Map<string, TrainClientFunction> = $state(new Map());
+  $effect(() => {
+    if (!train && editMode) {
+      train = new ClientTrain(crypto.randomUUID(), layout.uuid);
+    }
+  });
 
-  async function saveChanges() {
-    if (!trainConnUUID?.trim())
-      return toast.error("Please fill in the train connection");
-    if (!trainName?.trim()) return toast.error("Please fill in the train name");
-    if (!trainAddress?.trim())
-      return toast.error("Please fill in the train address");
-
-    const data: ITrainData = {
-      layoutUUID: layout.uuid,
-      name: trainName,
-      address: trainAddress,
-      connUUID: trainConnUUID,
-      functions: Array.from(trainFunctions.values()),
-      uuid: crypto.randomUUID(),
-    };
+  async function createTrain() {
+    if (!train) {
+      closeDialog();
+      return;
+    }
 
     fetch(`/api/layout/${layout.uuid}/trains/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: train.toJsonWeb(),
     })
       .then(async (response) => {
         const json = await response.json();
 
         if (response.ok) {
-          editMode = false; // Close the dialog on success
           toast.success(json.message);
         } else {
           toast.error(json.message);
         }
-
-        // Reset values
-        trainName = undefined;
-        trainAddress = undefined;
-        trainConnUUID = undefined;
-        trainFunctions = new Map();
       })
       .catch((error) => {
         toast.error("Error adding train: " + error);
       });
+
+    closeDialog();
+  }
+
+  function closeDialog() {
+    train = undefined;
+    editMode = false;
   }
 </script>
 
@@ -79,50 +62,25 @@
   {@render children?.()}
 </button>
 
-<Dialog.Root open={editMode}>
-  <Dialog.Content
-    onOpenAutoFocus={(e) => e.preventDefault()}
-    interactOutsideBehavior="ignore"
-    escapeKeydownBehavior="ignore"
-  >
-    <Dialog.Header>
-      <Dialog.Title>Add Train</Dialog.Title>
-    </Dialog.Header>
+{#if train}
+  <Dialog.Root open={editMode}>
+    <Dialog.Content
+      onOpenAutoFocus={(e) => e.preventDefault()}
+      interactOutsideBehavior="ignore"
+      escapeKeydownBehavior="ignore"
+    >
+      <Dialog.Header>
+        <Dialog.Title>Create Train</Dialog.Title>
+      </Dialog.Header>
 
-    <div class="w-full">
-      <!-- Name -->
-      <div class="grid grid-cols-4 my-2 items-center gap-4">
-        <Label for="trainName" class="text-right">Name</Label>
-        <Input id="trainName" bind:value={trainName} class="col-span-3" />
-      </div>
+      <TrainEditor bind:train {layout} />
 
-      <!-- Address -->
-      <div class="grid grid-cols-4 my-2 items-center gap-4">
-        <Label for="trainAddress" class="text-right">Address</Label>
-        <Input id="trainAddress" bind:value={trainAddress} class="col-span-3" />
-      </div>
-
-      <!-- Connection -->
-      <ConnectionSelector
-        connections={layout.connections}
-        bind:selectedConnectionUUID={trainConnUUID}
-      />
-
-      <Separator class="my-4" />
-
-      <FunctionViewer bind:functions={trainFunctions} />
-
-      <Separator class="mt-4" />
-    </div>
-
-    <Dialog.Footer>
-      <Button
-        type="reset"
-        class="w-28"
-        variant="outline"
-        onclick={() => (editMode = false)}>Cancel</Button
-      >
-      <Button type="submit" class="w-28" onclick={saveChanges}>Save</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+      <Dialog.Footer>
+        <Button class="w-28" variant="outline" onclick={closeDialog}
+          >Cancel</Button
+        >
+        <Button class="w-28" onclick={createTrain}>Create</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+{/if}

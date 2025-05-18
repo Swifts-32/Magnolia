@@ -1,21 +1,17 @@
-import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import type { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
+import type { TrainUuid } from "$lib/types/Trains/Train";
 import { ConnectionProtocols } from "$lib/client/Protocols/protocols";
-import type { ITrainFunctionData, TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
-import type { TrainUUID } from "$lib/types/Trains/Train";
 import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 
 export class TrainClientFunction {
-	value: string = $state() as string; // E.g. 1 for F1 or 1123.2434.35 LCC.
-	name: string = $state() as string; // User friendly display name
+	public value: string = $state() as string; // E.g. 1 for F1 or 1123.2434.35 LCC.
+	public trainUuid: TrainUuid;
 
-	icon: TrainFunctionIcons = $state() as TrainFunctionIcons;
-	mode: TrainFunctionModes = $state() as TrainFunctionModes;
-	visible: boolean = $state(true);
-	position: number = $state() as number;
-	trainUUID: TrainUUID;
-	connUUID: ConnectionUUID;
-	layoutUUID: LayoutUUID;
-
+	public name: string = $state() as string; // User friendly display name
+	public icon: TrainFunctionIcons = $state("Text");
+	public mode: TrainFunctionModes = $state("Toggle");
+	public visible: boolean = $state(true);
+	public position: number = $state(0);
 
 	// Function state
 	private _state: boolean = $state(false);
@@ -23,21 +19,26 @@ export class TrainClientFunction {
 		return this._state;
 	}
 	public set state(value: boolean) {
-		let layout = layoutClientHandler.layouts.get(this.layoutUUID);
+		const layout = layoutClientHandler.layouts.values().find(layout => layout.trains.has(this.trainUuid));
 		if (!layout) {
 			console.error(`Layout not found when trying to update function state: ${this.name}`);
 			return;
 		}
 
-		let connection = layout.connections.get(this.connUUID);
-		if (!connection) {
-			console.error("Connection not found when trying to update function state: " + this.name);
+		const train = layout.trains.get(this.trainUuid);
+		if (!train) {
+			console.error("Train not found when trying to update function state: " + this.name);
 			return;
 		}
 
-		const train = connection.trains.get(this.trainUUID);
-		if (!train) {
-			console.error("Train not found when trying to update function state: " + this.name);
+		if (train.connUuid === undefined) {
+			console.error("Connection UUID is undefined");
+			return;
+		}
+
+		const connection = layout.connections.get(train.connUuid);
+		if (!connection) {
+			console.error("Connection not found when trying to update function state: " + this.name);
 			return;
 		}
 
@@ -46,7 +47,7 @@ export class TrainClientFunction {
 		// Update the function on the server
 		switch (connection.protocol) {
 			case ConnectionProtocols.DCCEX:
-				fetch(`/api/layout/${this.layoutUUID}/${this.connUUID}/write?data=<F ${train.address} ${this.value} ${this.state ? 1 : 0}>`);
+				fetch(`/api/layout/${layout.uuid}/${train.connUuid}/write?data=<F ${train.address} ${this.value} ${this.state ? 1 : 0}>`);
 				break;
 			default:
 				console.log("Unknown protocol: " + connection.protocol);
@@ -59,37 +60,44 @@ export class TrainClientFunction {
 		this._state = state;
 	}
 
-	constructor(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, trainUUID: TrainUUID, connUUID: ConnectionUUID, layoutUUID: LayoutUUID) {
+	constructor(value: string, trainUuid: TrainUuid) {
 		this.value = value;
-		this.name = name;
-
-		this.mode = mode;
-		this.icon = icon;
-		this.position = position;
-
-		this.trainUUID = trainUUID;
-		this.connUUID = connUUID;
-		this.layoutUUID = layoutUUID;
-
+		this.trainUuid = trainUuid;
 	}
 
-	toJSON(): ITrainFunctionData {
-		return {
+	public toJson(): string {
+		return JSON.stringify({
 			value: this.value,
+			trainUuid: this.trainUuid,
 			name: this.name,
-
 			icon: this.icon,
 			mode: this.mode,
 			visible: this.visible,
 			position: this.position,
-			trainUUID: this.trainUUID,
-			connUUID: this.connUUID,
-			layoutUUID: this.layoutUUID
-		};
+			state: this.state,
+		});
+	}
+
+	public static fromJson(json: any): TrainClientFunction | null {
+		const value = json.value;
+		const trainUuid = json.trainUuid;
+
+		if (!value || !trainUuid) return null;
+
+		const funct = new TrainClientFunction(value, trainUuid);
+
+		funct.name = json.name;
+		funct.icon = json.icon;
+		funct.mode = json.mode;
+		funct.visible = json.visible;
+		funct.position = json.position;
+		funct.state = json.state;
+
+		return funct;
 	}
 
 	public clone(): TrainClientFunction {
-		const clonedFunction = new TrainClientFunction(this.value, this.name, this.icon, this.mode, this.position, this.trainUUID, this.connUUID, this.layoutUUID);
+		const clonedFunction = new TrainClientFunction(this.value, this.trainUuid);
 		clonedFunction.updateStateLocal(this.state); // Don't send a request to the server
 
 		return clonedFunction;

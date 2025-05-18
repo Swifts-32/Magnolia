@@ -4,8 +4,7 @@ import { ConnectionProtocols } from "../client/Protocols/protocols";
 import { Connection } from "./Connections/connection.svelte";
 import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.server";
 import { ServerTrain } from "./Trains/Train.server";
-import { type TrainAddress, type TrainUUID } from "$lib/types/Trains/Train";
-import { SvelteMap } from "svelte/reactivity";
+import { type TrainAddress, type TrainUuid } from "$lib/types/Trains/Train";
 import { Sensor } from "./Sensors/Sensor";
 import type { SensorUuid } from "$lib/client/Sensors/SensorClient.svelte";
 import { LccSensor } from "./Sensors/LccSensor";
@@ -21,7 +20,11 @@ export class Layout {
   public position: number = 0;
 
   public connections: Map<ConnectionUUID, Connection> = new Map();
-  private sensors: SvelteMap<SensorUuid, Sensor> = new SvelteMap();
+
+  // TODO to input
+  private sensors: Map<SensorUuid, Sensor> = new Map();
+
+  private trains: Map<TrainUuid, ServerTrain> = new Map();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
@@ -36,30 +39,26 @@ export class Layout {
 
       connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
       sensors: Array.from(this.sensors.values()).map(sensor => sensor.toJsonWeb()),
+      trains: Array.from(this.trains.values()).map(train => train.toJsonWeb()),
     };
   }
 
-  static fromJSON(json: any): Layout | null {
-    if (json == undefined) {
-      console.log("Invalid layout data");
+  public static fromJSON(json: any): Layout | null {
+    json = JSON.parse(json);
+
+    const name = json.name;
+    const uuid = json.uuid;
+
+    if (!name || !uuid) {
+      console.error("Failed to load layout: Undefined name or uuid");
       return null;
-    }
-    else if (json.uuid === undefined) {
-      console.log("Invalid layout uuid");
-      return null;
-    }
-    else if (json.name === undefined) {
-      console.log("Invalid layout name");
-      return null;
-    }
+    };
 
     const layout = new Layout(json.name, json.uuid);
     layout.position = json.position;
 
-    // Recreate connections
     layout.loadConnectionsFromJson(json);
-
-    // Recreate Sensors
+    layout.loadTrainsFromJson(json);
     layout.loadSensorsFromJson(json);
 
     return layout;
@@ -70,13 +69,25 @@ export class Layout {
     this.updateClientConnections();
 
     for (const conn of json.connections) {
-      let connection = Connection.fromJSON(conn);
+      let connection = Connection.fromJsonWeb(conn);
       if (!connection) continue;
 
       this.createConnection(connection);
 
       console.log("Recreated connection", connection.name);
     }
+  }
+
+  private loadTrainsFromJson(json: any) {
+    const trains: Map<TrainUuid, ServerTrain> = new Map();
+    for (const trainJson of json.trains) {
+      let train = ServerTrain.fromJsonFile(trainJson);
+      if (train) {
+        trains.set(train.uuid, train);
+      }
+    }
+
+    this.trains = trains;
   }
 
   private loadSensorsFromJson(json: any) {
@@ -115,42 +126,7 @@ export class Layout {
     }
   }
 
-  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, layoutUUID: LayoutUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
-    const connection = this.connections.get(connUUID);
-
-    if (connection) {
-      const train = new ServerTrain(address, trainName, connUUID, layoutUUID, trainUUID);
-      connection.trains.set(train.uuid, train);
-      return train;
-    }
-  }
-
-
-  /**
-   * Creates a DCC serial connection
-   * @param path 
-   * @param baudRate 
-   */
-  createSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string): Connection {
-    const hardware = new SerialConnection(path, baudRate);
-    const connUUID = crypto.randomUUID();
-
-    const connection = this.createConnection(new Connection(hardware, connName, protocol, connUUID));
-    return connection;
-  }
-
-  /**
-   * Creates an emulated DCC EX connection
-   */
-  createEmulatorConnection(protocol: ConnectionProtocols, connName: string): Connection {
-    const hardware = new EmulatorConnection();
-    const connUUID = crypto.randomUUID();
-
-    const connection = this.createConnection(new Connection(hardware, connName, protocol, connUUID));
-    return connection;
-  }
-
-  createConnection(connection: Connection): Connection {
+  public createConnection(connection: Connection) {
     connection.onDataRecieved((data: string) => {
       const message = `LayoutUuid:${this.uuid}:ConnectionUuid:${connection.uuid}:${data}`
 
@@ -164,8 +140,6 @@ export class Layout {
 
     this.connections.set(connection.uuid, connection);
     this.updateClientConnections();
-
-    return connection;
   }
 
   public updateConnection(connection: Connection) {
@@ -184,11 +158,11 @@ export class Layout {
       console.log("Layout Server handler is undefined");
     }
   }
-  
+
   private updateClientSensors() {
     const json = `{"sensors": ${JSON.stringify(Array.from(this.sensors.values()).map(sensor => sensor.toJsonWeb()))}}`;
     const message = `LayoutUuid:${this.uuid}:${json}`;
-  
+
     if (LayoutServerHandler) {
       LayoutServerHandler.sendClientMessage("UpdateLayoutSensors", message);
     }
@@ -198,13 +172,20 @@ export class Layout {
 
   }
 
-  getTrain(trainUUID: TrainUUID): ServerTrain | undefined {
-    for (const connection of this.connections.values()) {
-      const train = connection.trains.get(trainUUID);
-      if (train) {
-        return train;
-      }
-    }
+  public addTrain(train: ServerTrain) {
+    this.trains.set(train.uuid, train);
+  }
+
+  public deleteTrain(trainUUID: TrainUuid) {
+    this.trains.delete(trainUUID);
+  }
+
+  public getTrains(): Map<TrainAddress, ServerTrain> {
+    return this.trains;
+  }
+
+  public getTrain(trainUuid: TrainUuid): ServerTrain | undefined {
+    return this.trains.get(trainUuid);
   }
 
   public createSensor(name: string) {

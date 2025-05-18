@@ -4,37 +4,22 @@
 		LayoutUUID,
 	} from "$lib/client/LayoutClient.svelte";
 	import { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
-	import type { TrainUUID } from "$lib/types/Trains/Train";
+	import type { TrainUuid } from "$lib/types/Trains/Train";
 	import FunctionEditor from "./FunctionEditor.svelte";
 	import FunctionSelector from "./FunctionSelector.svelte";
 
 	interface Props {
 		functions: Map<string, TrainClientFunction>;
-		layoutUUID: LayoutUUID;
-		connUUID: ConnectionUUID;
-		trainUUID: TrainUUID;
+		trainUUID: TrainUuid;
 	}
 
-	let {
-		functions = $bindable(),
-		layoutUUID,
-		connUUID,
-		trainUUID,
-	}: Props = $props();
+	let { functions = $bindable(), trainUUID: trainUuid }: Props = $props();
 
 	let selectedFunction: TrainClientFunction | undefined = $state();
 
 	function addFunction() {
-		let newFunction = new TrainClientFunction(
-			"1",
-			"New Function",
-			"Text",
-			"Toggle",
-			0,
-			trainUUID,
-			layoutUUID,
-			connUUID,
-		);
+		let newFunction = new TrainClientFunction("1", trainUuid);
+
 		// Select a function value (numerical) that is not already in use
 		let i = 0;
 		while (functions.has(`${i}`)) {

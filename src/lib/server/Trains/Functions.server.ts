@@ -1,47 +1,51 @@
-import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import type { TrainUUID } from "$lib/types/Trains/Train";
-import type { TrainFunctionIcons, TrainFunctionModes, ITrainFunctionData } from "../../types/Trains/Functions/Functions";
+import type { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
+import type {  TrainUuid } from "$lib/types/Trains/Train";
 
 export class ServerTrainFunctions {
-    value: string; // E.g. 1 for F1 or 1123.2434.35 LCC.
-    name: string; // User friendly display name    
-    icon: TrainFunctionIcons;
-    mode: TrainFunctionModes;
-    visible: boolean = true;
-    position: number;
+  public value: string; // E.g. 1 for F1 or 1123.2434.35 LCC.
+  public trainUuid: TrainUuid;
 
-    trainUUID: TrainUUID;
-    connUUID: ConnectionUUID;
-    layoutUUID: LayoutUUID;
+  public name: string = "New Function"; // User friendly name
+  public icon: TrainFunctionIcons = "Text";
+  public mode: TrainFunctionModes = "Toggle";
+  public visible: boolean = true;
+  public position: number = 0;
+  public state: boolean = false;
 
-    constructor(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, trainUUID: TrainUUID, connUUID: ConnectionUUID, layoutUUID: LayoutUUID) {
-        this.value = value;
-        this.name = name;
+  constructor(value: string, trainUuid: TrainUuid) {
+    this.value = value;
+    this.trainUuid = trainUuid;
+  }
 
-        this.mode = mode;
-        this.icon = icon;
-        this.position = position;
+  public toJson(): string {
+    return JSON.stringify({
+      value: this.value,
+      trainUuid: this.trainUuid,
+      name: this.name,
+      icon: this.icon,
+      mode: this.mode,
+      visible: this.visible,
+      position: this.position,
+      state: this.state,
+    });
+  }
 
-        this.trainUUID = trainUUID;
-        this.connUUID = connUUID;
-        this.layoutUUID = layoutUUID;
-    }
+  public static fromJson(json: any): ServerTrainFunctions | null {
+    const value = json.value;
+    const trainUuid = json.trainUuid;
 
+    if (!value || !trainUuid) return null;
 
-    toJSON(): ITrainFunctionData {
-        return {
-            value: this.value,
-            name: this.name,
+    const serverTrainFunctions = new ServerTrainFunctions(value, trainUuid);
 
-            icon: this.icon,
-            mode: this.mode,
-            visible: this.visible,
-            position: this.position,
+    serverTrainFunctions.name = json.name;
+    serverTrainFunctions.icon = json.icon;
+    serverTrainFunctions.mode = json.mode;
+    serverTrainFunctions.visible = json.visible;
+    serverTrainFunctions.position = json.position;
+    serverTrainFunctions.state = json.state;
 
-            trainUUID: this.trainUUID,
-            connUUID: this.connUUID,
-            layoutUUID: this.layoutUUID,
-        };
-    }
+    return serverTrainFunctions;
+  }
 }
 

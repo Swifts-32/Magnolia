@@ -1,7 +1,6 @@
-import { isTrainData, type TrainUUID } from "$lib/types/Trains/Train";
+import type { TrainUuid } from "$lib/types/Trains/Train";
 import { ClientTrain } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
-import { isFunctionData } from "$lib/types/Trains/Functions/Functions";
 import { SvelteMap } from "svelte/reactivity";
 import { SensorClient, type SensorUuid } from "./Sensors/SensorClient.svelte";
 
@@ -14,21 +13,29 @@ export class LayoutClient {
 
   public connections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
   public sensors: SvelteMap<SensorUuid, SensorClient> = new SvelteMap();
-
-  public get trains() {
-    let trains: Map<TrainUUID, ClientTrain> = new Map();
-
-    this.connections.forEach(connection => {
-      connection.trains.forEach((train, uuid) => {
-        trains.set(uuid, train);
-      });
-    })
-    return trains;
-  }
+  public trains: SvelteMap<TrainUuid, ClientTrain> = new SvelteMap();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
+  }
+
+  public static fromJsonWeb(json: any): LayoutClient | null {
+    const layoutName = json.name;
+    const layoutUuid = json.uuid;
+
+    if (!layoutName || !layoutUuid) {
+      console.error("Failed to load layout: Undefined name or uuid");
+      return null;
+    }
+
+    const layout = new LayoutClient(layoutName, layoutUuid);
+
+    layout.loadConnectionsFromJson(json);
+    layout.loadSensorsFromJson(json);
+    layout.loadTrainsFromJsonWeb(json);
+
+    return layout;
   }
 
   public loadConnectionsFromJson(json: any) {
@@ -66,40 +73,6 @@ export class LayoutClient {
 
       const connection = new ClientConnection(conn.protocol, conn.hardware.connType, conn.name, conn.uuid, this.uuid);
 
-      // Add trains to connection
-      const serverTrainUuids = new Set();
-
-      for (const train of conn.trains) {
-        if (!isTrainData(train)) {
-          console.log("Invalid train data");
-          continue;
-        }
-
-        serverTrainUuids.add(train.uuid);
-
-        const clientTrain = new ClientTrain(train.uuid, train.address, train.name, conn.uuid, this.uuid);
-
-        // Add functions to train
-        for (const funct of train.functions) {
-          if (!isFunctionData(funct)) {
-            console.log("Invalid function data");
-            continue;
-          }
-
-          clientTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position, this.uuid);
-        }
-
-        connection.trains.set(clientTrain.uuid, clientTrain);
-      }
-
-      // Remove trains that still exist on client but not on server
-      for (const [uuid, train] of connection.trains) {
-        if (!serverTrainUuids.has(uuid)) {
-          console.log(`Removing train ${train.name} (${uuid}) as it no longer exists on server`);
-          connection.trains.delete(uuid);
-        }
-      }
-
       this.connections.set(conn.uuid, connection);
     }
 
@@ -111,32 +84,51 @@ export class LayoutClient {
       }
     }
   }
-  
+
   public loadSensorsFromJson(json: any) {
     const serverSensorUuids = new Set();
-  
+
     for (const sensorJson of json.sensors) {
       if (sensorJson.uuid === undefined) {
         console.log("Invalid sensor uuid");
         return;
       }
-  
+
       // TODO Maybe update instead of create if it already exists
 
-      const sensor = new SensorClient(sensorJson.layoutUUID, sensorJson.uuid);  
+      const sensor = new SensorClient(sensorJson.layoutUUID, sensorJson.uuid);
       sensor.name = sensorJson.name;
-      
 
-      
+
+
       serverSensorUuids.add(sensor.uuid);
       this.sensors.set(sensor.uuid, sensor);
     }
-  
+
     for (const [uuid, sensor] of this.sensors) {
       if (!serverSensorUuids.has(uuid)) {
         console.log(`Removing senser ${sensor.name} (${uuid}) as it no longer exists on server`);
         this.sensors.delete(uuid);
       }
     }
+  }
+
+  public loadTrainsFromJsonWeb(json: any) {
+    const serverTrainUuids = new Set();
+
+    for (const trainJson of json.trains) {
+      const train = ClientTrain.fromJsonWeb(trainJson);
+      if (!train) continue;
+
+      serverTrainUuids.add(train.uuid);
+      this.trains.set(train.uuid, train);
+    }
+
+    // Remove trains that no longer exist on the server from the client
+    this.trains.forEach(train => {
+      if (!serverTrainUuids.has(train.uuid)) {
+        this.trains.delete(train.uuid);
+      }
+    })
   }
 }

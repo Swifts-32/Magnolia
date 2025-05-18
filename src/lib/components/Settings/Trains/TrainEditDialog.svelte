@@ -1,19 +1,14 @@
 <script lang="ts">
-  import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import Label from "$lib/components/ui/label/label.svelte";
-  import Input from "$lib/components/ui/input/input.svelte";
-  import Button from "$lib/components/ui/button/button.svelte";
+  import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import type { Snippet } from "svelte";
   import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { Trash2 } from "lucide-svelte";
-  import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
-  import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
-  import Separator from "$lib/components/ui/separator/separator.svelte";
-  import FunctionViewer from "./Functions/FunctionViewer.svelte";
-  import type { ITrainData } from "$lib/types/Trains/Train";
   import { toast } from "svelte-sonner";
-  import { type Snippet } from "svelte";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import Button from "$lib/components/ui/button/button.svelte";
   import ConformationDialog from "../Common/ConformationDialog/ConformationDialog.svelte";
+  import TrainEditor from "./TrainEditor.svelte";
+  import Separator from "$lib/components/ui/separator/separator.svelte";
 
   interface Props {
     train: ClientTrain;
@@ -24,43 +19,28 @@
 
   let { train, layout, class: trainEditClass = "", children }: Props = $props();
 
-  // Working copy of the train that will be edited
-  let editableTrain: ClientTrain | null = $state(null);
-  // Original train data for cancellation
-  let currentTrain: ClientTrain | undefined;
   let editMode = $state(false);
+  let editableTrain: ClientTrain | undefined = $state();
 
-  async function saveChanges() {
+  $effect(() => {
+    if (!editableTrain && editMode) {
+      editableTrain = train.clone();
+    }
+  });
+
+  async function deleteTrain() {
     if (!editableTrain) return;
 
-    if (!editableTrain.name.trim())
-      return toast.error("Please fill in the train name");
-    if (!editableTrain.address)
-      return toast.error("Please fill in the train address");
-    if (!editableTrain.connUUID.trim())
-      return toast.error("Please fill in the train connection");
-
-    const data: ITrainData = {
-      layoutUUID: layout.uuid,
-      address: editableTrain.address,
-      connUUID: editableTrain.connUUID,
-      functions: Array.from(editableTrain.functions.values()),
-      name: editableTrain.name,
-      uuid: editableTrain.uuid,
-    };
-
-    fetch(`/api/layout/${layout.uuid}/trains/edit`, {
+    fetch(`/api/layout/${layout.uuid}/trains/delete`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: editableTrain.toJsonWeb(),
     })
       .then(async (response) => {
         const json = await response.json();
         if (response.ok) {
-          // Update the original train with edited values
-          Object.assign(train, editableTrain);
           closeDialog();
           toast.success(json.message);
         } else {
@@ -72,28 +52,23 @@
       });
   }
 
-  function deleteTrain() {
-    if (!editableTrain || !editableTrain.connUUID.trim())
-      return toast.error("Please fill in the train connection");
+  function updateTrain() {
+    if (!editableTrain) {
+      closeDialog();
+      return;
+    }
 
-    const data = {
-      uuid: editableTrain.uuid,
-      connUUID: editableTrain.connUUID,
-    };
-
-    fetch(`/api/layout/${layout.uuid}/trains/delete`, {
+    fetch(`/api/layout/${layout.uuid}/trains/edit`, {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: editableTrain.toJsonWeb(),
     })
       .then(async (response) => {
         const json = await response.json();
         if (response.ok) {
           toast.success(json.message);
-          editMode = false;
         } else {
           toast.error(json.message);
         }
@@ -101,24 +76,17 @@
       .catch((error) => {
         toast.error("Error deleting train: " + error);
       });
-  }
 
-  function openDialog() {
-    // Create fresh clones of the train each time dialog opens
-    editableTrain = train.clone();
-    currentTrain = train.clone(); // Save original state for potential cancellation
-    editMode = true;
-
-    if (editableTrain == null) closeDialog();
+    closeDialog();
   }
 
   function closeDialog() {
     editMode = false;
-    editableTrain = null; // Clear the editable train when closing
+    editableTrain = undefined;
   }
 </script>
 
-<button class={trainEditClass} onclick={openDialog}>
+<button class={trainEditClass}>
   {@render children?.()}
 </button>
 
@@ -136,40 +104,7 @@
     </Dialog.Header>
     {#if editableTrain}
       <div class="w-full">
-        <!-- Name -->
-        <div class="grid grid-cols-4 my-2 items-center gap-4">
-          <Label for="trainName" class="text-right">Name</Label>
-          <Input
-            id="trainName"
-            bind:value={editableTrain.name}
-            class="col-span-3"
-          />
-        </div>
-
-        <!-- Address -->
-        <div class="grid grid-cols-4 my-2 items-center gap-4">
-          <Label for="trainAddress" class="text-right">Address</Label>
-          <Input
-            id="trainAddress"
-            bind:value={editableTrain.address}
-            class="col-span-3"
-          />
-        </div>
-
-        <!-- Connection -->
-        <ConnectionSelector
-          connections={layout.connections}
-          bind:selectedConnectionUUID={editableTrain.connUUID}
-        />
-
-        <Separator class="my-4" />
-
-        <FunctionViewer
-          bind:functions={editableTrain.functions}
-          layoutUUID={editableTrain.layoutUUID}
-          connUUID={editableTrain.connUUID}
-          trainUUID={editableTrain.uuid}
-        />
+        <TrainEditor bind:train={editableTrain} {layout} />
 
         <Separator class="my-4" />
 
@@ -198,7 +133,7 @@
       <Button type="reset" class="w-28" variant="outline" onclick={closeDialog}
         >Cancel</Button
       >
-      <Button type="submit" class="w-28" onclick={saveChanges}>Save</Button>
+      <Button type="submit" class="w-28" onclick={updateTrain}>Save</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

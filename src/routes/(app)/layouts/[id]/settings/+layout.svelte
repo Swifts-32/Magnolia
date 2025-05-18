@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import type { LayoutData } from "./$types";
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
 
-  let { data, children }: { data: LayoutData; children: Snippet } = $props();
+  let { children }: { children: Snippet } = $props();
 </script>
 
 {#snippet layoutButton(name: string, onclick: () => void)}
@@ -22,12 +22,12 @@
     <div class="flex flex-col gap-3">
       <!-- Layout -->
       {@render layoutButton("Layout", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/layout`),
+        goto(`/layouts/${page.params.id}/settings/layout`),
       )}
 
       <!-- Trains -->
       {@render layoutButton("Trains", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/trains`),
+        goto(`/layouts/${page.params.id}/settings/trains`),
       )}
 
       <!-- Accessories -->
@@ -35,12 +35,12 @@
 
       <!-- Connections -->
       {@render layoutButton("Connections", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/connections`),
+        goto(`/layouts/${page.params.id}/settings/connections`),
       )}
 
       <!-- Sensors -->
       {@render layoutButton("Sensors", () =>
-        goto(`/layouts/${data.layout.uuid}/settings/sensors`),
+        goto(`/layouts/${page.params.id}/settings/sensors`),
       )}
 
       <!-- Automations -->

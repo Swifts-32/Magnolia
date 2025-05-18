@@ -7,37 +7,21 @@ class LayoutClientHandler {
 
   public async loadLayouts() {
     const layoutHandlerJson = await fetch("/api/layout").then(res => res.json());
-
     const layoutServerUuids = new Set();
 
     for (const layoutJson of layoutHandlerJson.layouts) {
-      if (layoutJson.uuid === undefined) {
-        console.log("Invalid layout uuid");
-        return;
-      }
-      else if (layoutJson.name === undefined) {
-        console.log("Invalid layout name");
-        return;
-      }
+      const layout = LayoutClient.fromJsonWeb(layoutJson);
+      if (!layout) continue;
 
       layoutServerUuids.add(layoutJson.uuid);
 
-      const layoutClient = new LayoutClient(layoutJson.name, layoutJson.uuid);
-
-      // Recreate connections
-      layoutClient.loadConnectionsFromJson(layoutJson);
-
-      // TODO recreate sensors
-      layoutClient.loadSensorsFromJson(layoutJson);
-
-      this.layouts.set(layoutClient.uuid, layoutClient);
+      this.layouts.set(layout.uuid, layout);
     }
 
-    // Remove layouts that don't exist on server
+    // Remove layouts that no longer exist on server
     for (const uuid of this.layouts.keys()) {
       if (!layoutServerUuids.has(uuid)) {
         this.layouts.delete(uuid);
-        console.log(`Layout ${uuid} removed from client`);
       }
     }
   }
@@ -56,7 +40,7 @@ class LayoutClientHandler {
 
     this.appEventSource.addEventListener("UpdateLayoutConnections", (event) => {
       const message = event.data.trim().match(/^LayoutUuid:([^:]+):(.+)/);
-      
+
       const layoutUuid = message[1] as LayoutUUID;
       const layout = this.layouts.get(layoutUuid);
       if (!layout) return;
@@ -70,10 +54,10 @@ class LayoutClientHandler {
         console.error("Failed to parse JSON:", error);
       }
     });
-    
+
     this.appEventSource.addEventListener("UpdateLayoutSensors", (event) => {
       const message = event.data.trim().match(/^LayoutUuid:([^:]+):(.+)/);
-      
+
       const layoutUuid = message[1] as LayoutUUID;
       const layout = this.layouts.get(layoutUuid);
       if (!layout) return;
@@ -83,27 +67,6 @@ class LayoutClientHandler {
 
       try {
         layout.loadSensorsFromJson(JSON.parse(data));
-      } catch (error) {
-        console.error("Failed to parse JSON:", error);
-      }
-    });
-    
-    this.appEventSource.addEventListener("LayoutConnectionDataReceived", (event) => {
-      const message = event.data.trim().match(/^LayoutUuid:([^:]+):ConnectionUuid:([^:]+):(.+)/);
-      
-      const layoutUuid = message[1] as LayoutUUID;
-      const layout = this.layouts.get(layoutUuid);
-      if (!layout) return;
-
-      const connectionUuid = message[2];
-      const connection = layout.connections.get(connectionUuid);
-      if (!connection) return;
-  
-      const data = message[3];
-      if (!data) return;
-  
-      try {
-        connection.processCommand(JSON.parse(data));
       } catch (error) {
         console.error("Failed to parse JSON:", error);
       }
