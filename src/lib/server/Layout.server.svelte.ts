@@ -1,8 +1,5 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server";
-import { ConnectionProtocols } from "../client/Protocols/protocols";
 import { Connection } from "./Connections/connection.svelte";
-import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.server";
 import { ServerTrain } from "./Trains/Train.server";
 import { type TrainAddress, type TrainUuid } from "$lib/types/Trains/Train";
 import { Sensor } from "./Sensors/Sensor";
