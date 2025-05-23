@@ -1,23 +1,64 @@
 <script lang="ts">
+  import { z } from "zod/v4";
+  import { cn } from "$lib/utils.js";
+  import { tick } from "svelte";
+  import { toast } from "svelte-sonner";
+  import { Plus } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
+  import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
   import Check from "lucide-svelte/icons/check";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
-  import { tick } from "svelte";
+  import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { cn } from "$lib/utils.js";
-  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
-  import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
-  import { Plus } from "lucide-svelte";
-  import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
 
   interface Props {
     curTrain: ClientTrain | undefined;
     disabled?: boolean;
-    layout: LayoutClient;
+    layoutId: LayoutUUID;
   }
 
-  let { curTrain = $bindable(), disabled = false, layout }: Props = $props();
+  let { curTrain = $bindable(), disabled = false, layoutId }: Props = $props();
+
+  let trains: {
+    id: string;
+    name: string;
+    address: string;
+    connName: string | null;
+  }[] = $state([]);
+
+  // Refresh the list of trains when the combobox is opened
+  async function loadTrains() {
+    const response = await fetch(`/api/layout/${layoutId}/trains/loco-select`);
+    const json = await response.json();
+
+    // Need train:
+    // - Name
+    // - Address
+    // - Uuid
+    // - Connection Name
+    const Train = z.object({
+      id: z.uuidv4(),
+      name: z.string(),
+      address: z.string(),
+      connName: z.string().nullable(),
+    });
+
+    trains = z.array(Train).parse(json.trains);
+  }
+
+  async function loadTrain(trainId: string) {
+    const response = await fetch(`/api/layout/${layoutId}/trains/${trainId}`);
+    const json = await response.json();
+
+    if (response.ok) {
+      const train = ClientTrain.fromJsonWeb(json.train);
+      return train ? train : undefined;
+    } else {
+      toast(json.message);
+    }
+  }
 
   let open = $state(false);
   let trainSearch: string = $state("");
@@ -32,7 +73,11 @@
 </script>
 
 <Popover.Root bind:open>
-  <Popover.Trigger bind:ref={triggerRef} {disabled}>
+  <Popover.Trigger
+    bind:ref={triggerRef}
+    {disabled}
+    onclick={async () => loadTrains()}
+  >
     {#snippet child({ props })}
       <Button
         variant="outline"
@@ -66,20 +111,16 @@
       <Command.List>
         <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
-          {#each layout.trains.values() as train}
+          {#each trains as train}
             <Command.Item
               {disabled}
-              value={train.uuid}
-              keywords={[
-                train.name,
-                train.address.toString(),
-                layout.connections.get(train.connUUID)?.name ?? "Undefined",
-              ]}
-              onSelect={() => {
-                curTrain = train;
+              value={train.id}
+              keywords={[train.name, train.address, train.connName ?? ""]}
+              onSelect={async () => {
+                curTrain = await loadTrain(train.id);
                 closeAndFocusTrigger();
               }}
-              class=" h-10 flex justify-between {train.uuid == curTrain?.uuid
+              class=" h-10 flex justify-between {train.id == curTrain?.uuid
                 ? 'cursor-default'
                 : 'cursor-pointer'}"
             >
@@ -89,16 +130,17 @@
                   class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
                 >
                   <p>Address: {train.address}</p>
-                  <p>
-                    Connection: {layout.connections.get(train.connUUID)?.name ??
-                      "Undefined"}
-                  </p>
+                  {#if train.connName}
+                    <p>
+                      Connection: {train.connName}
+                    </p>
+                  {/if}
                 </div>
               </div>
               <Check
                 class={cn(
                   "mr-2 size-4",
-                  curTrain?.uuid !== train.uuid && "text-transparent",
+                  curTrain?.uuid !== train.id && "text-transparent",
                 )}
               />
             </Command.Item>
@@ -112,7 +154,7 @@
             class="h-10 w-full flex-col justify-center"
           >
             <TrainAdd
-              {layout}
+              {layoutId}
               class="flex size-full items-center justify-center gap-2"
             >
               <Plus class="size-6" />

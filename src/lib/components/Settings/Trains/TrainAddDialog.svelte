@@ -1,25 +1,25 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
-  import { LayoutClient } from "$lib/client/LayoutClient.svelte";
+  import { type LayoutUUID } from "$lib/client/LayoutClient.svelte";
   import { toast } from "svelte-sonner";
   import { type Snippet } from "svelte";
   import TrainEditor from "./TrainEditor.svelte";
   import { ClientTrain } from "$lib/client/Trains/Train.svelte";
 
   interface Props {
-    layout: LayoutClient;
+    layoutId: LayoutUUID;
     class?: string;
     children?: Snippet;
   }
-  let { layout, class: trainAddClass = "", children }: Props = $props();
+  let { layoutId, class: trainAddClass = "", children }: Props = $props();
 
   let editMode: boolean = $state(false);
   let train: ClientTrain | undefined = $state();
 
   $effect(() => {
     if (!train && editMode) {
-      train = new ClientTrain(crypto.randomUUID(), layout.uuid);
+      train = new ClientTrain(crypto.randomUUID(), layoutId);
     }
   });
 
@@ -29,7 +29,7 @@
       return;
     }
 
-    fetch(`/api/layout/${layout.uuid}/trains/add`, {
+    fetch(`/api/layout/${layoutId}/trains/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +73,7 @@
         <Dialog.Title>Create Train</Dialog.Title>
       </Dialog.Header>
 
-      <TrainEditor bind:train {layout} />
+      <TrainEditor bind:train />
 
       <Dialog.Footer>
         <Button class="w-28" variant="outline" onclick={closeDialog}

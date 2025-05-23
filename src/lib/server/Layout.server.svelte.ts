@@ -6,6 +6,8 @@ import { Sensor } from "./Sensors/Sensor";
 import type { SensorUuid } from "$lib/client/Sensors/SensorClient.svelte";
 import { LccSensor } from "./Sensors/LccSensor";
 import { LayoutServerHandler } from "./layoutHandler.server.svelte";
+import { db } from "./db";
+import { TrainTable } from "./db/schema/trains";
 
 export interface LayoutServerJsonWeb {
 
@@ -23,9 +25,12 @@ export class Layout {
 
   private trains: Map<TrainUuid, ServerTrain> = new Map();
 
+
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
+
+    this.loadTrainsFromServer();
   }
 
   // TODO web and file
@@ -86,6 +91,23 @@ export class Layout {
     }
 
     this.trains = trains;
+  }
+
+  public async loadTrainsFromServer() {
+    console.log("Loadnig");
+
+    const trains = await db.select().from(TrainTable);
+
+    trains.forEach((train) => {
+      const sTrain = new ServerTrain(train.uuid as TrainUuid, this.uuid);
+
+      sTrain.address = train.address;
+      sTrain.comment = train.comment;
+      sTrain.connUuid = train.connectionUuid ? train.connectionUuid as ConnectionUUID : undefined;
+      sTrain.name = train.name;
+
+      this.trains.set(sTrain.uuid, sTrain);
+    })
   }
 
   private loadSensorsFromJson(json: any) {
@@ -174,16 +196,12 @@ export class Layout {
     this.trains.set(train.uuid, train);
   }
 
-  public deleteTrain(trainUUID: TrainUuid) {
-    this.trains.delete(trainUUID);
-  }
-
-  public getTrains(): Map<TrainAddress, ServerTrain> {
-    return this.trains;
-  }
-
   public getTrain(trainUuid: TrainUuid): ServerTrain | undefined {
     return this.trains.get(trainUuid);
+  }
+
+  public getTrains() {
+    return this.trains;
   }
 
   public createSensor(name: string) {

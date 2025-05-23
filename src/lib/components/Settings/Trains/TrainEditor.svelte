@@ -9,10 +9,9 @@
 
   interface Props {
     train: ClientTrain;
-    layout: LayoutClient;
   }
 
-  let { train = $bindable(), layout }: Props = $props();
+  let { train = $bindable() }: Props = $props();
 </script>
 
 <div>
@@ -29,10 +28,12 @@
   </div>
 
   <!-- Connection -->
-  <ConnectionSelector
+  <!-- TODO Add connection selector -->
+   <p>Connection Selector</p>
+  <!-- <ConnectionSelector
     connections={layout.connections}
     bind:selectedConnectionUUID={train.connUuid}
-  />
+  /> -->
 
   <Separator class="my-4" />
 

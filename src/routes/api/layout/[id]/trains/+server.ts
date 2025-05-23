@@ -9,8 +9,7 @@ export const GET = async ({ params }) => {
         return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
     }
 
-    const connections = Array.from(layout.connections.values());
-    const trains = connections.flatMap(conn => Array.from(conn.trains.values()).map(train => train.toJSON()));
+    const trains = layout.getTrains();
 
     return new Response(JSON.stringify({ message: trains }), { status: 200 });
 }

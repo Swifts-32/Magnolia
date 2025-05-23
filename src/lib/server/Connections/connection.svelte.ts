@@ -5,6 +5,10 @@ import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import { DccEx } from "../Protocols/DccEx/DccEx";
 import { LayoutServerHandler } from "../layoutHandler.server.svelte";
+import { db } from "../db";
+import { TrainFunctionTable, TrainTable } from "../db/schema/trains";
+import { and, eq } from "drizzle-orm";
+import type { TrainUuid } from "$lib/types/Trains/Train";
 
 export class Connection {
   public uuid: ConnectionUUID;
@@ -155,7 +159,7 @@ export class Connection {
     }
   }
 
-  private processDccExCommand(command: string) {
+  private async processDccExCommand(command: string) {
 
     if (/<p0>/.test(command)) { // Power Off
       console.log("Power Off");
@@ -182,21 +186,42 @@ export class Connection {
         return;
       }
 
-      const train = layout.getTrain(`${this.uuid}:${cabId}`)
-      if (!train) {
-        console.log("Train not found: " + cabId);
-        return;
-      }
+      // TODO Add functions states
+      const trainUuids = await db.update(TrainTable)
+        .set({
+          speed: speed,
+          direction: direction === 0 ? "Reverse" : "Forward"
+        })
+        .where(and(eq(TrainTable.address, cabId.toString()), eq(TrainTable.connectionUuid, this.uuid)))
+        .returning({
+          uuid: TrainTable.uuid,
+        });
 
-      train.speed = speed;
-      train.direction = direction;
       functStates.forEach((state, i) => {
-        const trainFunct = train.functions.get(i.toString());
-
-        if (trainFunct) {
-          trainFunct.state = state;
-        }
+        trainUuids.forEach(async uuid => {
+          await db.update(TrainFunctionTable)
+            .set({
+              state
+            })
+            .where(and(eq(TrainFunctionTable.trainUuid, uuid as unknown as TrainUuid), eq(TrainFunctionTable.value, i.toString())))
+        });
       });
+
+      // const train = layout.getTrain(`${this.uuid}:${cabId}`)
+      // if (!train) {
+      //   console.log("Train not found: " + cabId);
+      //   return;
+      // }
+
+      // train.speed = speed;
+      // train.direction = direction;
+      // functStates.forEach((state, i) => {
+      //   const trainFunct = train.functions.get(i.toString());
+
+      //   if (trainFunct) {
+      //     trainFunct.state = state;
+      //   }
+      // });
 
       return;
     }

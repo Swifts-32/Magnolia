@@ -109,8 +109,6 @@ export class ClientTrain {
 	}
 
 	public static fromJsonWeb(json: any): ClientTrain | null {
-		json = JSON.parse(json);
-
 		const uuid = json.uuid;
 		const layoutUuid = json.layoutUuid;
 
@@ -156,6 +154,10 @@ export class ClientTrain {
 		});
 
 		return clonedTrain;
+	}
+
+	public emergencyStop() {
+		// TODO Implement emergency stop for the train
 	}
 }
 

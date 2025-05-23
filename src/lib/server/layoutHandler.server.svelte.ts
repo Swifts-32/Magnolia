@@ -25,6 +25,8 @@ class LayoutServerHandlerClass {
     // Auto save layoutsa
     this.saveInterval = setInterval(() => {
       this.saveLayouts();
+
+      this.layouts.values().forEach((l) => l.loadTrainsFromServer())
     }, 5 * (60 * 1000)); // 5 minutes
   }
 
@@ -51,11 +53,13 @@ class LayoutServerHandlerClass {
     clearInterval(this.saveInterval);
   }
 
-  public addNewLayout(name: string): Layout {
-    const layoutUUID = crypto.randomUUID();
-    let layout = new Layout(name, layoutUUID);
+  public addNewLayout(name: string, uuid?: LayoutUUID, position: number = 0): Layout {
+    const id = uuid ?? crypto.randomUUID();
 
-    this.layouts.set(layoutUUID, layout);
+    const layout = new Layout(name, id);
+    layout.position = position
+
+    this.layouts.set(layout.uuid, layout);
     this.saveLayouts();
 
     return layout;

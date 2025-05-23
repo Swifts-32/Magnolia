@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import type { Snippet } from "svelte";
-  import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import { Trash2 } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
@@ -12,12 +11,12 @@
 
   interface Props {
     train: ClientTrain;
-    layout: LayoutClient;
+    isOpen: boolean;
     class?: string;
     children?: Snippet;
   }
 
-  let { train, layout, class: trainEditClass = "", children }: Props = $props();
+  let { train, isOpen: open = $bindable(), children }: Props = $props();
 
   let editMode = $state(false);
   let editableTrain: ClientTrain | undefined = $state();
@@ -31,7 +30,7 @@
   async function deleteTrain() {
     if (!editableTrain) return;
 
-    fetch(`/api/layout/${layout.uuid}/trains/delete`, {
+    fetch(`/api/layout/${editableTrain.layoutUuid}/trains/delete`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,7 +57,7 @@
       return;
     }
 
-    fetch(`/api/layout/${layout.uuid}/trains/edit`, {
+    fetch(`/api/layout/${editableTrain.layoutUuid}/trains/edit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -86,14 +85,7 @@
   }
 </script>
 
-<button class={trainEditClass}>
-  {@render children?.()}
-</button>
-
-<Dialog.Root
-  bind:open={editMode}
-  onOpenChange={(open) => !open && closeDialog()}
->
+<Dialog.Root bind:open onOpenChange={(open) => !open && closeDialog()}>
   <Dialog.Content
     onOpenAutoFocus={(e) => e.preventDefault()}
     interactOutsideBehavior="ignore"
@@ -104,7 +96,7 @@
     </Dialog.Header>
     {#if editableTrain}
       <div class="w-full">
-        <TrainEditor bind:train={editableTrain} {layout} />
+        <TrainEditor bind:train={editableTrain} />
 
         <Separator class="my-4" />
 

@@ -1,41 +1,32 @@
 <script lang="ts">
-  import { Slider } from "$lib/components/ui/slider";
   import { Card } from "$lib/components/ui/card";
-  import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
-  import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
-  import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
-  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
-  import { ClientTrain, TrainDirection } from "$lib/client/Trains/Train.svelte";
-  import Button from "../ui/button/button.svelte";
-  import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
+  import { Slider } from "$lib/components/ui/slider";
   import { CircleAlert } from "lucide-svelte";
+  import { ClientTrain, TrainDirection } from "$lib/client/Trains/Train.svelte";
+  import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
+  import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
+  import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
+  import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
+  import Button from "../ui/button/button.svelte";
 
   interface Props {
-    layout: LayoutClient;
+    layoutId: LayoutUUID;
     disabled?: boolean;
   }
-  let { layout, disabled: disabledProp = false }: Props = $props();
 
-  let curConnection: ClientConnection | undefined = $derived.by(() => {
-    if (curTrain) {
-      return layout.connections.get(curTrain.connUUID);
-    }
-    return undefined;
-  });
+  let { layoutId, disabled: disabledProp = false }: Props = $props();
+
   let curTrain: ClientTrain | undefined = $state();
 
   // Disable throttle if:
   // - Disabled prop is true
   // - No train is selected
-  // - Train is not connected to a connection
-  let disabled: boolean = $derived(
-    disabledProp || curTrain == undefined || !curConnection?.isConnected,
-  );
+  const disabled: boolean = $derived(disabledProp || curTrain == undefined);
 </script>
 
 <Card class="p-5 max-w-fit h-[375px] flex flex-col select-none gap-4">
   <!-- Loco Select -->
-  <LocoSelect bind:curTrain {layout} disabled={disabledProp} />
+  <LocoSelect bind:curTrain {layoutId} disabled={disabledProp} />
 
   <div class="flex gap-4 justify-between items-center flex-1 grow">
     <!-- Speed Slider -->
@@ -62,7 +53,7 @@
       <Button
         {disabled}
         class="size-[54px] m-0"
-        onclick={() => curConnection?.emergencyStop()}
+        onclick={() => curTrain?.emergencyStop()}
         variant="destructive"
         size="icon"
       >

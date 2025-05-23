@@ -3,6 +3,8 @@ import { SvelteMap } from "svelte/reactivity";
 
 class LayoutClientHandler {
   private appEventSource: EventSource | null = null;
+
+  public clientId: string | undefined;
   public layouts: SvelteMap<LayoutUUID, LayoutClient> = new SvelteMap();
 
   public async loadLayouts() {

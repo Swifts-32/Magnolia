@@ -1,22 +1,20 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler.svelte";
+	import type { PageProps } from "./$types";
 	import LayoutAdd from "$lib/components/Settings/Layouts/LayoutAdd.svelte";
+
+	let { data }: PageProps = $props();
 </script>
 
-<div class="mx-10 flex flex-col justify-center">
-	<h1 class="text-center text-8xl mx-10 my-5">Your are Home</h1>
-	<hr class="my-10" />
-
-	<div class="flex flex-wrap">
-		{#each layoutClientHandler.layouts.values() as layout (layout.uuid)}
-			<button
-				class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
-				onclick={() => goto(`/layouts/${layout.uuid}`)}
-			>
-				<p class="text-3xl text-center">{layout.name}</p>
-			</button>
-		{/each}
-		<LayoutAdd />
-	</div>
+<div class="mx-2 flex flex-wrap justify-center">
+	{#each data.layouts as layout (layout.id)}
+		<button
+			class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
+			onclick={() => goto(`/layouts/${layout.id}`)}
+		>
+			<p class="text-3xl text-center">{layout.name}</p>
+		</button>
+	{/each}
+	
+	<LayoutAdd />
 </div>
