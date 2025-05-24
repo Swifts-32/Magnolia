@@ -2,6 +2,9 @@ import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte
 import type { TrainAddress, TrainUuid } from "$lib/types/Trains/Train";
 import { ServerTrainFunctions } from "./Functions.server";
 import { TrainDirection } from "$lib/client/Trains/Train.svelte";
+import { db } from "../db";
+import { TrainTable } from "../db/schema/trains";
+import { eq } from "drizzle-orm";
 
 export class ServerTrain {
 	public uuid: TrainUuid;
@@ -15,7 +18,7 @@ export class ServerTrain {
 
 	public functions: Map<string, ServerTrainFunctions> = new Map();
 	public speed: number = 0;
-	public direction: TrainDirection = TrainDirection.Unknown;
+	public direction: TrainDirection = "Unknown";
 
 	constructor(uuid: TrainUuid, layoutUuid: LayoutUUID) {
 		this.uuid = uuid;
@@ -110,4 +113,60 @@ export class ServerTrain {
 
 		return functions;
 	}
+
+	public static async getTrainFromDb(trainId: TrainUuid): Promise<ServerTrain | undefined> {
+		const dbTrains = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
+		const dbTrain = dbTrains[0];
+		if (!dbTrain) return;
+
+		const train = new ServerTrain(dbTrain.uuid as TrainUuid, dbTrain.layoutUuid as LayoutUUID);
+
+		train.address = dbTrain.address;
+		train.comment = dbTrain.comment;
+		if (dbTrain.connectionUuid) train.connUuid = dbTrain.connectionUuid as ConnectionUUID;
+		train.direction = dbTrain.direction;
+		train.name = dbTrain.name;
+		train.speed = train.speed;
+		train.functions = await ServerTrainFunctions.getFunctionsFromDb(train.uuid);
+
+		return train;
+	}
+
+	public static async setTrainDirection(trainId: TrainUuid, direction: TrainDirection) {
+
+		// TODO set train direction;
+		
+		// const connection = layoutClientHandler.layouts.get(this.layoutUuid)?.connections.get(this.connUuid);
+		// if (!connection) return;
+
+		// this._direction = value;
+
+		// switch (connection.protocol) {
+		// 	case ConnectionProtocols.DCCEX:
+		// 		fetch(`/api/layout/${this.layoutUuid}/${this.connUuid}/write?data=<t ${this.address} ${this.speed} ${this.direction}>`);
+		// 		break;
+		// 	default:
+		// 		console.log("Unknown protocol: " + connection.protocol);
+		// 		break;
+		// }
+	}
+	public static async setTrainSpeed(trainId: TrainUuid, speed: number) {
+
+		// TODO set train speed;
+
+		// const connection = layoutClientHandler.layouts.get(this.layoutUuid)?.connections.get(this.connUuid);
+		// if (!connection) return;
+
+		// this._direction = value;
+
+		// switch (connection.protocol) {
+		// 	case ConnectionProtocols.DCCEX:
+		// 		fetch(`/api/layout/${this.layoutUuid}/${this.connUuid}/write?data=<t ${this.address} ${this.speed} ${this.direction}>`);
+		// 		break;
+		// 	default:
+		// 		console.log("Unknown protocol: " + connection.protocol);
+		// 		break;
+		// }
+	}
+
 }

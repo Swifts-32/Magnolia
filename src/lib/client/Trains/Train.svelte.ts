@@ -5,12 +5,16 @@ import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandl
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
 import { ConnectionProtocols } from "../Protocols/protocols";
 import { TrainClientFunction } from "./Functions/Function.svelte";
+import { z } from "zod/v4";
 
-export enum TrainDirection {
-	Reverse = 0,
-	Forward = 1,
-	Unknown = 2,
-}
+const trainDirection = ["Reverse", "Forward", "Unknown"] as const;
+export const TrainDirection = z.enum(trainDirection);
+export type TrainDirection = z.infer<typeof TrainDirection>;
+// export enum TrainDirection {
+// 	Reverse = 0,
+// 	Forward = 1,
+// 	Unknown = 2,
+// }
 
 export class ClientTrain {
 	public uuid: TrainUuid;
@@ -25,32 +29,21 @@ export class ClientTrain {
 	public functions: SvelteMap<string, TrainClientFunction> = new SvelteMap();
 
 	// Direction
-	public _direction: TrainDirection = $state(TrainDirection.Unknown);
+	public _direction: TrainDirection = $state("Unknown");
 	public get direction(): TrainDirection {
 		return this._direction;
 	}
 	public set direction(value: TrainDirection) {
-		if (this.connUuid === undefined) {
-			console.warn("Connection is undefined - Trying to update train direction");
-			return;
-		}
-
-		const connection = layoutClientHandler.layouts.get(this.layoutUuid)?.connections.get(this.connUuid);
-		if (!connection) {
-			console.warn("Could not find connection - Trying to update train direction");
-			return;
-		}
-
+		fetch(`/api/layout/${this.layoutUuid}/trains/${this.uuid}/direction`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				direction: value,
+			}),
+		});
 		this._direction = value;
-
-		switch (connection.protocol) {
-			case ConnectionProtocols.DCCEX:
-				fetch(`/api/layout/${this.layoutUuid}/${this.connUuid}/write?data=<t ${this.address} ${this.speed} ${this.direction}>`);
-				break;
-			default:
-				console.log("Unknown protocol: " + connection.protocol);
-				break;
-		}
 	}
 	public updateDirectionLocal(value: TrainDirection) {
 		this._direction = value;
@@ -62,27 +55,16 @@ export class ClientTrain {
 		return this._speed;
 	}
 	public set speed(value: number) {
-		if (this.connUuid === undefined) {
-			console.warn("Connection is undefined - Trying to update train speed");
-			return;
-		}
-
-		const connection = layoutClientHandler.layouts.get(this.layoutUuid)?.connections.get(this.connUuid);
-		if (!connection) {
-			console.warn("Could not find connection - Trying to update train speed");
-			return;
-		}
-
+		fetch(`/api/layout/${this.layoutUuid}/trains/${this.uuid}/speed`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				speed: value,
+			}),
+		});
 		this._speed = value;
-
-		switch (connection.protocol) {
-			case ConnectionProtocols.DCCEX:
-				fetch(`/api/layout/${this.layoutUuid}/${this.connUuid}/write?data=<t ${this.address} ${this.speed} ${this.direction}>`);
-				break;
-			default:
-				console.log("Unknown protocol: " + connection.protocol);
-				break;
-		}
 	}
 
 	public updateSpeedLocal(value: number) {
@@ -109,6 +91,8 @@ export class ClientTrain {
 	}
 
 	public static fromJsonWeb(json: any): ClientTrain | null {
+		json = JSON.parse(json);
+
 		const uuid = json.uuid;
 		const layoutUuid = json.layoutUuid;
 
@@ -127,13 +111,12 @@ export class ClientTrain {
 
 		train.functions = new SvelteMap();
 		for (const functJson of json.functions) {
-			const funct = TrainClientFunction.fromJson(functJson);
+			const funct = TrainClientFunction.fromJson(JSON.parse(functJson));
 			if (funct) {
 				train.functions.set(funct.value, funct);
 			}
 		}
 
-		
 		return train;
 	}
 

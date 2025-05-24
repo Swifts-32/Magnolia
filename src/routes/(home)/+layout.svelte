@@ -13,12 +13,6 @@
 			displayInNav: true,
 			displayInFooter: false,
 		},
-		{
-			linkText: "Database",
-			url: "/database",
-			displayInNav: true,
-			displayInFooter: false,
-		},
 	];
 
 	const navbarData = new NavBarData(links, curLink);

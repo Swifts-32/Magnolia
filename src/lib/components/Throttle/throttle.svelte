@@ -2,7 +2,7 @@
   import { Card } from "$lib/components/ui/card";
   import { Slider } from "$lib/components/ui/slider";
   import { CircleAlert } from "lucide-svelte";
-  import { ClientTrain, TrainDirection } from "$lib/client/Trains/Train.svelte";
+  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
   import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
@@ -30,7 +30,7 @@
 
   <div class="flex gap-4 justify-between items-center flex-1 grow">
     <!-- Speed Slider -->
-    <!-- Useing onValueCommit to prevent spamming the server with speed updates -->
+    <!-- Using onValueCommit to prevent spamming the server with speed updates -->
     <div class="w-16 h-full pb-8 pt-4">
       <Slider
         type="single"
@@ -64,7 +64,7 @@
       <DirectionSelector
         bind:direction={
           () =>
-            curTrain != undefined ? curTrain.direction : TrainDirection.Forward,
+            curTrain != undefined ? curTrain.direction : "Unknown",
           (direction) =>
             curTrain != undefined && (curTrain.direction = direction)
         }

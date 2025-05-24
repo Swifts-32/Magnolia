@@ -21,13 +21,6 @@
 
   let { curTrain = $bindable(), disabled = false, layoutId }: Props = $props();
 
-  let trains: {
-    id: string;
-    name: string;
-    address: string;
-    connName: string | null;
-  }[] = $state([]);
-
   // Refresh the list of trains when the combobox is opened
   async function loadTrains() {
     const response = await fetch(`/api/layout/${layoutId}/trains/loco-select`);
@@ -45,7 +38,7 @@
       connName: z.string().nullable(),
     });
 
-    trains = z.array(Train).parse(json.trains);
+    return z.array(Train).parse(json.trains);
   }
 
   async function loadTrain(trainId: string) {
@@ -54,6 +47,7 @@
 
     if (response.ok) {
       const train = ClientTrain.fromJsonWeb(json.train);
+
       return train ? train : undefined;
     } else {
       toast(json.message);
@@ -111,40 +105,44 @@
       <Command.List>
         <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
-          {#each trains as train}
-            <Command.Item
-              {disabled}
-              value={train.id}
-              keywords={[train.name, train.address, train.connName ?? ""]}
-              onSelect={async () => {
-                curTrain = await loadTrain(train.id);
-                closeAndFocusTrigger();
-              }}
-              class=" h-10 flex justify-between {train.id == curTrain?.uuid
-                ? 'cursor-default'
-                : 'cursor-pointer'}"
-            >
-              <div class="flex items-center gap-2">
-                <p class="text-md">{train.name}</p>
-                <div
-                  class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
-                >
-                  <p>Address: {train.address}</p>
-                  {#if train.connName}
-                    <p>
-                      Connection: {train.connName}
-                    </p>
-                  {/if}
+          {#await loadTrains() then trains}
+            {#each trains as train}
+              <Command.Item
+                {disabled}
+                value={train.id}
+                keywords={[train.name, train.address, train.connName ?? ""]}
+                onSelect={async () => {
+                  if (curTrain?.uuid !== train.id) {
+                    curTrain = await loadTrain(train.id);
+                  }
+                  closeAndFocusTrigger();
+                }}
+                class=" h-10 flex justify-between {train.id == curTrain?.uuid
+                  ? 'cursor-default'
+                  : 'cursor-pointer'}"
+              >
+                <div class="flex items-center gap-2">
+                  <p class="text-md">{train.name}</p>
+                  <div
+                    class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
+                  >
+                    <p>Address: {train.address}</p>
+                    {#if train.connName}
+                      <p>
+                        Connection: {train.connName}
+                      </p>
+                    {/if}
+                  </div>
                 </div>
-              </div>
-              <Check
-                class={cn(
-                  "mr-2 size-4",
-                  curTrain?.uuid !== train.id && "text-transparent",
-                )}
-              />
-            </Command.Item>
-          {/each}
+                <Check
+                  class={cn(
+                    "mr-2 size-4",
+                    curTrain?.uuid !== train.id && "text-transparent",
+                  )}
+                />
+              </Command.Item>
+            {/each}
+          {/await}
 
           <Command.Separator class="my-1 h-[0.5px]" />
 

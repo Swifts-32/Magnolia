@@ -1,18 +1,13 @@
-import type { LayoutUUID } from '$lib/client/LayoutClient.svelte';
-import { LayoutServerHandler } from '$lib/server/layoutHandler.server.svelte';
+import { ServerTrain } from '$lib/server/Trains/Train.server.js';
 import type { TrainUuid } from '$lib/types/Trains/Train.js';
 
 export const GET = async ({ params }) => {
-  let { id, trainUUID } = params; // Extract the dynamic parameter
+  const { trainUUID } = params;
 
-  const layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
-  if (!layout) {
-    return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
-  }
-  const train = layout.getTrain(trainUUID as TrainUuid);
+  const train = await ServerTrain.getTrainFromDb(trainUUID as TrainUuid);
 
   if (train) {
-    return new Response(JSON.stringify({ message: "Found train", train: train }), { status: 200 });
+    return new Response(JSON.stringify({ message: "Found train", train: train.toJsonWeb() }), { status: 200 });
   }
   else {
     return new Response(JSON.stringify({ message: "Train does not exist" }), { status: 404 });
