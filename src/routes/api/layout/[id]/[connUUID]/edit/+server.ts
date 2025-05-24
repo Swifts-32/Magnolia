@@ -60,7 +60,6 @@ export const POST = async ({ request, params }) => {
 
     // Update the connection in the layout
     layout.updateConnection(connection);
-    LayoutServerHandler.saveLayouts();
 
     return new Response(
       JSON.stringify({

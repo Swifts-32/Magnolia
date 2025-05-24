@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
-  import type { Snippet } from "svelte";
   import { Trash2 } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
@@ -11,18 +10,16 @@
 
   interface Props {
     train: ClientTrain;
-    isOpen: boolean;
+    open: boolean;
     class?: string;
-    children?: Snippet;
   }
 
-  let { train, isOpen: open = $bindable(), children }: Props = $props();
+  let { train, open = $bindable() }: Props = $props();
 
-  let editMode = $state(false);
   let editableTrain: ClientTrain | undefined = $state();
 
   $effect(() => {
-    if (!editableTrain && editMode) {
+    if (!editableTrain && open) {
       editableTrain = train.clone();
     }
   });
@@ -80,7 +77,7 @@
   }
 
   function closeDialog() {
-    editMode = false;
+    open = false;
     editableTrain = undefined;
   }
 </script>

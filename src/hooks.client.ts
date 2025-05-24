@@ -21,7 +21,5 @@ export const init: ClientInit = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clientId: layoutClientHandler.clientId })
     });
-
-    fetch("/api/layout/save");
   });
 }

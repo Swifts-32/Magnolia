@@ -151,7 +151,7 @@ export class Layout {
       const message = `LayoutUuid:${this.uuid}:ConnectionUuid:${connection.uuid}:${data}`
 
       if (LayoutServerHandler) {
-        LayoutServerHandler.sendClientMessage("LayoutConnectionDataReceived", message);
+        LayoutServerHandler.sendMessage("LayoutConnectionDataReceived", message);
       }
       else {
         console.log("Layout Server handler is undefined");
@@ -172,7 +172,7 @@ export class Layout {
     const message = `LayoutUuid:${this.uuid}:${json}`;
 
     if (LayoutServerHandler) {
-      LayoutServerHandler.sendClientMessage("UpdateLayoutConnections", message);
+      LayoutServerHandler.sendMessage("UpdateLayoutConnections", message);
     }
     else {
       console.log("Layout Server handler is undefined");
@@ -184,7 +184,7 @@ export class Layout {
     const message = `LayoutUuid:${this.uuid}:${json}`;
 
     if (LayoutServerHandler) {
-      LayoutServerHandler.sendClientMessage("UpdateLayoutSensors", message);
+      LayoutServerHandler.sendMessage("UpdateLayoutSensors", message);
     }
     else {
       console.log("Layout Server handler is undefined");

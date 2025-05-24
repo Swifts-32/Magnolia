@@ -15,7 +15,6 @@ export const POST = async ({ request }) => {
   }
 
   layout.createConnection(connection);
-  LayoutServerHandler.saveLayouts();
 
   return new Response(
     JSON.stringify({

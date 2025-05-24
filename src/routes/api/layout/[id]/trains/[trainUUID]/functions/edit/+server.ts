@@ -28,8 +28,6 @@ export const POST = async ({ request, params }) => {
 
     train.addFunction(data.value, data.name, data.icon, data.mode, data.position, data.layoutUUID, data.visible);
 
-    LayoutServerHandler.saveLayouts();
-
     return new Response(
         JSON.stringify({
             message: `Function edited successfully on train: ${train.name}`,

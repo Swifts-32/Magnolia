@@ -1,14 +1,11 @@
-import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
+import { db } from "$lib/server/db/index.js";
+import { LayoutTable } from "$lib/server/db/schema/layouts.js";
+import { eq } from "drizzle-orm";
 
 export const GET = async ({ params }) => {
-    let { id } = params; // Extract the dynamic parameter
+    const { id } = params; // Extract the dynamic parameter
 
-    const layout = LayoutServerHandler.getLayout(id as LayoutUUID);
-    if (!layout) {
-        return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
-    }
+    await db.delete(LayoutTable).where(eq(LayoutTable.uuid, id));
 
-    LayoutServerHandler.deleteLayout(id as LayoutUUID);
     return new Response(JSON.stringify({ message: "Layout deleted." }), { status: 200 });
 }

@@ -3,8 +3,10 @@
 	import { NavBarData } from "$lib/components/NavBar/linkUtils.svelte";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
+	import { createLayoutClientState } from "$lib/client/LayoutClient.svelte";
+	import type { LayoutProps } from "./$types";
 
-	let { children } = $props();
+	let { children, data }: LayoutProps = $props();
 
 	const curLink = page.url.pathname;
 	const links = [
@@ -35,6 +37,8 @@
 	];
 
 	const navBarData = new NavBarData(links, curLink);
+
+	createLayoutClientState(data.layoutId, data.layoutName);
 </script>
 
 <div class="flex flex-col h-dvh">
@@ -43,5 +47,3 @@
 </div>
 
 <Toaster />
-
-

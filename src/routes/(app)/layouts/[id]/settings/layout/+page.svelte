@@ -1,27 +1,19 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button/button.svelte";
-  import { layoutClientHandler } from "../../../../../../services/Layouts/LayoutClientHandler.svelte";
   import { beforeNavigate, goto } from "$app/navigation";
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import { onDestroy, onMount } from "svelte";
-  import { Toaster } from "$lib/components/ui/sonner";
   import { toast } from "svelte-sonner";
   import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import { Trash2 } from "lucide-svelte";
-  import type {
-    LayoutClient,
-    LayoutUUID,
-  } from "$lib/client/LayoutClient.svelte";
-  import { page } from "$app/state";
+  import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
 
-  const layout: LayoutClient | undefined = $derived(
-    layoutClientHandler.layouts.get(page.params.id as LayoutUUID),
-  );
+  const layout = getLayoutClientState();
   let layoutName: string = $state("");
 
   onMount(() => {
-    layoutName = layout?.name ?? "";
+    layoutName = layout.name;
 
     beforeNavigate(({ cancel }) => {
       if (!layoutName?.trim()) {
@@ -31,10 +23,8 @@
     });
   });
 
+  // Save the layout
   onDestroy(() => {
-    // Save layout
-    if (!layout) return;
-
     const layoutData = {
       layoutName: layoutName,
     };
@@ -62,8 +52,6 @@
   });
 
   function deleteLayout() {
-    if (!layout) return;
-
     fetch(`/api/layout/${layout.uuid}/delete`);
     goto("/");
   }
@@ -96,5 +84,3 @@
     <p>Are you sure you want to delete this layout?</p>
   </ConformationDialog>
 </div>
-
-<Toaster />

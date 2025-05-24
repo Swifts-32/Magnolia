@@ -2,11 +2,10 @@
   import { z } from "zod/v4";
   import { cn } from "$lib/utils.js";
   import { tick } from "svelte";
-  import { toast } from "svelte-sonner";
   import { Plus } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
+  import type { TrainUuid } from "$lib/types/Trains/Train";
   import Check from "lucide-svelte/icons/check";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
   import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
@@ -14,12 +13,16 @@
   import * as Popover from "$lib/components/ui/popover/index.js";
 
   interface Props {
-    curTrain: ClientTrain | undefined;
+    selTrainId: TrainUuid | undefined;
     disabled?: boolean;
     layoutId: LayoutUUID;
   }
 
-  let { curTrain = $bindable(), disabled = false, layoutId }: Props = $props();
+  let {
+    selTrainId = $bindable(),
+    disabled = false,
+    layoutId,
+  }: Props = $props();
 
   // Refresh the list of trains when the combobox is opened
   async function loadTrains() {
@@ -41,19 +44,7 @@
     return z.array(Train).parse(json.trains);
   }
 
-  async function loadTrain(trainId: string) {
-    const response = await fetch(`/api/layout/${layoutId}/trains/${trainId}`);
-    const json = await response.json();
-
-    if (response.ok) {
-      const train = ClientTrain.fromJsonWeb(json.train);
-
-      return train ? train : undefined;
-    } else {
-      toast(json.message);
-    }
-  }
-
+  let selTrainName: string | undefined = $state();
   let open = $state(false);
   let trainSearch: string = $state("");
   let triggerRef = $state<HTMLButtonElement>(null!);
@@ -81,7 +72,7 @@
         aria-expanded={open}
         {disabled}
       >
-        {curTrain?.name || "Select a train..."}
+        {selTrainName || "Select a train..."}
         <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
       </Button>
     {/snippet}
@@ -112,12 +103,11 @@
                 value={train.id}
                 keywords={[train.name, train.address, train.connName ?? ""]}
                 onSelect={async () => {
-                  if (curTrain?.uuid !== train.id) {
-                    curTrain = await loadTrain(train.id);
-                  }
+                  selTrainId = train.id as TrainUuid;
+                  selTrainName = train.name;
                   closeAndFocusTrigger();
                 }}
-                class=" h-10 flex justify-between {train.id == curTrain?.uuid
+                class=" h-10 flex justify-between {train.id == selTrainId
                   ? 'cursor-default'
                   : 'cursor-pointer'}"
               >
@@ -137,7 +127,7 @@
                 <Check
                   class={cn(
                     "mr-2 size-4",
-                    curTrain?.uuid !== train.id && "text-transparent",
+                    selTrainId !== train.id && "text-transparent",
                   )}
                 />
               </Command.Item>

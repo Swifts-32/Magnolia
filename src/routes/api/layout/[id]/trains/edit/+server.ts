@@ -44,7 +44,6 @@ export const POST = async ({ request, params }) => {
         });
 
         newConn.trains.set(train.uuid, train);
-        LayoutServerHandler.saveLayouts();
 
         return new Response(
             JSON.stringify({

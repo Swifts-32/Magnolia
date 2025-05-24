@@ -68,7 +68,7 @@ class LayoutClientHandler {
       if (!data) return;
 
       try {
-        layout.loadSensorsFromJson(JSON.parse(data));
+        // layout.loadSensorsFromJson(JSON.parse(data));
       } catch (error) {
         console.error("Failed to parse JSON:", error);
       }

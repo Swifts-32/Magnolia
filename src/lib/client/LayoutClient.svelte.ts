@@ -3,9 +3,25 @@ import { ClientTrain } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
 import { SvelteMap } from "svelte/reactivity";
 import { SensorClient, type SensorUuid } from "./Sensors/SensorClient.svelte";
+import { getContext, setContext } from "svelte";
+import { toast } from "svelte-sonner";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
 export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
+
+const LAYOUT_CLIENT_KEY = Symbol("LAYOUT_CLIENT");
+
+export function setLayoutClientState(layout: LayoutClient) {
+  return setContext(LAYOUT_CLIENT_KEY, layout);
+}
+
+export function createLayoutClientState(id: LayoutUUID, name: string) {
+  return setContext(LAYOUT_CLIENT_KEY, new LayoutClient(name, id));
+}
+
+export function getLayoutClientState() {
+  return getContext<ReturnType<typeof setLayoutClientState>>(LAYOUT_CLIENT_KEY);
+}
 
 export class LayoutClient {
   public name: string = $state() as string;
@@ -20,6 +36,26 @@ export class LayoutClient {
     this.uuid = uuid;
   }
 
+  public async loadTrain(trainId: TrainUuid): Promise<ClientTrain | undefined> {
+    if (this.trains.has(trainId)) return this.trains.get(trainId);
+
+    const response = await fetch(`/api/layout/${this.uuid}/trains/${trainId}`);
+    const json = await response.json();
+    if (response.ok) {
+      const train = ClientTrain.fromJsonWeb(json.train);
+
+      if (train) {
+        this.trains.set(train.uuid, train);
+        return train;
+      }
+      else {
+        return undefined;
+      }
+    } else {
+      toast(json.message);
+    }
+  }
+
   public static fromJsonWeb(json: any): LayoutClient | null {
     const layoutName = json.name;
     const layoutUuid = json.uuid;
@@ -32,8 +68,6 @@ export class LayoutClient {
     const layout = new LayoutClient(layoutName, layoutUuid);
 
     layout.loadConnectionsFromJson(json);
-    layout.loadSensorsFromJson(json);
-    layout.loadTrainsFromJsonWeb(json);
 
     return layout;
   }
@@ -85,50 +119,4 @@ export class LayoutClient {
     }
   }
 
-  public loadSensorsFromJson(json: any) {
-    const serverSensorUuids = new Set();
-
-    for (const sensorJson of json.sensors) {
-      if (sensorJson.uuid === undefined) {
-        console.log("Invalid sensor uuid");
-        return;
-      }
-
-      // TODO Maybe update instead of create if it already exists
-
-      const sensor = new SensorClient(sensorJson.layoutUUID, sensorJson.uuid);
-      sensor.name = sensorJson.name;
-
-
-
-      serverSensorUuids.add(sensor.uuid);
-      this.sensors.set(sensor.uuid, sensor);
-    }
-
-    for (const [uuid, sensor] of this.sensors) {
-      if (!serverSensorUuids.has(uuid)) {
-        console.log(`Removing senser ${sensor.name} (${uuid}) as it no longer exists on server`);
-        this.sensors.delete(uuid);
-      }
-    }
-  }
-
-  public loadTrainsFromJsonWeb(json: any) {
-    const serverTrainUuids = new Set();
-
-    for (const trainJson of json.trains) {
-      const train = ClientTrain.fromJsonWeb(trainJson);
-      if (!train) continue;
-
-      serverTrainUuids.add(train.uuid);
-      this.trains.set(train.uuid, train);
-    }
-
-    // Remove trains that no longer exist on the server from the client
-    this.trains.forEach(train => {
-      if (!serverTrainUuids.has(train.uuid)) {
-        this.trains.delete(train.uuid);
-      }
-    })
-  }
 }

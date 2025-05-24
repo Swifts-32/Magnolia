@@ -21,7 +21,6 @@ export const POST = async ({ request }) => {
   });
 
   layout.addTrain(train);
-  LayoutServerHandler.saveLayouts();
 
   return new Response(
     JSON.stringify({

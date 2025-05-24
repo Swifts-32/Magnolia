@@ -1,19 +1,22 @@
 <script lang="ts">
   import Label from "$lib/components/ui/label/label.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
-  import { type ConnectionUUID } from "$lib/client/LayoutClient.svelte";
+  import {
+    type ConnectionUUID,
+    type LayoutUUID,
+  } from "$lib/client/LayoutClient.svelte";
   import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
 
   interface Props {
-    connections: Map<ConnectionUUID, ClientConnection>;
-    selectedConnectionUUID: ConnectionUUID | undefined;
+    layoutId: LayoutUUID;
+    selConnectionId: ConnectionUUID | undefined;
   }
 
-  let { connections, selectedConnectionUUID = $bindable() }: Props = $props();
+  let { layoutId, selConnectionId = $bindable() }: Props = $props();
 
   const selectedConnection: ClientConnection | undefined = $derived.by(() => {
-    if (selectedConnectionUUID) {
-      return connections.get(selectedConnectionUUID);
+    if (selConnectionId) {
+      return connections.get(selConnectionId);
     }
   });
 </script>
@@ -24,13 +27,13 @@
   <Select.Root
     type="single"
     name="trainConnection"
-    bind:value={selectedConnectionUUID}
+    bind:value={selConnectionId}
   >
     <Select.Trigger class="col-span-3">
       {selectedConnection?.name ?? "Select Connection"}
     </Select.Trigger>
     <Select.Content>
-      {#each connections as [connUUID, connection]}
+      <!-- {#each connections as [connUUID, connection]}
         <Select.Item
           value={connUUID}
           class={selectedConnection?.uuid === connUUID
@@ -39,7 +42,7 @@
         >
           <p class="text-md">{connection.name}</p>
         </Select.Item>
-      {/each}
+      {/each} -->
     </Select.Content>
   </Select.Root>
 </div>

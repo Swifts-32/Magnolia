@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
@@ -28,16 +27,14 @@
   </div>
 
   <!-- Connection -->
-  <!-- TODO Add connection selector -->
-   <p>Connection Selector</p>
-  <!-- <ConnectionSelector
-    connections={layout.connections}
-    bind:selectedConnectionUUID={train.connUuid}
-  /> -->
+  <ConnectionSelector
+    layoutId={train.layoutUuid}
+    bind:selConnectionId={train.connUuid}
+  />
 
   <Separator class="my-4" />
 
-  <FunctionViewer bind:functions={train.functions} trainUUID={train.uuid} />
+  <FunctionViewer functions={train.functions} trainUUID={train.uuid} />
 
   <Separator class="my-4" />
 </div>
