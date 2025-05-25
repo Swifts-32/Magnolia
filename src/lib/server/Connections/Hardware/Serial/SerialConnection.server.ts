@@ -1,6 +1,6 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 import type { HardwareClass } from "../hardware";
-import { ConnectionTypes } from '$lib/client/Protocols/protocols';
+import { ConnectionType } from '$lib/client/Protocols/protocols';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -13,7 +13,7 @@ export class SerialConnection implements HardwareClass {
 
 	public path: string;
 	public baudRate: number;
-	public connType: ConnectionTypes.Serial = ConnectionTypes.Serial;
+	public connType: ConnectionType.Serial = ConnectionType.Serial;
 
 	private dataReceived: ((data: string) => void) | null = null;
 	public onDataReceived(callback: (data: string) => void) {

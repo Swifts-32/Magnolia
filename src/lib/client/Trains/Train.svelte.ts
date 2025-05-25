@@ -1,20 +1,13 @@
 import type { TrainAddress } from "$lib/types/Trains/Train";
 import type { TrainUuid } from "$lib/types/Trains/Train";
 import { SvelteMap } from "svelte/reactivity";
-import { layoutClientHandler } from "../../../services/Layouts/LayoutClientHandler.svelte";
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
-import { ConnectionProtocols } from "../Protocols/protocols";
 import { TrainClientFunction } from "./Functions/Function.svelte";
 import { z } from "zod/v4";
 
 const trainDirection = ["Reverse", "Forward", "Unknown"] as const;
 export const TrainDirection = z.enum(trainDirection);
 export type TrainDirection = z.infer<typeof TrainDirection>;
-// export enum TrainDirection {
-// 	Reverse = 0,
-// 	Forward = 1,
-// 	Unknown = 2,
-// }
 
 export class ClientTrain {
 	public uuid: TrainUuid;

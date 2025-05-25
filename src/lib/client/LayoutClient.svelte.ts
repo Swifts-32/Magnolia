@@ -11,16 +11,12 @@ export type LayoutUUID = `${string}-${string}-${string}-${string}-${string}`;
 
 const LAYOUT_CLIENT_KEY = Symbol("LAYOUT_CLIENT");
 
-export function setLayoutClientState(layout: LayoutClient) {
-  return setContext(LAYOUT_CLIENT_KEY, layout);
-}
-
 export function createLayoutClientState(id: LayoutUUID, name: string) {
   return setContext(LAYOUT_CLIENT_KEY, new LayoutClient(name, id));
 }
 
 export function getLayoutClientState() {
-  return getContext<ReturnType<typeof setLayoutClientState>>(LAYOUT_CLIENT_KEY);
+  return getContext<ReturnType<typeof createLayoutClientState>>(LAYOUT_CLIENT_KEY);
 }
 
 export class LayoutClient {
@@ -28,8 +24,9 @@ export class LayoutClient {
   public uuid: LayoutUUID = $state() as LayoutUUID;
 
   public connections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
-  public sensors: SvelteMap<SensorUuid, SensorClient> = new SvelteMap();
   public trains: SvelteMap<TrainUuid, ClientTrain> = new SvelteMap();
+
+  public sensors: SvelteMap<SensorUuid, SensorClient> = new SvelteMap();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
@@ -54,6 +51,27 @@ export class LayoutClient {
     } else {
       toast(json.message);
     }
+  }
+  public async loadConnection(connId: ConnectionUUID): Promise<ClientConnection | undefined> {
+    if (this.connections.has(connId)) return this.connections.get(connId);
+
+    const response = await fetch(`/api/layout/${this.uuid}/${connId}`);
+    const json = await response.json();
+    if (response.ok) {
+      const connection = ClientConnection.fromJsonWeb(json.connection);
+
+      if (connection) {
+        this.connections.set(connection.uuid, connection);
+        return connection;
+      }
+      else {
+        return undefined;
+      }
+    } else {
+      toast(json.message);
+    }
+
+    return undefined;
   }
 
   public static fromJsonWeb(json: any): LayoutClient | null {

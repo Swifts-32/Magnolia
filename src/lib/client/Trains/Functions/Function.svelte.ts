@@ -1,6 +1,6 @@
 import type { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
 import type { TrainUuid } from "$lib/types/Trains/Train";
-import { ConnectionProtocols } from "$lib/client/Protocols/protocols";
+import { ConnectionProtocol } from "$lib/client/Protocols/protocols";
 import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 
 export class TrainClientFunction {
@@ -46,7 +46,7 @@ export class TrainClientFunction {
 
 		// Update the function on the server
 		switch (connection.protocol) {
-			case ConnectionProtocols.DCCEX:
+			case ConnectionProtocol.DCCEX:
 				fetch(`/api/layout/${layout.uuid}/${train.connUuid}/write?data=<F ${train.address} ${this.value} ${this.state ? 1 : 0}>`);
 				break;
 			default:

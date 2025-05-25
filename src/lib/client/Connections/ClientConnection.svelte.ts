@@ -1,17 +1,17 @@
 import { toast } from "svelte-sonner";
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
-import { ConnectionProtocols, ConnectionTypes } from "../Protocols/protocols";
+import { ConnectionProtocol, ConnectionType } from "../Protocols/protocols";
 
 export class ClientConnection {
   public uuid: ConnectionUUID;
   public name: string = $state() as string;
-  public protocol: ConnectionProtocols = $state() as ConnectionProtocols;
-  public hardware: ConnectionTypes = $state() as ConnectionTypes;
+  public protocol: ConnectionProtocol = $state() as ConnectionProtocol;
+  public hardware: ConnectionType = $state() as ConnectionType;
   public layoutUuid: LayoutUUID;
 
   public isConnected: boolean = $state(false);
 
-  constructor(protocol: ConnectionProtocols, hardware: ConnectionTypes, name: string, uuid: ConnectionUUID, layoutUUID: LayoutUUID) {
+  constructor(protocol: ConnectionProtocol, hardware: ConnectionType, name: string, uuid: ConnectionUUID, layoutUUID: LayoutUUID) {
     this.protocol = protocol;
     this.hardware = hardware;
     this.name = name;
@@ -30,8 +30,6 @@ export class ClientConnection {
   }
 
   public static fromJsonWeb(json: any): ClientConnection | null {
-    json = JSON.parse(json);
-
     const connUuid = json.uuid;
     const connName = json.name;
     const connProtocol = json.protocol;
@@ -83,13 +81,18 @@ export class ClientConnection {
 
   public emergencyStop() {
     switch (this.protocol) {
-      case ConnectionProtocols.DCCEX:
+      case "DccEx":
         this.write("<!>");
         break;
       default:
         console.log("Unknown protocol: " + this.protocol);
         break;
     }
+  }
+
+  public clone() {
+    const connection = new ClientConnection(this.protocol, this.hardware, this.name, this.uuid, this.layoutUuid);
+    return connection;
   }
 }
 

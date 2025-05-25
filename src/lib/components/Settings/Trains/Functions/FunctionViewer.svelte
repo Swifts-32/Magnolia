@@ -1,8 +1,4 @@
 <script lang="ts">
-	import type {
-		ConnectionUUID,
-		LayoutUUID,
-	} from "$lib/client/LayoutClient.svelte";
 	import { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 	import type { TrainUuid } from "$lib/types/Trains/Train";
 	import FunctionEditor from "./FunctionEditor.svelte";
@@ -10,10 +6,10 @@
 
 	interface Props {
 		functions: Map<string, TrainClientFunction>;
-		trainUUID: TrainUuid;
+		trainUuid: TrainUuid;
 	}
 
-	let { functions = $bindable(), trainUUID: trainUuid }: Props = $props();
+	let { functions = $bindable(), trainUuid }: Props = $props();
 
 	let selectedFunction: TrainClientFunction | undefined = $state();
 

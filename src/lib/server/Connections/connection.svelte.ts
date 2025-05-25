@@ -1,6 +1,6 @@
 import type { HardwareClass } from "./Hardware/hardware";
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { ConnectionProtocols, ConnectionTypes } from "$lib/client/Protocols/protocols";
+import { ConnectionProtocol, ConnectionType } from "$lib/client/Protocols/protocols";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import { DccEx } from "../Protocols/DccEx/DccEx";
@@ -9,20 +9,21 @@ import { db } from "../db";
 import { TrainFunctionTable, TrainTable } from "../db/schema/trains";
 import { and, eq } from "drizzle-orm";
 import type { TrainUuid } from "$lib/types/Trains/Train";
+import { ConnectionTable } from "../db/schema/connection";
 
 export class Connection {
   public uuid: ConnectionUUID;
   public layoutUuid: LayoutUUID;
 
   public name: string;
-  public protocol: ConnectionProtocols;
+  public protocol: ConnectionProtocol;
   private hardware: HardwareClass;
 
   public get isConnected(): boolean {
     return this.hardware.isConnected
   };
 
-  constructor(uuid: ConnectionUUID, layoutUuid: LayoutUUID, name: string, protocol: ConnectionProtocols, hardware: HardwareClass) {
+  constructor(uuid: ConnectionUUID, layoutUuid: LayoutUUID, name: string, protocol: ConnectionProtocol, hardware: HardwareClass) {
     this.uuid = uuid;
     this.layoutUuid = layoutUuid;
     this.name = name;
@@ -69,10 +70,10 @@ export class Connection {
     let hardware: HardwareClass;
 
     switch (connHardwareType) {
-      case ConnectionTypes.Emulator:
+      case ConnectionType.Emulator:
         hardware = new EmulatorConnection();
         break;
-      case ConnectionTypes.Serial:
+      case ConnectionType.Serial:
         if (json.hardware.path == undefined || json.hardware.baudRate == undefined) {
           console.log(`Invalid serial connection data`);
           return null;
@@ -106,10 +107,10 @@ export class Connection {
     let hardware: HardwareClass;
 
     switch (json.hardware.connType) {
-      case ConnectionTypes.Emulator:
+      case ConnectionType.Emulator:
         hardware = new EmulatorConnection();
         break;
-      case ConnectionTypes.Serial:
+      case ConnectionType.Serial:
         if (json.hardware.path == undefined || json.hardware.baudRate == undefined) {
           console.log(`Invalid serial connection data`);
           return null;
@@ -150,7 +151,7 @@ export class Connection {
 
   private processCommand(command: string) {
     switch (this.protocol) {
-      case ConnectionProtocols.DCCEX:
+      case ConnectionProtocol.DCCEX:
         this.processDccExCommand(command);
         break;
       default:
@@ -229,6 +230,34 @@ export class Connection {
 
   public addHardware(hardware: HardwareClass) {
     this.hardware = hardware;
+  }
+
+
+  public static async getConnectionFromDb(connId: ConnectionUUID): Promise<Connection | undefined> {
+    const dbConnections = await db.select().from(ConnectionTable).where(eq(ConnectionTable.uuid, connId));
+    const dbConn = dbConnections[0];
+    if (!dbConn) return;
+
+    let hardware: HardwareClass | undefined = undefined;
+
+    switch (dbConn.hardware) {
+      case "Emulator":
+        hardware = new EmulatorConnection();
+        break;
+      case "Serial":
+        // if (json.hardware.path == undefined || json.hardware.baudRate == undefined) {
+        //   console.log(`Invalid serial connection data`);
+        //   return null;
+        // }
+        // hardware = new SerialConnection(json.hardware.path, json.hardware.baudRate);
+        break;
+    }
+
+    if (!hardware) return;
+
+    const connection = new Connection(dbConn.uuid as ConnectionUUID, dbConn.layoutUuid as LayoutUUID, dbConn.name, dbConn.protocol, hardware);
+
+    return connection;
   }
 }
 

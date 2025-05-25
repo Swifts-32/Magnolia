@@ -1,5 +1,5 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { ConnectionTypes } from "$lib/client/Protocols/protocols";
+import { ConnectionType } from "$lib/client/Protocols/protocols";
 import { EmulatorConnection } from "$lib/server/Connections/Hardware/Emulator/Emulator.server.js";
 import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte.js";
@@ -32,7 +32,7 @@ export const POST = async ({ request, params }) => {
 
     // Update type-specific properties
     switch (data.connType) {
-      case ConnectionTypes.Serial: {
+      case ConnectionType.Serial: {
         if (data.serialPath === undefined || data.serialBaudRate === undefined) {
           return new Response(
             JSON.stringify({ message: `Invalid serial connection: Path is: ${data.serialPath} or Baud Rate is: ${data.serialBaudRate}` }),
@@ -46,7 +46,7 @@ export const POST = async ({ request, params }) => {
         break;
       }
 
-      case ConnectionTypes.Emulator: {
+      case ConnectionType.Emulator: {
         connection.addHardware(new EmulatorConnection());
         break;
       }

@@ -5,10 +5,6 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
   import ConnectionEditor from "./ConnectionEditor.svelte";
-  import {
-    ConnectionProtocols,
-    ConnectionTypes,
-  } from "$lib/client/Protocols/protocols";
   import { toast } from "svelte-sonner";
 
   interface Props {
@@ -22,8 +18,8 @@
   $effect(() => {
     if (editMode && !connection) {
       connection = new ClientConnection(
-        ConnectionProtocols.DCCEX,
-        ConnectionTypes.Serial,
+        "DccEx",
+        "Emulator",
         "New Connection",
         crypto.randomUUID(),
         layout.uuid,

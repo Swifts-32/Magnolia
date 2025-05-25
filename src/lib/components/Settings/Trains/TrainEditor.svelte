@@ -27,14 +27,17 @@
   </div>
 
   <!-- Connection -->
-  <ConnectionSelector
-    layoutId={train.layoutUuid}
-    bind:selConnectionId={train.connUuid}
-  />
+  <div class="grid grid-cols-4 my-2 items-center gap-4 w-full">
+    <Label for="trainConnection" class="text-right">Connection</Label>
+    <ConnectionSelector
+      layoutId={train.layoutUuid}
+      bind:selConnectionId={train.connUuid}
+    />
+  </div>
 
   <Separator class="my-4" />
 
-  <FunctionViewer functions={train.functions} trainUUID={train.uuid} />
+  <FunctionViewer functions={train.functions} trainUuid={train.uuid} />
 
   <Separator class="my-4" />
 </div>

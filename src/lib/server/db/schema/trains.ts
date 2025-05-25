@@ -4,6 +4,7 @@ import { AppSchema } from "./app";
 import { TrainFunctionIconsList, TrainFunctionModesList } from "../../../types/Trains/Functions/Functions";
 import { relations } from "drizzle-orm";
 import { UserTable } from "./users";
+import { ConnectionTable } from "./connection";
 
 export const TrainDirection = pgEnum("trainDirection", ["Forward", "Reverse", "Unknown"]);
 export const TrainFunctionIcon = pgEnum("trainFunctionIcon", TrainFunctionIconsList);
@@ -16,7 +17,7 @@ export const TrainTable = AppSchema.table("trains", {
   address: varchar("address").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   comment: varchar("comment", { length: 255 }).notNull(),
-  connectionUuid: uuid("connectionId"),
+  connectionUuid: uuid("connectionId").references(() => ConnectionTable.uuid, { onDelete: "set null" }),
 
   direction: TrainDirection("direction").default("Unknown").notNull(),
   speed: integer("speed").notNull().default(0),

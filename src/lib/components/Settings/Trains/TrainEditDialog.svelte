@@ -37,15 +37,16 @@
       .then(async (response) => {
         const json = await response.json();
         if (response.ok) {
-          closeDialog();
           toast.success(json.message);
         } else {
           toast.error(json.message);
         }
       })
       .catch((error) => {
-        toast.error("Error editing train: " + error);
+        toast.error("Error deleting train: " + error);
       });
+    
+    closeDialog();
   }
 
   function updateTrain() {
@@ -70,7 +71,7 @@
         }
       })
       .catch((error) => {
-        toast.error("Error deleting train: " + error);
+        toast.error("Error updating train: " + error);
       });
 
     closeDialog();
