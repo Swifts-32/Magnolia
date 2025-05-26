@@ -3,7 +3,7 @@ import { ClientTrain } from "./Trains/Train.svelte";
 import { ClientConnection } from "./Connections/ClientConnection.svelte";
 import { SvelteMap } from "svelte/reactivity";
 import { SensorClient, type SensorUuid } from "./Sensors/SensorClient.svelte";
-import { getContext, setContext } from "svelte";
+import { getContext, onDestroy, setContext } from "svelte";
 import { toast } from "svelte-sonner";
 
 export type ConnectionUUID = `${string}-${string}-${string}-${string}-${string}`;
@@ -22,16 +22,56 @@ export function getLayoutClientState() {
 export class LayoutClient {
   public name: string = $state() as string;
   public uuid: LayoutUUID = $state() as LayoutUUID;
+  private appEventSource: EventSource | null = null;
 
   public connections: SvelteMap<ConnectionUUID, ClientConnection> = new SvelteMap();
-  public trains: SvelteMap<TrainUuid, ClientTrain> = new SvelteMap();
+  public trains: SvelteMap<TrainUuid, ClientTrain> = new SvelteMap(); // Map of trains currently being controlled.
 
   public sensors: SvelteMap<SensorUuid, SensorClient> = new SvelteMap();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
+
+    this.connectToSse();
+
+    onDestroy(() => {
+      this.appEventSource?.close();
+    })
   }
+
+  private connectToSse() {
+    this.appEventSource = new EventSource(`/api/${this.uuid}/stream`);
+
+    this.appEventSource.addEventListener("Update", (event) => {
+
+    });
+  }
+
+  public async getTrain(trainId: TrainUuid): Promise<ClientTrain | undefined> {
+    if (this.trains.has(trainId)) return this.trains.get(trainId);
+
+    const response = await fetch(`/api/layout/${this.uuid}/trains/${trainId}`, {});
+    const json = await response.json();
+    if (response.ok) {
+      const train = ClientTrain.fromJsonWeb(json.train);
+
+      if (train) {
+        this.trains.set(train.uuid, train);
+        return train;
+      }
+      else {
+        return undefined;
+      }
+    } else {
+      toast(json.message);
+    }
+  }
+
+  public deleteTrain(trainId: TrainUuid) {
+
+  }
+
 
   public async loadTrain(trainId: TrainUuid): Promise<ClientTrain | undefined> {
     if (this.trains.has(trainId)) return this.trains.get(trainId);

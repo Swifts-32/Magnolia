@@ -25,12 +25,28 @@ export class Layout {
 
   private trains: Map<TrainUuid, ServerTrain> = new Map();
 
+  private streamControllers: Set<ReadableStreamDefaultController> = new Set();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
 
     this.loadTrainsFromServer();
+  }
+
+
+  public createStream(): ReadableStream {
+    let streamController: ReadableStreamDefaultController;
+
+    return new ReadableStream({
+      start: (controller) => {
+        streamController = controller;
+        this.streamControllers.add(controller);
+      },
+      cancel: (reason) => {
+        this.streamControllers.delete(streamController);
+      }
+    });
   }
 
   // TODO web and file

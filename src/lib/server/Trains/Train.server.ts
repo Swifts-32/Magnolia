@@ -132,6 +132,26 @@ export class ServerTrain {
 		return train;
 	}
 
+	public static async acquireTrain(trainId: TrainUuid): Promise<ServerTrain | undefined> {
+		const dbTrains = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
+		const dbTrain = dbTrains[0];
+		if (!dbTrain) return;
+
+		const train = new ServerTrain(dbTrain.uuid as TrainUuid, dbTrain.layoutUuid as LayoutUUID);
+
+		train.address = dbTrain.address;
+		train.comment = dbTrain.comment;
+		if (dbTrain.connectionUuid) train.connUuid = dbTrain.connectionUuid as ConnectionUUID;
+		train.direction = dbTrain.direction;
+		train.name = dbTrain.name;
+		train.speed = train.speed;
+		train.functions = await ServerTrainFunctions.getFunctionsFromDb(train.uuid);
+
+		await db.in
+
+		return train;
+	}
+
 	public static async setTrainDirection(trainId: TrainUuid, direction: TrainDirection) {
 
 		// TODO set train direction;
