@@ -1,12 +1,15 @@
 import { createSession, deleteSessionTokenCookie, generateSessionToken, setSessionTokenCookie, validateSessionToken } from '$lib/server/auth/Session';
 import { layoutClientHandler } from '../../../services/Layouts/LayoutClientHandler.svelte';
 import type { PageServerLoad } from '../$types';
+import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = (async (event) => {
-  const token = event.cookies.get("session") ?? null;
+
+  if (event.locals.user) {
+    return redirect(303, "/");
+  };
 
   if (!layoutClientHandler.clientId) {
-    console.log("Client Id is null");
     layoutClientHandler.clientId = crypto.randomUUID();
   }
 
@@ -16,23 +19,23 @@ export const load: PageServerLoad = (async (event) => {
     body: JSON.stringify({ clientId: layoutClientHandler.clientId })
   });
 
+  const cookie = event.cookies.get("session") ?? null;
+  if (cookie) {
+    const { session, user } = await validateSessionToken(cookie);
 
-  if (token === null) { 
-    // Set session cookie
-    const token = generateSessionToken();
-    const session = await createSession(token, layoutClientHandler.clientId);
-    setSessionTokenCookie(event, token, session.expiresAt);
-    return new Response(null, {
-      status: 401
-    });
+    if (session && user) {
+      return redirect(303, "/");
+    }
   }
 
-  const { session, user } = await validateSessionToken(token);
-  if (session === null) {
-    deleteSessionTokenCookie(event);
-    return new Response(null, {
-      status: 401
-    });
-  }
+  deleteSessionTokenCookie(event);
+
+  const token = generateSessionToken();
+  const session = await createSession(token, layoutClientHandler.clientId);
   setSessionTokenCookie(event, token, session.expiresAt);
+
+  if (event.locals.user) {
+    console.log("Authenticated");
+    return redirect(303, "/");
+  }
 }) satisfies PageServerLoad;

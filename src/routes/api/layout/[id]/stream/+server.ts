@@ -5,12 +5,15 @@ export const GET = async ({ params }) => {
   const { id } = params;
 
   const layout = LayoutServerHandler.getLayout(id as LayoutUUID);
-
-  return new Response(layout?.createStream(), {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive'
-    }
-  });
+  if (layout) {
+    return new Response(layout?.createStream(), {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive'
+      }
+    });
+  } else {
+    return new Response("Layout does not exist");
+  }
 };

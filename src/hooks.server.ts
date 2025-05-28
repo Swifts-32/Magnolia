@@ -2,15 +2,17 @@ import { deleteSessionTokenCookie, setSessionTokenCookie, validateSessionToken }
 import { redirect, type Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  const token = event.cookies.get("session") ?? null;
 
   if (event.url.pathname.startsWith("/login")) {
     return resolve(event);
   }
 
+  const token = event.cookies.get("session") ?? null;
+  if (token == null) {
+    event.locals.user = null;
+    event.locals.session = null;
 
-  if (!token) {
-    return redirect(307, `${event.url.origin}/login`);
+    return redirect(307, `/login`);
   }
 
   const { session, user } = await validateSessionToken(token);
@@ -20,7 +22,12 @@ export const handle: Handle = async ({ event, resolve }) => {
     deleteSessionTokenCookie(event);
   }
 
-  console.log("Handling request for:", event.cookies.get("session"));
+  if (!session || !user) {
+    return redirect(307, `/login`);
+  }
+
+  event.locals.session = session;
+  event.locals.user = user;
 
   return resolve(event);
 };

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { page } from "$app/state";
-  import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-  import Throttle from "$lib/components/Throttle/throttle.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
+  import Throttle from "$lib/components/Throttle/throttle.svelte";
+  import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
 
+  const layout = getLayoutClientState();
   let noOfThrottles: number = $state(1);
 </script>
 
@@ -20,7 +20,7 @@
 
   <div class="flex flex-row flex-wrap justify-center gap-4">
     {#each Array(noOfThrottles) as _}
-      <Throttle layoutId={page.params.id as LayoutUUID} />
+      <Throttle layoutId={layout.uuid} />
     {/each}
   </div>
 </main>

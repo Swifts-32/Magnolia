@@ -39,6 +39,7 @@
       name: z.string(),
       address: z.string(),
       connName: z.string().nullable(),
+      isSelectable: z.boolean(),
     });
 
     return z.array(Train).parse(json.trains);
@@ -103,11 +104,14 @@
                 value={train.id}
                 keywords={[train.name, train.address, train.connName ?? ""]}
                 onSelect={async () => {
-                  selTrainId = train.id as TrainUuid;
-                  selTrainName = train.name;
-                  closeAndFocusTrigger();
+                  if (train.isSelectable) {
+                    selTrainId = train.id as TrainUuid;
+                    selTrainName = train.name;
+                    closeAndFocusTrigger();
+                  }
                 }}
-                class=" h-10 flex justify-between {train.id == selTrainId
+                class=" h-10 flex justify-between {train.id == selTrainId ||
+                !train.isSelectable
                   ? 'cursor-default'
                   : 'cursor-pointer'}"
               >

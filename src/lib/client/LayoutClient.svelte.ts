@@ -41,7 +41,7 @@ export class LayoutClient {
   }
 
   private connectToSse() {
-    this.appEventSource = new EventSource(`/api/${this.uuid}/stream`);
+    this.appEventSource = new EventSource(`/api/layout/${this.uuid}/stream`);
 
     this.appEventSource.addEventListener("Update", (event) => {
 
