@@ -4,6 +4,7 @@ import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/enco
 import { sha256 } from "@oslojs/crypto/sha2";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
+import type { RequestEvent } from "@sveltejs/kit";
 
 
 export function generateSessionToken(): string {
@@ -59,6 +60,24 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 
 export async function invalidateAllSessions(userId: string): Promise<void> {
   await db.delete(SessionTable).where(eq(SessionTable.userId, userId));
+}
+
+export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date): void {
+  event.cookies.set("session", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    expires: expiresAt,
+    path: "/"
+  });
+}
+
+export function deleteSessionTokenCookie(event: RequestEvent): void {
+  event.cookies.set("session", "", {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 0,
+    path: "/"
+  });
 }
 
 export type SessionValidationResult =
