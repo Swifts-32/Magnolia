@@ -5,12 +5,14 @@
   import Label from "$lib/components/ui/label/label.svelte";
   import { onDestroy, onMount } from "svelte";
   import { toast } from "svelte-sonner";
-  import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import { Trash2 } from "lucide-svelte";
   import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { deleteLayout } from "../../../data.remote";
 
   const layout = getLayoutClientState();
   let layoutName: string = $state("");
+  let isDialogOpen = $state(false);
 
   onMount(() => {
     layoutName = layout.name;
@@ -50,11 +52,6 @@
         toast.error(`Error updating layout: ${error}`);
       });
   });
-
-  function deleteLayout() {
-    fetch(`/api/layout/${layout.uuid}/delete`);
-    goto("/");
-  }
 </script>
 
 <div class="m-4">
@@ -66,21 +63,34 @@
     <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
   </div>
 
-  <!-- Delete Layout -->
-  <ConformationDialog title="Delete Layout">
-    {#snippet trigger()}
+  <!-- Delete Layout Dialog -->
+  <Dialog.Root bind:open={isDialogOpen}>
+    <Dialog.Trigger>
       <Button variant="destructive" class="w-96"
         ><Trash2 /> Delete Layout</Button
       >
-    {/snippet}
-    {#snippet primaryButton()}
-      <Button variant="destructive" class="w-28" onclick={deleteLayout}
-        >Delete Train</Button
-      >
-    {/snippet}
-    {#snippet secondaryButton()}
-      <Button variant="outline" class="w-28">Cancel</Button>
-    {/snippet}
-    <p>Are you sure you want to delete this layout?</p>
-  </ConformationDialog>
+    </Dialog.Trigger>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Delete Layout</Dialog.Title>
+        <Dialog.Description>
+          Are you sure you want to delete this layout?
+        </Dialog.Description>
+      </Dialog.Header>
+
+      <form {...deleteLayout.for(layout.uuid)}>
+        <Dialog.Footer>
+          <Button
+            type="reset"
+            onclick={() => (isDialogOpen = false)}
+            variant="outline"
+            class="w-32">Cancel</Button
+          >
+          <Button type="submit" variant="destructive" class="w-32"
+            >Delete Layout</Button
+          >
+        </Dialog.Footer>
+      </form>
+    </Dialog.Content>
+  </Dialog.Root>
 </div>
