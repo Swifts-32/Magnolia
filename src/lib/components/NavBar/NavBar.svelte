@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Home } from "lucide-svelte";
 	import { NavBarData } from "./linkUtils.svelte";
 	import { goto } from "$app/navigation";
+	import { House } from "lucide-svelte";
 
 	interface Props {
 		navBarData: NavBarData;
@@ -16,14 +16,14 @@
 
 <nav class="w-full flex justify-between items-center">
 	<div class="flex-col justify-center items-center mx-10">
-		<Home
-			size="40px"
-			class="cursor-pointer"
+		<button
 			onclick={() => {
 				handleClick("/");
 				goto("/");
 			}}
-		/>
+		>
+			<House class="cursor-pointer" size="40px" />
+		</button>
 	</div>
 
 	<div class="flex">
