@@ -6,6 +6,10 @@
 	let { data }: PageProps = $props();
 </script>
 
+<svelte:head>
+	<title>Home</title>
+</svelte:head>
+
 <div class="mx-2 flex flex-wrap justify-center">
 	{#each data.layouts as layout (layout.id)}
 		<button

@@ -2,6 +2,7 @@
 
 import type { Session } from "$lib/server/db/schema/sessions";
 import type { User } from "$lib/server/db/schema/users";
+import type { ZodUUID } from "zod/v4";
 
 // for information about these interfaces
 declare global {
@@ -10,6 +11,7 @@ declare global {
 		interface Locals {
 			user: User | null;
 			session: Session | null;
+			sessionId: string;
 		}
 		// interface PageData {}
 		// interface PageState {}

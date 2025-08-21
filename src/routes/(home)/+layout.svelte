@@ -13,6 +13,12 @@
 			displayInNav: true,
 			displayInFooter: false,
 		},
+		{
+			linkText: "Login",
+			url: "/login",
+			displayInNav: true,
+			displayInFooter: false,
+		},
 	];
 
 	const navbarData = new NavBarData(links, curLink);

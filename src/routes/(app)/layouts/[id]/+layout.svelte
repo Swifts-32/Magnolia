@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { NavBarData } from "$lib/components/NavBar/linkUtils.svelte";
-	import { Toaster } from "$lib/components/ui/sonner";
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
 	import { createLayoutClientState } from "$lib/client/LayoutClient.svelte";
 	import type { LayoutProps } from "./$types";
@@ -38,12 +37,11 @@
 
 	const navBarData = new NavBarData(links, curLink);
 
-	createLayoutClientState(data.layoutId, data.layoutName);
+	// This is causing page load error
+	// createLayoutClientState(data.layoutId, data.layoutName);
 </script>
 
 <div class="flex flex-col h-dvh">
 	<NavBar {navBarData} />
 	{@render children()}
 </div>
-
-<Toaster />
