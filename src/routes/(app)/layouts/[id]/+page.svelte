@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { LayoutProps } from "./$types";
+  import type { PageProps } from "./$types";
 
-  let { data }: LayoutProps = $props();
+  let { data }: PageProps = $props();
 </script>
 
 <svelte:head>
@@ -9,3 +9,4 @@
 </svelte:head>
 
 <p>Mixed View will go here</p>
+<p>{data.sessionId}</p>

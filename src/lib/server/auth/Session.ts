@@ -6,7 +6,6 @@ import { db } from "../db";
 import { eq } from "drizzle-orm";
 import type { RequestEvent } from "@sveltejs/kit";
 
-
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
   crypto.getRandomValues(bytes);

@@ -11,7 +11,7 @@ declare global {
 		interface Locals {
 			user: User | null;
 			session: Session | null;
-			sessionId: string;
+			sessionId: string | null;
 		}
 		// interface PageData {}
 		// interface PageState {}
