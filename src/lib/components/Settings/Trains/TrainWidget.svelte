@@ -59,9 +59,21 @@
     </Dialog.Header>
 
     <form
-      {...editTrain.enhance(async ({ submit }) => {
-        await submit();
+      {...editTrain.enhance(async ({ submit, form, data: sd }) => {
+        sd.set("layoutUuid", train.layoutUuid);
+        sd.set("uuid", train.uuid);
+
         isDialogOpen = false;
+
+        try {
+          await submit();
+          toast.success("Edited train");
+        } catch (error) {
+          toast.error("Error editing train: " + error);
+        } finally {
+          form.reset();
+          isDialogOpen = false;
+        }
       })}
     >
       <!-- Train Name -->
@@ -103,11 +115,6 @@
         />
       </label>
 
-      <!-- Layout uuid -->
-      <input hidden name="layoutUuid" value={train.layoutUuid} />
-      <!-- Train uuid -->
-      <input hidden name="uuid" value={train.uuid} />
-
       <Separator class="mb-3" />
 
       <!-- Delete Train -->
@@ -126,33 +133,40 @@
           </Dialog.Header>
 
           <form
-            {...deleteTrain.enhance(async ({ submit, form }) => {
+            id="delete-train-form"
+            {...deleteTrain.enhance(async ({ submit, form, data: sd }) => {
+              sd.set("layoutUuid", train.layoutUuid);
+              sd.set("uuid", train.uuid);
+
+              isDialogOpen = false;
+
               try {
                 await submit();
-                form.reset();
                 toast.success("Deleted train");
               } catch (error) {
                 toast.error("Error deleting train: " + error);
               } finally {
+                form.reset();
                 isDialogOpen = false;
                 isDelTrainDiaOpen = false;
               }
             })}
-          >
-            <input hidden name="layoutUuid" value={train.layoutUuid} />
-            <input hidden name="uuid" value={train.uuid} />
-            <Dialog.Footer>
-              <Button
-                type="reset"
-                onclick={() => (isDialogOpen = false)}
-                variant="outline"
-                class="w-32">Cancel</Button
-              >
-              <Button type="submit" variant="destructive" class="w-32"
-                >Delete Train</Button
-              >
-            </Dialog.Footer>
-          </form>
+          ></form>
+
+          <Dialog.Footer>
+            <Button
+              type="reset"
+              onclick={() => (isDialogOpen = false)}
+              variant="outline"
+              class="w-32">Cancel</Button
+            >
+            <Button
+              type="submit"
+              variant="destructive"
+              form="delete-train-form"
+              class="w-32">Delete Train</Button
+            >
+          </Dialog.Footer>
         </Dialog.Content>
       </Dialog.Root>
 

@@ -52,6 +52,7 @@
         sd.set("layoutUuid", data.id);
 
         try {
+          isDialogOpen = false;
           await submit();
           form.reset();
           toast.success("Created train");
