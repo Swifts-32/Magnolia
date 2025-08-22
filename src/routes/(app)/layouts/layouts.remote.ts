@@ -16,6 +16,17 @@ export const getLayouts = query(async () => {
   return layouts;
 });
 
+export const getLayout = query(z.uuid(), async (id) => {
+  const layouts = await db.select({
+    id: LayoutTable.uuid,
+    name: LayoutTable.name,
+  }).from(LayoutTable).where(eq(LayoutTable.uuid, id));
+
+  if (layouts.length < 1 || layouts.length > 1) error(404, "Not found");
+
+  return layouts[0];
+});
+
 export const createLayout = form(async (data: FormData) => {
   const layoutSchema = z.object({
     name: z.string().trim().min(1, "Name is required"),

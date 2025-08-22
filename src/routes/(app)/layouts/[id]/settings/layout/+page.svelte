@@ -8,50 +8,50 @@
   import { Trash2 } from "lucide-svelte";
   import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import { deleteLayout } from "../../../data.remote";
+  import { deleteLayout } from "../../../layouts.remote";
 
-  const layout = getLayoutClientState();
+  // const layout = getLayoutClientState();
   let layoutName: string = $state("");
   let isDialogOpen = $state(false);
 
-  onMount(() => {
-    layoutName = layout.name;
+//   onMount(() => {
+//     layoutName = layout.name;
 
-    beforeNavigate(({ cancel }) => {
-      if (!layoutName?.trim()) {
-        toast.error("Layout name is required");
-        cancel(); // This cancels the navigation.
-      }
-    });
-  });
+//     beforeNavigate(({ cancel }) => {
+//       if (!layoutName?.trim()) {
+//         toast.error("Layout name is required");
+//         cancel(); // This cancels the navigation.
+//       }
+//     });
+//   });
 
-  // Save the layout
-  onDestroy(() => {
-    const layoutData = {
-      layoutName: layoutName,
-    };
+//   // Save the layout
+//   onDestroy(() => {
+//     const layoutData = {
+//       layoutName: layoutName,
+//     };
 
-    // Don't update the layout if nothing has changed
-    if (layoutName === layout.name) return;
+//     // Don't update the layout if nothing has changed
+//     if (layoutName === layout.name) return;
 
-    fetch(`/api/layout/${layout.uuid}/edit`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(layoutData),
-    })
-      .then((response) => {
-        if (response.ok) {
-          toast.success("Layout updated successfully");
-        } else {
-          toast.error("Failed to update layout");
-        }
-      })
-      .catch((error) => {
-        toast.error(`Error updating layout: ${error}`);
-      });
-  });
+//     fetch(`/api/layout/${layout.uuid}/edit`, {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(layoutData),
+//     })
+//       .then((response) => {
+//         if (response.ok) {
+//           toast.success("Layout updated successfully");
+//         } else {
+//           toast.error("Failed to update layout");
+//         }
+//       })
+//       .catch((error) => {
+//         toast.error(`Error updating layout: ${error}`);
+//       });
+//   });
 </script>
 
 <div class="m-4">
@@ -78,7 +78,7 @@
         </Dialog.Description>
       </Dialog.Header>
 
-      <form {...deleteLayout.for(layout.uuid)}>
+      <!-- <form {...deleteLayout.for(layout.uuid)}>
         <Dialog.Footer>
           <Button
             type="reset"
@@ -90,7 +90,7 @@
             >Delete Layout</Button
           >
         </Dialog.Footer>
-      </form>
+      </form> -->
     </Dialog.Content>
   </Dialog.Root>
 </div>

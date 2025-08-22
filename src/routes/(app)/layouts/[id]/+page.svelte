@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>{data.layoutName} Home</title>
+  <title>{data.name} Home</title>
 </svelte:head>
 
 <p>Mixed View will go here</p>

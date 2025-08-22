@@ -1,6 +1,6 @@
 import { db } from "$lib/server/db";
 import { SessionTable } from "$lib/server/db/schema/sessions";
-import { type Handle } from "@sveltejs/kit";
+import { type Handle, type HandleValidationError } from "@sveltejs/kit";
 import { sql } from "drizzle-orm";
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -14,6 +14,12 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   return resolve(event);
+};
+
+export const handleValidationError: HandleValidationError = ({ event, issues }) => {
+  return {
+    message: 'Nice try, hacker!'
+  };
 };
 
 // const SESSION_COOKIE = "anon_session";

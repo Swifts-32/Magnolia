@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createLayout, getLayouts } from "../(app)/layouts/data.remote";
+	import { createLayout, getLayouts } from "../(app)/layouts/layouts.remote";
 	import { Plus } from "lucide-svelte";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import Fab from "$lib/components/FAB/Fab.svelte";

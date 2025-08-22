@@ -5,6 +5,7 @@ import { TrainFunctionIconsList, TrainFunctionModesList } from "../../../types/T
 import { relations } from "drizzle-orm";
 import { UserTable } from "./users";
 import { ConnectionTable } from "./connection";
+import { z } from "zod/v4";
 
 export const TrainDirection = pgEnum("trainDirection", ["Forward", "Reverse", "Unknown"]);
 export const TrainFunctionIcon = pgEnum("trainFunctionIcon", TrainFunctionIconsList);
@@ -22,7 +23,19 @@ export const TrainTable = AppSchema.table("trains", {
   direction: TrainDirection("direction").default("Unknown").notNull(),
   speed: integer("speed").notNull().default(0),
   userControllingId: uuid("userControllingId").references(() => UserTable.id, { onDelete: "set null" }),
-})
+});
+
+export const trainSchema = z.object({
+  uuid: z.uuid(),
+  layoutUuid: z.uuid(),
+  address: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(255),
+  comment: z.string().trim().min(1).max(255),
+  connectionUuid: z.uuid(),
+  direction: z.enum(["Forward", "Reverse", "Unkown"]),
+  speed: z.number(),
+  userControllingId: uuid(),
+});
 
 export const TrainTableRelations = relations(TrainTable, ({ one, many }) => ({
   layout: one(LayoutTable, {
