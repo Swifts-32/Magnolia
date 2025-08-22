@@ -41,9 +41,19 @@
 	// createLayoutClientState(data.layoutId, data.layoutName);
 </script>
 
-<div class="flex flex-col h-dvh">
-	<NavBar {navBarData} />
-	{@render children()}
-</div>
+<svelte:boundary>
+	<div class="flex flex-col h-dvh">
+		<NavBar {navBarData} />
+		{@render children()}
+	</div>
 
-<Toaster richColors position="bottom-left" />
+	<Toaster richColors theme="dark" position="bottom-left" />
+
+	{#snippet pending()}
+		<p>Loading...</p>
+	{/snippet}
+
+	{#snippet failed(error, reset)}
+		<button onclick={reset}>oops! try again</button>
+	{/snippet}
+</svelte:boundary>

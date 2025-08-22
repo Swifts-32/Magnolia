@@ -11,13 +11,14 @@
 	} from "$lib/types/Trains/Functions/Functions";
 	import FunctionIcons from "./FunctionIcons.svelte";
 	import ConformationDialog from "../../Common/ConformationDialog/ConformationDialog.svelte";
+    import type { TrainFunction } from "$lib/server/db/schema/trains";
 
 	interface Props {
-		selectedFunction: TrainClientFunction;
+		selFunction: TrainFunction;
 		deleteFunction: () => void;
 	}
 
-	let { selectedFunction, deleteFunction }: Props = $props();
+	let { selFunction, deleteFunction }: Props = $props();
 </script>
 
 <div class="flex flex-col gap-2">
@@ -26,7 +27,7 @@
 		<Label for="functionName" class="text-right">Name</Label>
 		<Input
 			id="functionName"
-			bind:value={selectedFunction.name}
+			bind:value={selFunction.name}
 			class="col-span-3"
 		/>
 	</div>
@@ -36,7 +37,7 @@
 		<Label for="functionValue" class="text-right">Value</Label>
 		<Input
 			id="functionValue"
-			bind:value={selectedFunction.value}
+			bind:value={selFunction.value}
 			class="col-span-3"
 		/>
 	</div>
@@ -46,7 +47,7 @@
 		<Label for="functionPosition" class="text-right">Position</Label>
 		<Input
 			id="functionPosition"
-			bind:value={selectedFunction.position}
+			bind:value={selFunction.position}
 			class="col-span-3"
 		/>
 	</div>
@@ -57,16 +58,16 @@
 		<Select.Root
 			type="single"
 			name="functionIcon"
-			bind:value={selectedFunction.icon}
+			bind:value={selFunction.icon}
 		>
 			<Select.Trigger class="col-span-3">
-				<FunctionIcons selectedIcon={selectedFunction.icon} size={18} />
+				<FunctionIcons selectedIcon={selFunction.icon} size={18} />
 			</Select.Trigger>
 			<Select.Content>
 				{#each TrainFunctionIconsList as icon}
 					<Select.Item
 						value={icon}
-						class={icon === selectedFunction.icon
+						class={icon === selFunction.icon
 							? "cursor-default"
 							: "cursor-pointer"}
 					>
@@ -83,16 +84,16 @@
 		<Select.Root
 			type="single"
 			name="functionMode"
-			bind:value={selectedFunction.mode}
+			bind:value={selFunction.mode}
 		>
 			<Select.Trigger class="col-span-3">
-				{selectedFunction.mode}
+				{selFunction.mode}
 			</Select.Trigger>
 			<Select.Content>
 				{#each TrainFunctionModesList as mode}
 					<Select.Item
 						value={mode}
-						class={mode === selectedFunction.mode
+						class={mode === selFunction.mode
 							? "cursor-default"
 							: "cursor-pointer"}
 					>

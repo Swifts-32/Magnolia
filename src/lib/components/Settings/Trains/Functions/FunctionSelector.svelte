@@ -1,32 +1,26 @@
 <script lang="ts">
-	import { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 	import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
 	import * as Command from "$lib/components/ui/command/index.js";
 	import * as Popover from "$lib/components/ui/popover/index.js";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import { Check, Plus } from "lucide-svelte";
 	import FunctionIcons from "./FunctionIcons.svelte";
+	import type { TrainFunction } from "$lib/server/db/schema/trains";
 
 	interface Props {
-		functions: Map<string, TrainClientFunction>;
-		selectedFunction: TrainClientFunction | undefined;
+		functions: TrainFunction[];
+		selFunction: TrainFunction | undefined;
 		addFunction: () => void;
 	}
 
-	let {
-		functions = $bindable(),
-		selectedFunction = $bindable(),
-		addFunction,
-	}: Props = $props();
+	let { functions, selFunction = $bindable(), addFunction }: Props = $props();
 
-	let functionSelectorOpen = $state(false);
+	let isSelOpen = $state(false);
 	let triggerRef = $state<HTMLButtonElement>(null!);
-
 </script>
 
 <div class="my-2 mb-5 items-center gap-4 w-full grid grid-cols-8">
-	<!-- Function Selector -->
-	<Popover.Root bind:open={functionSelectorOpen}>
+	<Popover.Root bind:open={isSelOpen}>
 		<Popover.Trigger
 			bind:ref={triggerRef}
 			class="w-full col-span-5 flex justify-between"
@@ -37,16 +31,16 @@
 					class="w-full"
 					{...props}
 					role="combobox"
-					aria-expanded={functionSelectorOpen}
+					aria-expanded={isSelOpen}
 				>
-					{#if selectedFunction}
+					{#if selFunction}
 						<div class="flex gap-2 align-middle">
 							<FunctionIcons
-								selectedIcon={selectedFunction.icon}
+								selectedIcon={selFunction.icon}
 								size={18}
 								text={false}
 							/>
-							{selectedFunction.name}
+							{selFunction}
 						</div>
 					{:else}
 						Select a function
@@ -66,21 +60,21 @@
 						<!-- Sort the functions by value (Descending) -->
 						{#each Array.from(functions.values()).sort( (a, b) => a.value.localeCompare(b.value), ) as funct}
 							<Command.Item
-								class="{selectedFunction?.value === funct.value
+								class="{selFunction?.value === funct.value
 									? 'cursor-default'
 									: 'cursor-pointer'}
 								 py-1 px-2"
 								value={funct.value}
 								keywords={[funct.name]}
 								onclick={() => {
-									if (selectedFunction?.value !== funct.value) {
+									if (selFunction?.value !== funct.value) {
 										// If not already selected, select it
-										selectedFunction = funct;
-										functionSelectorOpen = false;
+										selFunction = funct;
+										isSelOpen = false;
 									}
 								}}
 							>
-								{#if selectedFunction?.value === funct.value}
+								{#if selFunction?.value === funct.value}
 									<Check size={10} />
 								{:else}
 									<div class="w-4"></div>
@@ -107,12 +101,7 @@
 	</Popover.Root>
 
 	<!-- Add Function Button -->
-	<Button
-		class="w-full col-span-3"
-		variant="outline"
-		onclick={() => {
-			functionSelectorOpen = false;
-			addFunction();
-		}}><Plus />Add Function</Button
-	>
+	<Button class="w-full col-span-3" variant="outline" onclick={addFunction}>
+		<Plus />Add Function
+	</Button>
 </div>

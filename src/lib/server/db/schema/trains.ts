@@ -27,18 +27,6 @@ export const TrainTable = AppSchema.table("trains", {
 
 export type Train = InferSelectModel<typeof TrainTable>;
 
-export const trainSchema = z.object({
-  uuid: z.uuid(),
-  layoutUuid: z.uuid(),
-  address: z.string().trim().min(1),
-  name: z.string().trim().min(1).max(255),
-  comment: z.string().trim().min(1).max(255),
-  connectionUuid: z.uuid(),
-  direction: z.enum(["Forward", "Reverse", "Unkown"]),
-  speed: z.number(),
-  userControllingId: uuid(),
-});
-
 export const TrainTableRelations = relations(TrainTable, ({ one, many }) => ({
   layout: one(LayoutTable, {
     fields: [TrainTable.layoutUuid],
@@ -65,6 +53,8 @@ export const TrainFunctionTable = AppSchema.table("function", {
   position: integer("position").default(0).notNull(),
   state: boolean("state").default(false).notNull(),
 })
+
+export type TrainFunction = InferSelectModel<typeof TrainFunctionTable>;
 
 export const TrainFunctionTableRelations = relations(TrainFunctionTable, ({ one }) => ({
   train: one(TrainTable, {

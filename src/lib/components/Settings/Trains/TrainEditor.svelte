@@ -37,7 +37,7 @@
 
   <Separator class="my-4" />
 
-  <FunctionViewer functions={train.functions} trainUuid={train.uuid} />
+  <FunctionViewer functions={train.functions} trainId={train.uuid} />
 
   <Separator class="my-4" />
 </div>

@@ -7,6 +7,7 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
+  import ConnectionSelector from "$lib/components/Settings/Connections/ConnectionSelector.svelte";
 
   let { data }: LayoutProps = $props();
 
@@ -100,6 +101,12 @@
           placeholder="e.g. 135"
           required
         />
+      </label>
+
+      <!-- Connection -->
+      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
+        <p>Connection</p>
+        <ConnectionSelector layoutId={data.id} />
       </label>
     </form>
 

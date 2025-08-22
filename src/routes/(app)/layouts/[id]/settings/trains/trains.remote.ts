@@ -17,6 +17,7 @@ export const createTrain = form(async (data: FormData) => {
     address: z.string().trim().min(1),
     name: z.string().trim().min(1).max(255),
     comment: z.string().trim().min(1).max(255),
+    connectionId: z.uuid(),
   });
   const trainData = trainSchema.safeParse(Object.fromEntries(data));
   if (!trainData.success) error(400, z.prettifyError(trainData.error));
@@ -27,6 +28,7 @@ export const createTrain = form(async (data: FormData) => {
     layoutUuid: trainData.data.layoutUuid,
     uuid: crypto.randomUUID(),
     address: trainData.data.address,
+    connectionUuid: trainData.data.connectionId,
   });
 
 
