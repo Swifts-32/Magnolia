@@ -10,7 +10,8 @@
   import { getConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import { toast } from "svelte-sonner";
-  import { onDestroy } from "svelte";
+  import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
+  import FunctionViewer from "./Functions/FunctionViewer.svelte";
 
   interface Props {
     train: Train;
@@ -18,14 +19,8 @@
 
   let { train }: Props = $props();
 
-  const connection = getConnection(train.connectionUuid);
   let isDialogOpen = $state(false);
   let isDelTrainDiaOpen = $state(false);
-
-  onDestroy(() => {
-    isDialogOpen = false;
-    isDelTrainDiaOpen = false;
-  });
 </script>
 
 <!-- Train Widget -->
@@ -39,15 +34,11 @@
   <div class="flex-col flex items-start">
     <p class="text-sm text-gray-400">Addr: {train.address}</p>
 
-    {#if connection.error}
+    {#await getConnection(train.connectionUuid) then connection}
+      <p class="text-sm text-gray-400">{connection.name}</p>
+    {:catch}
       <p class="text-sm text-gray-400">None</p>
-    {:else if connection.loading}
-      <p>loading...</p>
-    {:else}
-      <p class="text-sm text-gray-400">
-        Connection: {connection.current?.name ?? "None"}
-      </p>
-    {/if}
+    {/await}
   </div>
 </button>
 
@@ -85,6 +76,7 @@
           name="name"
           id="name"
           placeholder="Thomas"
+          value={train.name}
           required
         />
       </label>
@@ -98,6 +90,7 @@
           name="comment"
           id="comment"
           placeholder="This is a steam train"
+          value={train.comment}
           required
         />
       </label>
@@ -111,9 +104,23 @@
           name="address"
           id="address"
           placeholder="e.g. 135"
+          value={train.address}
           required
         />
       </label>
+
+      <!-- Connection -->
+      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
+        <p>Connection</p>
+        <ConnectionSelector
+          layoutId={train.layoutUuid}
+          selConnectionId={train.connectionUuid}
+        />
+      </label>
+
+      <Separator class="my-4" />
+
+      <FunctionViewer trainUuid={train.uuid} />
 
       <Separator class="mb-3" />
 
