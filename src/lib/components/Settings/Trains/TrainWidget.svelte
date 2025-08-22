@@ -109,19 +109,6 @@
         />
       </label>
 
-      <!-- Connection -->
-      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
-        <p>Connection</p>
-        <ConnectionSelector
-          layoutId={train.layoutUuid}
-          selConnectionId={train.connectionUuid}
-        />
-      </label>
-
-      <Separator class="my-4" />
-
-      <FunctionViewer trainId={train.uuid} />
-
       <Separator class="mb-3" />
 
       <!-- Delete Train -->
