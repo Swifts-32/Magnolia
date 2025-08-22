@@ -2,7 +2,7 @@ import { boolean, integer, pgEnum, uuid, varchar } from "drizzle-orm/pg-core";
 import { LayoutTable as LayoutTable } from "./layouts";
 import { AppSchema } from "./app";
 import { TrainFunctionIconsList, TrainFunctionModesList } from "../../../types/Trains/Functions/Functions";
-import { relations } from "drizzle-orm";
+import { relations, type InferSelectModel } from "drizzle-orm";
 import { UserTable } from "./users";
 import { ConnectionTable } from "./connection";
 import { z } from "zod/v4";
@@ -24,6 +24,8 @@ export const TrainTable = AppSchema.table("trains", {
   speed: integer("speed").notNull().default(0),
   userControllingId: uuid("userControllingId").references(() => UserTable.id, { onDelete: "set null" }),
 });
+
+export type Train = InferSelectModel<typeof TrainTable>;
 
 export const trainSchema = z.object({
   uuid: z.uuid(),
