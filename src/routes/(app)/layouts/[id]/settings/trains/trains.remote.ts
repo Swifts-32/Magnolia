@@ -60,8 +60,8 @@ export const editTrain = form(async (data: FormData) => {
 
 export const deleteTrain = form(async (data: FormData) => {
   const trainSchema = z.object({
-    uuid: z.uuid(),
-    layoutUuid: z.uuid(),
+    trainId: z.uuid(),
+    layoutId: z.uuid(),
   });
 
   const trainData = trainSchema.safeParse(Object.fromEntries(data));
@@ -69,9 +69,9 @@ export const deleteTrain = form(async (data: FormData) => {
     return error(400, z.prettifyError(trainData.error));
   }
 
-  const res = await db.delete(TrainTable).where(eq(TrainTable.uuid, trainData.data.uuid)).returning();
+  const res = await db.delete(TrainTable).where(eq(TrainTable.uuid, trainData.data.trainId)).returning();
 
   if (res.length === 0) error(404, "Train not found");
 
-  await getTrains(trainData.data.layoutUuid).refresh();
+  await getTrains(trainData.data.layoutId).refresh();
 });

@@ -109,15 +109,29 @@
         />
       </label>
 
+      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
+        <p>Connection</p>
+        <ConnectionSelector
+          layoutId={train.layoutUuid}
+          selConnectionId={train.connectionUuid}
+        />
+      </label>
+
+      <FunctionViewer trainId={train.uuid} />
+
       <Separator class="mb-3" />
 
-      <!-- Delete Train -->
+      <!-- Delete Train Button -->
+      <Button
+        onclick={() => (isDelTrainDiaOpen = true)}
+        variant="destructive"
+        class="w-full mb-3"
+      >
+        <Trash2 /> Delete Train
+      </Button>
+
+      <!-- Delete Train Dialog -->
       <Dialog.Root bind:open={isDelTrainDiaOpen}>
-        <Dialog.Trigger class="w-full mb-3">
-          <Button type="button" variant="destructive" class="w-full">
-            <Trash2 /> Delete Train
-          </Button>
-        </Dialog.Trigger>
         <Dialog.Content>
           <Dialog.Header>
             <Dialog.Title>Delete Train</Dialog.Title>
@@ -129,9 +143,10 @@
           <form
             id="delete-train-form"
             {...deleteTrain.enhance(async ({ submit, form, data: sd }) => {
-              sd.set("layoutUuid", train.layoutUuid);
-              sd.set("uuid", train.uuid);
+              sd.set("trainId", train.uuid);
+              sd.set("layoutId", train.layoutUuid);
 
+              isDelTrainDiaOpen = false;
               isDialogOpen = false;
 
               try {

@@ -24,7 +24,7 @@
 		{/each}
 
 		{#snippet pending()}
-			<p>loading...</p>
+			<p>Loading Layouts...</p>
 		{/snippet}
 
 		{#snippet failed(error, reset)}
@@ -64,10 +64,10 @@
 				<Button
 					type="reset"
 					onclick={() => (isDialogOpen = false)}
-					variant="destructive"
+					variant="outline"
 					class="w-32">Cancel</Button
 				>
-				<Button type="submit" class="w-32">Submit</Button>
+				<Button type="submit" class="w-32">Create</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

@@ -1,4 +1,4 @@
-import { boolean, integer, pgEnum, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, pgEnum, primaryKey, uuid, varchar } from "drizzle-orm/pg-core";
 import { LayoutTable as LayoutTable } from "./layouts";
 import { AppSchema } from "./app";
 import { TrainFunctionIconsList, TrainFunctionModesList } from "../../../types/Trains/Functions/Functions";
@@ -42,17 +42,21 @@ export const TrainTableRelations = relations(TrainTable, ({ one, many }) => ({
 
 // Train Function
 export const TrainFunctionTable = AppSchema.table("function", {
-  value: varchar("value").primaryKey().notNull(),
+  functValue: varchar("value").notNull(),
   trainUuid: uuid("trainId").references(() => TrainTable.uuid, { onDelete: "cascade" }).notNull(),
 
-  name: varchar("name").default("New Function").notNull(),
+  name: varchar("name", { length: 255 }).notNull().default("New Function"),
   icon: TrainFunctionIcon("icon").default("Text").notNull(),
   mode: TrainFunctionMode("mode").default("Toggle").notNull(),
 
   visible: boolean("visible").default(true).notNull(),
   position: integer("position").default(0).notNull(),
   state: boolean("state").default(false).notNull(),
-})
+},
+  (table) => [
+    primaryKey({ columns: [table.functValue, table.trainUuid] })
+  ]
+)
 
 export type TrainFunction = InferSelectModel<typeof TrainFunctionTable>;
 

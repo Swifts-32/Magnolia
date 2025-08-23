@@ -204,7 +204,7 @@ export class Connection {
             .set({
               state
             })
-            .where(and(eq(TrainFunctionTable.trainUuid, uuid as unknown as TrainUuid), eq(TrainFunctionTable.value, i.toString())))
+            .where(and(eq(TrainFunctionTable.trainUuid, uuid as unknown as TrainUuid), eq(TrainFunctionTable.functValue, i.toString())))
         });
       });
 

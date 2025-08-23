@@ -57,7 +57,7 @@ export class ServerTrainFunctions {
     const functs: Map<string, ServerTrainFunctions> = new Map();
     
     dbFuncts.forEach(dbFunct => {
-      const funct = new ServerTrainFunctions(dbFunct.value, dbFunct.trainUuid as TrainUuid);
+      const funct = new ServerTrainFunctions(dbFunct.functValue, dbFunct.trainUuid as TrainUuid);
       funct.icon = dbFunct.icon;
       funct.mode = dbFunct.mode;
       funct.name = dbFunct.name;
