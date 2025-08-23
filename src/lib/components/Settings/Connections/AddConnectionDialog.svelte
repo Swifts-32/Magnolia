@@ -1,84 +1,50 @@
 <script lang="ts">
-  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
-  import { Plus } from "lucide-svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
-  import { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
-  import ConnectionEditor from "./ConnectionEditor.svelte";
+  import { createConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  import ConnectionFormContent from "./ConnectionFormContent.svelte";
   import { toast } from "svelte-sonner";
 
   interface Props {
-    layout: LayoutClient;
+    open: boolean;
+    layoutId: string;
   }
 
-  let { layout }: Props = $props();
-  let editMode: boolean = $state(false);
-  let connection: ClientConnection | undefined = $state();
-
-  $effect(() => {
-    if (editMode && !connection) {
-      connection = new ClientConnection(
-        "DccEx",
-        "Emulator",
-        "New Connection",
-        crypto.randomUUID(),
-        layout.uuid,
-      );
-    }
-  });
-
-  function createConnection() {
-    if (!connection) return;
-
-    fetch(`/api/layout/${connection.layoutUuid}/connections/add`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: connection.toJsonWeb(),
-    })
-      .then(async (response) => {
-        if (response.ok) {
-          editMode = false; // Close the dialog on success
-          toast.success("Connection added successfully");
-        } else {
-          toast.error("Failed to add connection");
-        }
-      })
-      .catch((error) => {
-        toast.error("Error adding connection");
-      });
-
-    closeDialog();
-  }
-
-  function closeDialog() {
-    editMode = false;
-    connection = undefined;
-  }
+  let { open = $bindable(), layoutId }: Props = $props();
 </script>
 
-<button
-  class="border-primary border-2 flex p-3 rounded-md w-96 h-16 justify-center items-center select-none"
-  onclick={() => (editMode = true)}
->
-  <Plus size={30} />
-  <p class="text-xl">Add Connection</p>
-</button>
-
-<Dialog.Root open={editMode}>
+<Dialog.Root bind:open>
   <Dialog.Content>
-    <Dialog.Title>Create Connection</Dialog.Title>
+    <Dialog.Title>Add Connection</Dialog.Title>
 
-    {#if connection}
-      <ConnectionEditor bind:connection />
-    {/if}
+    <form
+      id="add-connection-form"
+      {...createConnection.enhance(async ({ submit, form, data: sd }) => {
+        sd.set("layoutUuid", layoutId);
+
+        open = false;
+
+        try {
+          await submit();
+          form.reset();
+          toast.success("Created connection");
+        } catch (error) {
+          toast.error("Error creating connection: " + error);
+        }
+      })}
+    >
+      <ConnectionFormContent />
+    </form>
 
     <Dialog.Footer>
-      <Button type="reset" class="w-28" variant="outline" onclick={closeDialog}
-        >Cancel</Button
+      <Button
+        type="reset"
+        class="w-28"
+        variant="outline"
+        onclick={() => (open = false)}>Cancel</Button
       >
-      <Button type="submit" class="w-28" onclick={createConnection}>Save</Button
+      <Button type="submit" form="add-connection-form" class="w-28"
+        >Create</Button
       >
     </Dialog.Footer>
   </Dialog.Content>

@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { z } from "zod/v4";
   import { cn } from "$lib/utils.js";
   import { tick } from "svelte";
   import { Plus } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-  import type { TrainUuid } from "$lib/types/Trains/Train";
   import Check from "lucide-svelte/icons/check";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
-  import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
+  import { getTrains } from "../../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
+  import { getConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
 
   interface Props {
-    selTrainId: TrainUuid | undefined;
+    selTrainId: string | undefined;
     disabled?: boolean;
-    layoutId: LayoutUUID;
+    layoutId: string;
   }
 
   let {
@@ -23,27 +21,6 @@
     disabled = false,
     layoutId,
   }: Props = $props();
-
-  // Refresh the list of trains when the combobox is opened
-  async function loadTrains() {
-    const response = await fetch(`/api/layout/${layoutId}/trains/loco-select`);
-    const json = await response.json();
-
-    // Need train:
-    // - Name
-    // - Address
-    // - Uuid
-    // - Connection Name
-    const Train = z.object({
-      id: z.uuidv4(),
-      name: z.string(),
-      address: z.string(),
-      connName: z.string().nullable(),
-      isSelectable: z.boolean(),
-    });
-
-    return z.array(Train).parse(json.trains);
-  }
 
   let selTrainName: string | undefined = $state();
   let open = $state(false);
@@ -59,11 +36,7 @@
 </script>
 
 <Popover.Root bind:open>
-  <Popover.Trigger
-    bind:ref={triggerRef}
-    {disabled}
-    onclick={async () => loadTrains()}
-  >
+  <Popover.Trigger bind:ref={triggerRef} {disabled}>
     {#snippet child({ props })}
       <Button
         variant="outline"
@@ -78,6 +51,7 @@
       </Button>
     {/snippet}
   </Popover.Trigger>
+
   <Popover.Content class="w-[275px] p-0">
     <Command.Root
       filter={(value, search, keywords) => {
@@ -97,46 +71,46 @@
       <Command.List>
         <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
-          {#await loadTrains() then trains}
-            {#each trains as train}
-              <Command.Item
-                {disabled}
-                value={train.id}
-                keywords={[train.name, train.address, train.connName ?? ""]}
-                onSelect={async () => {
-                  if (train.isSelectable) {
-                    selTrainId = train.id as TrainUuid;
-                    selTrainName = train.name;
-                    closeAndFocusTrigger();
-                  }
-                }}
-                class=" h-10 flex justify-between {train.id == selTrainId ||
-                !train.isSelectable
-                  ? 'cursor-default'
-                  : 'cursor-pointer'}"
-              >
-                <div class="flex items-center gap-2">
-                  <p class="text-md">{train.name}</p>
-                  <div
-                    class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
-                  >
-                    <p>Address: {train.address}</p>
-                    {#if train.connName}
-                      <p>
-                        Connection: {train.connName}
-                      </p>
-                    {/if}
-                  </div>
+          {#each await getTrains(layoutId) as train}
+            <Command.Item
+              disabled={disabled || train.userControllingId !== null}
+              value={train.uuid}
+              keywords={[train.name, train.address]}
+              onSelect={async () => {
+                if (train.userControllingId === null) {
+                  selTrainId = train.uuid;
+                  selTrainName = train.name;
+                  closeAndFocusTrigger();
+                }
+              }}
+              class="h-10 flex justify-between {train.uuid == selTrainId ||
+              train.userControllingId
+                ? 'cursor-default'
+                : 'cursor-pointer'}"
+            >
+              <div class="flex items-center gap-2">
+                <p class="text-md">{train.name}</p>
+                <div
+                  class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
+                >
+                  <p>Address: {train.address}</p>
+                  {#await getConnection(train.connectionUuid) then connection}
+                    <p class="text-sm text-gray-400">
+                      Connection: {connection.name}
+                    </p>
+                  {:catch}
+                    <p class="text-sm text-red-400">No Connection</p>
+                  {/await}
                 </div>
-                <Check
-                  class={cn(
-                    "mr-2 size-4",
-                    selTrainId !== train.id && "text-transparent",
-                  )}
-                />
-              </Command.Item>
-            {/each}
-          {/await}
+              </div>
+              <Check
+                class={cn(
+                  "mr-2 size-4",
+                  selTrainId !== train.uuid && "text-transparent",
+                )}
+              />
+            </Command.Item>
+          {/each}
 
           <Command.Separator class="my-1 h-[0.5px]" />
 
@@ -145,13 +119,14 @@
             value="create-train"
             class="h-10 w-full flex-col justify-center"
           >
-            <TrainAdd
+            <p>Add Train</p>
+            <!-- <TrainAdd
               {layoutId}
               class="flex size-full items-center justify-center gap-2"
             >
               <Plus class="size-6" />
               <p>Create Train</p>
-            </TrainAdd>
+            </TrainAdd> -->
           </Command.Item>
         </Command.Group>
       </Command.List>

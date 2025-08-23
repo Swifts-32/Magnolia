@@ -2,24 +2,21 @@
   import { Card } from "$lib/components/ui/card";
   import { Slider } from "$lib/components/ui/slider";
   import { CircleAlert } from "lucide-svelte";
-  import {
-    getLayoutClientState,
-    type LayoutUUID,
-  } from "$lib/client/LayoutClient.svelte";
   import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
   import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import Button from "../ui/button/button.svelte";
   import type { TrainUuid } from "$lib/types/Trains/Train";
+  import { getTrain } from "../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
 
   interface Props {
-    layoutId: LayoutUUID;
+    layoutId: string;
     disabled?: boolean;
   }
 
   let { layoutId, disabled: disabledProp = false }: Props = $props();
 
-  const layout = getLayoutClientState();
+  // const layout = getLayoutClientState();
   let selTrainId: TrainUuid | undefined = $state();
 
   // Disable throttle if:
@@ -33,7 +30,7 @@
   <LocoSelect bind:selTrainId {layoutId} disabled={disabledProp} />
 
   <div class="flex gap-4 justify-between items-center flex-1 grow">
-    {#await selTrainId && layout.loadTrain(selTrainId) then curTrain}
+    {#await selTrainId && getTrain(selTrainId) then curTrain}
       <!-- Speed Slider -->
       <!-- Using onValueCommit to prevent spamming the server with speed updates -->
       <div class="w-16 h-full pb-8 pt-4">
@@ -57,7 +54,7 @@
 
       <div class="flex flex-col gap-2 h-full">
         <!-- Emergency Stop -->
-        <Button
+        <!-- <Button
           {disabled}
           class="size-[54px] m-0"
           onclick={() => curTrain?.emergencyStop()}
@@ -65,7 +62,7 @@
           size="icon"
         >
           <CircleAlert />
-        </Button>
+        </Button> -->
 
         <!-- Direction Selector -->
         <DirectionSelector
@@ -77,11 +74,11 @@
           {disabled}
         />
       </div>
-
+<!-- 
       <FunctionCarousel
         functions={curTrain?.functions ?? new Map()}
         {disabled}
-      />
+      /> -->
     {/await}
   </div>
 </Card>

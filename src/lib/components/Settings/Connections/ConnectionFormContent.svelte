@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
   import {
     connectionProtocolList,
     connectionTypeList,
@@ -10,32 +9,35 @@
   import Label from "$lib/components/ui/label/label.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
   import Separator from "$lib/components/ui/separator/separator.svelte";
+  import type { Connection } from "$lib/server/db/schema/connection";
   import SerialConnection from "./Serial/SerialConnection.svelte";
 
   interface Props {
-    connection: ClientConnection;
+    connection?: Connection | undefined;
   }
 
-  let { connection = $bindable() }: Props = $props();
+  let { connection = $bindable(undefined) }: Props = $props();
 </script>
 
 <div class="flex-col flex gap-2">
   <!-- Connection Name -->
   <div class="grid grid-cols-4 items-center gap-4">
-    <Label for="connName" class="text-right">Name</Label>
-    <Input id="connName" bind:value={connection.name} class="col-span-3" />
+    <Label for="name" class="text-right">Name</Label>
+    <Input
+      id="name"
+      name="name"
+      value={connection?.name}
+      placeholder="Enter connection name"
+      class="col-span-3"
+    />
   </div>
 
   <!-- Connection Protocol e.g. DCC Ex, LCC, etc. -->
   <div class="grid grid-cols-4 items-center gap-4">
-    <Label for="connProtocol" class="text-right">Protocol</Label>
-    <Select.Root
-      type="single"
-      name="connProtocol"
-      bind:value={connection.protocol}
-    >
+    <Label for="protocol" class="text-right">Protocol</Label>
+    <Select.Root type="single" name="protocol" value={connection?.protocol}>
       <Select.Trigger class="col-span-3">
-        {getProtocolName(connection.protocol)}
+        {connection ? getProtocolName(connection.protocol) : "Select Protocol"}
       </Select.Trigger>
 
       <Select.Content>
@@ -52,10 +54,12 @@
 
   <!-- Connection Type e.g. Serial, Bluetooth, etc. -->
   <div class="grid grid-cols-4 items-center gap-4">
-    <Label for="connType" class="text-right">Hardware</Label>
-    <Select.Root type="single" name="connType" bind:value={connection.hardware}>
+    <Label for="hardware" class="text-right">Hardware</Label>
+    <Select.Root type="single" name="hardware" value={connection?.hardware}>
       <Select.Trigger class="col-span-3">
-        {getConnectionTypeName(connection.hardware)}
+        {connection
+          ? getConnectionTypeName(connection.hardware)
+          : "Select Hardware"}
       </Select.Trigger>
       <Select.Content>
         {#each connectionTypeList as connType, i}
@@ -67,9 +71,9 @@
     </Select.Root>
   </div>
 
-  {#if connection.hardware === "Serial"}
+  <!-- {#if connection.hardware === "Serial"}
     <p>Serial editor goes here</p>
-    <!-- <SerialConnection bind:serialPath bind:serialBaudRate /> -->
-  {/if}
+    <SerialConnection bind:serialPath bind:serialBaudRate />
+  {/if} -->
   <Separator />
 </div>

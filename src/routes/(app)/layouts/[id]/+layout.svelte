@@ -4,6 +4,7 @@
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
 	import { Toaster } from "svelte-sonner";
 	import type { LayoutProps } from "./$types";
+	import Button from "$lib/components/ui/button/button.svelte";
 
 	let { children }: LayoutProps = $props();
 
@@ -54,6 +55,7 @@
 	{/snippet}
 
 	{#snippet failed(error, reset)}
-		<button onclick={reset}>oops! try again</button>
+		<p>Error: {error.message}</p>
+		<Button onclick={reset}>Try again</Button>
 	{/snippet}
 </svelte:boundary>

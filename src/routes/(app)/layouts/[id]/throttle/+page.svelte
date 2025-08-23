@@ -4,8 +4,11 @@
   import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import { Plus } from "lucide-svelte";
+    import type { PageProps } from "../$types";
 
-  const layout = getLayoutClientState();
+  let {data}: PageProps = $props();
+
+  // const layout = getLayoutClientState();
   let noOfThrottles: number = $state(1);
 </script>
 
@@ -32,7 +35,7 @@
 
   <div class="flex flex-row flex-wrap justify-center gap-4">
     {#each Array(noOfThrottles) as _}
-      <Throttle layoutId={layout.uuid} />
+      <Throttle layoutId={data.id} />
     {/each}
   </div>
 </main>

@@ -1,74 +1,49 @@
 <script lang="ts">
-  import { z } from "zod/v4";
   import {
-    getLayoutClientState,
-    type ConnectionUUID,
-  } from "$lib/client/LayoutClient.svelte";
-  import AddConnectionDialog from "$lib/components/Settings/Connections/AddConnectionDialog.svelte";
-  import {
-    ConnectionProtocol,
-    ConnectionType,
     getConnectionTypeName,
     getProtocolName,
   } from "$lib/client/Protocols/protocols";
   import EditConnectionDialog from "$lib/components/Settings/Connections/EditConnectionDialog.svelte";
+  import { getConnections } from "./connections.remote";
+  import type { PageProps } from "./$types";
+  import type { Connection } from "$lib/server/db/schema/connection";
+  import Fab from "$lib/components/FAB/Fab.svelte";
+  import { Plus } from "lucide-svelte";
+  import AddConnectionDialog from "$lib/components/Settings/Connections/AddConnectionDialog.svelte";
 
-  const layout = getLayoutClientState();
-  let selConnectionId: ConnectionUUID | undefined = $state();
+  let { data }: PageProps = $props();
+  let selConnection: Connection | undefined = $state();
 
-  // Refresh the list of trains when the combobox is opened
-  async function loadConnections() {
-    const response = await fetch(
-      `/api/layout/${layout.uuid}/connections/connection-select`,
-    );
-    const json = await response.json();
-
-    const Connection = z.object({
-      id: z.uuidv4(),
-      name: z.string(),
-      protocol: ConnectionProtocol,
-      hardware: ConnectionType,
-    });
-
-    return z.array(Connection).parse(json.connections);
-  }
+  let isAddConnectionDialogOpen = $state(false);
 </script>
 
-{#await selConnectionId && layout.loadConnection(selConnectionId) then connection}
-  {#if connection}
-    <EditConnectionDialog
-      bind:open={
-        () => connection !== undefined,
-        (v) => v || (selConnectionId = undefined)
-      }
-      {connection}
-    />
-  {/if}
-{/await}
+<EditConnectionDialog bind:connection={selConnection} />
+<AddConnectionDialog layoutId={data.id} bind:open={isAddConnectionDialogOpen} />
+
+<!-- Add Connection Button -->
+<Fab label="Add Connection" onclick={() => (isAddConnectionDialogOpen = true)}>
+  <Plus class="size-8" />
+</Fab>
 
 <div class="m-4">
   <h1 class="text-4xl my-10">Connections</h1>
 
   <div class="flex flex-wrap gap-3">
-    {#await loadConnections() then connections}
-      {#each connections as connection}
-        <button
-          class="border-primary border-2 px-3 flex rounded-md gap-3 w-96 h-16 items-center select-none"
-          onclick={() => (selConnectionId = connection.id as ConnectionUUID)}
-        >
-          <p class="text-xl">{connection.name}</p>
-          <div class="flex-col flex items-start">
-            <p class="text-sm text-gray-400">
-              Protocol: {getProtocolName(connection.protocol)}
-            </p>
-            <p class="text-sm text-gray-400">
-              Type: {getConnectionTypeName(connection.hardware)}
-            </p>
-          </div>
-        </button>
-      {/each}
-    {/await}
-
-    <AddConnectionDialog {layout} />
+    {#each await getConnections(data.id) as connection}
+      <button
+        class="border-primary cursor-pointer border-2 px-3 flex rounded-md gap-3 w-96 h-16 items-center select-none"
+        onclick={() => (selConnection = connection)}
+      >
+        <p class="text-xl">{connection.name}</p>
+        <div class="flex-col flex items-start">
+          <p class="text-sm text-gray-400">
+            Protocol: {getProtocolName(connection.protocol)}
+          </p>
+          <p class="text-sm text-gray-400">
+            Type: {getConnectionTypeName(connection.hardware)}
+          </p>
+        </div>
+      </button>
+    {/each}
   </div>
 </div>

@@ -11,6 +11,14 @@ export const getTrains = query(z.uuid(), async (layoutId) => {
   return trains;
 });
 
+export const getTrain = query(z.uuid(), async (trainId) => {
+  const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
+
+  if (trains.length < 1 || trains.length > 1) error(404, "Not found");
+
+  return trains[0];
+});
+
 export const createTrain = form(async (data: FormData) => {
   const trainSchema = z.object({
     layoutUuid: z.uuid(),

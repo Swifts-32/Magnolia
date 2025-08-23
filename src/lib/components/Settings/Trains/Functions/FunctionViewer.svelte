@@ -23,13 +23,10 @@
 
 	interface Props {
 		trainId: string;
+		selFunction: TrainFunction | undefined;
 	}
 
-	let { trainId }: Props = $props();
-
-	let selFunction: TrainFunction | undefined = $state();
-	let isSelOpen = $state(false);
-	let triggerRef = $state<HTMLButtonElement>(null!);
+	let { trainId, selFunction = $bindable() }: Props = $props();
 
 	async function deleteFunction() {
 		if (selFunction) {
@@ -41,97 +38,6 @@
 		}
 	}
 </script>
-
-<div class="my-2 mb-5 items-center gap-4 w-full grid grid-cols-8">
-	<Popover.Root bind:open={isSelOpen}>
-		<Popover.Trigger
-			bind:ref={triggerRef}
-			class="w-full col-span-5 flex justify-between"
-		>
-			{#snippet child({ props })}
-				<Button
-					variant="outline"
-					class="w-full"
-					{...props}
-					role="combobox"
-					aria-expanded={isSelOpen}
-				>
-					{#if selFunction}
-						<div class="flex gap-2 align-middle">
-							<FunctionIcons
-								selectedIcon={selFunction.icon}
-								size={18}
-								text={false}
-							/>
-							{selFunction.name}
-						</div>
-					{:else}
-						Select a function
-					{/if}
-					<ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
-				</Button>
-			{/snippet}
-		</Popover.Trigger>
-
-		<!-- TODO Make Dynamic width -->
-		<Popover.Content class="p-0 w-72">
-			<Command.Root>
-				<Command.Input placeholder="Type to search a function" />
-				<Command.Empty>No functions found.</Command.Empty>
-				<Command.List>
-					<Command.Group>
-						{#each Array.from((await getTrainFunctions(trainId)).values()).sort( (a, b) => a.functValue.localeCompare(b.functValue), ) as funct}
-							<Command.Item
-								class="{selFunction?.functValue === funct.functValue
-									? 'cursor-default'
-									: 'cursor-pointer'}
-								 py-1 px-2"
-								value={funct.functValue}
-								keywords={[funct.name]}
-								onclick={() => {
-									if (selFunction?.functValue !== funct.functValue) {
-										// If not already selected, select it
-										selFunction = funct;
-										isSelOpen = false;
-									}
-								}}
-							>
-								{#if selFunction?.functValue === funct.functValue}
-									<Check size={10} />
-								{:else}
-									<div class="w-4"></div>
-								{/if}
-								<FunctionIcons
-									selectedIcon={funct.icon}
-									text={false}
-									size={18}
-								/>
-								<div class="flex flex-col items-start">
-									<p class="text-md">
-										{funct.name}
-									</p>
-									<p class="text-xs">
-										Value: {funct.functValue}
-									</p>
-								</div>
-							</Command.Item>
-						{/each}
-						<!-- {/if} -->
-					</Command.Group>
-				</Command.List>
-			</Command.Root>
-		</Popover.Content>
-	</Popover.Root>
-
-	<!-- Add Function Button -->
-	<Button
-		class="w-full col-span-3"
-		variant="outline"
-		onclick={async () => await createDefaultTrainFunction(trainId)}
-	>
-		<Plus />Add Function
-	</Button>
-</div>
 
 <!-- Function Editor -->
 {#if selFunction}

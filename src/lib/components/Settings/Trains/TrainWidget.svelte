@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Train } from "$lib/server/db/schema/trains";
-  import { TrainFront, Trash2 } from "lucide-svelte";
+  import type { Train, TrainFunction } from "$lib/server/db/schema/trains";
+  import { Plus, TrainFront, Trash2 } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import {
@@ -12,6 +12,8 @@
   import { toast } from "svelte-sonner";
   import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
+  import FunctionSelector from "./Functions/FunctionSelector.svelte";
+  import { createDefaultTrainFunction } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
 
   interface Props {
     train: Train;
@@ -21,6 +23,8 @@
 
   let isDialogOpen = $state(false);
   let isDelTrainDiaOpen = $state(false);
+
+  let selFunction: TrainFunction | undefined = $state();
 </script>
 
 <!-- Train Widget -->
@@ -32,12 +36,12 @@
 
   <p class="text-2xl text-start">{train.name}</p>
   <div class="flex-col flex items-start">
-    <p class="text-sm text-gray-400">Addr: {train.address}</p>
+    <p class="text-sm text-gray-400">Address: {train.address}</p>
 
     {#await getConnection(train.connectionUuid) then connection}
-      <p class="text-sm text-gray-400">{connection.name}</p>
+      <p class="text-sm text-gray-400">Connection: {connection.name}</p>
     {:catch}
-      <p class="text-sm text-gray-400">None</p>
+      <p class="text-sm text-red-400">No Connection</p>
     {/await}
   </div>
 </button>
@@ -109,6 +113,7 @@
         />
       </label>
 
+      <!-- Connection Selector -->
       <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
         <p>Connection</p>
         <ConnectionSelector
@@ -117,7 +122,22 @@
         />
       </label>
 
-      <FunctionViewer trainId={train.uuid} />
+      <div class="my-2 mb-5 items-center gap-4 w-full grid grid-cols-8">
+        <div class="col-span-5">
+          <FunctionSelector bind:selFunction trainId={train.uuid} />
+        </div>
+
+        <!-- Add Function Button -->
+        <Button
+          class="w-full col-span-3"
+          variant="outline"
+          onclick={async () => await createDefaultTrainFunction(train.uuid)}
+        >
+          <Plus />Add Function
+        </Button>
+      </div>
+
+      <FunctionViewer trainId={train.uuid} bind:selFunction />
 
       <Separator class="mb-3" />
 
@@ -165,7 +185,7 @@
           <Dialog.Footer>
             <Button
               type="reset"
-              onclick={() => (isDialogOpen = false)}
+              onclick={() => (isDelTrainDiaOpen = false)}
               variant="outline"
               class="w-32">Cancel</Button
             >

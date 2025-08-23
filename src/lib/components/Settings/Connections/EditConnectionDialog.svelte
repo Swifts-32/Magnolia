@@ -1,67 +1,58 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
-  import { ClientConnection } from "$lib/client/Connections/ClientConnection.svelte";
-  import ConnectionEditor from "./ConnectionEditor.svelte";
+  import type { Connection } from "$lib/server/db/schema/connection";
+  import ConnectionFormContent from "./ConnectionFormContent.svelte";
+  import { editConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
   import { toast } from "svelte-sonner";
 
   interface Props {
-    connection: ClientConnection;
-    open: boolean;
+    connection: Connection | undefined;
   }
 
-  let { open = $bindable(false), connection: oldConnection }: Props = $props();
-  let connection: ClientConnection | undefined = $state();
-
-  $effect(() => {
-    if (open && !connection) {
-      connection = oldConnection.clone();
-    }
-  });
-
-  function updateConnection() {
-    if (!connection) return;
-
-    fetch(`/api/layout/${connection.layoutUuid}/connections/add`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: connection.toJsonWeb(),
-    })
-      .then(async (response) => {
-        if (response.ok) {
-          toast.success("Connection added successfully");
-        } else {
-          toast.error("Failed to add connection");
-        }
-      })
-      .catch((error) => {
-        toast.error("Error adding connection");
-      });
-
-    closeDialog();
-  }
+  let { connection = $bindable() }: Props = $props();
 
   function closeDialog() {
-    open = false;
     connection = undefined;
   }
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root
+  bind:open={
+    () => connection !== undefined, (v) => v || (connection = undefined)
+  }
+>
   <Dialog.Content>
     <Dialog.Title>Edit Connection</Dialog.Title>
 
-    {#if connection}
-      <ConnectionEditor bind:connection />
-    {/if}
+    <form
+      id="edit-connection-form"
+      {...editConnection.enhance(async ({ submit, form, data: sd }) => {
+        if (connection) {
+          sd.set("layoutUuid", connection.layoutUuid);
+          sd.set("uuid", connection.uuid);
+        }
+
+        closeDialog();
+
+        try {
+          await submit();
+          form.reset();
+          toast.success("Edited connection");
+        } catch (error) {
+          toast.error("Error editing connection: " + error);
+        }
+      })}
+    >
+      <ConnectionFormContent bind:connection />
+    </form>
 
     <Dialog.Footer>
       <Button type="reset" class="w-28" variant="outline" onclick={closeDialog}
         >Cancel</Button
       >
-      <Button type="submit" class="w-28" onclick={updateConnection}>Save</Button
+      <Button type="submit" form="edit-connection-form" class="w-28"
+        >Save</Button
       >
     </Dialog.Footer>
   </Dialog.Content>
