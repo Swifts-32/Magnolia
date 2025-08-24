@@ -24,7 +24,6 @@
 <Fab label="Add Connection" onclick={() => (isAddConnectionDialogOpen = true)}>
   <Plus class="size-8" />
 </Fab>
-
 <div class="m-4">
   <h1 class="text-4xl my-10">Connections</h1>
 

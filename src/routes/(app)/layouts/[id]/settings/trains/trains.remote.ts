@@ -1,9 +1,17 @@
-import { form, query } from "$app/server";
+import { command, form, query } from "$app/server";
 import { db } from "$lib/server/db";
 import { TrainTable, type Train } from "$lib/server/db/schema/trains";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
+
+async function getTrainFromDb(trainId: string) {
+  const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
+
+  if (trains.length < 1 || trains.length > 1) error(404, "Not found");
+
+  return trains[0];
+}
 
 export const getTrains = query(z.uuid(), async (layoutId) => {
   const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.layoutUuid, layoutId));
@@ -12,11 +20,7 @@ export const getTrains = query(z.uuid(), async (layoutId) => {
 });
 
 export const getTrain = query(z.uuid(), async (trainId) => {
-  const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
-
-  if (trains.length < 1 || trains.length > 1) error(404, "Not found");
-
-  return trains[0];
+  return await getTrainFromDb(trainId);
 });
 
 export const createTrain = form(async (data: FormData) => {
@@ -34,7 +38,6 @@ export const createTrain = form(async (data: FormData) => {
     name: trainData.data.name,
     comment: trainData.data.comment,
     layoutUuid: trainData.data.layoutUuid,
-    uuid: crypto.randomUUID(),
     address: trainData.data.address,
     connectionUuid: trainData.data.connectionId,
   });
@@ -66,20 +69,13 @@ export const editTrain = form(async (data: FormData) => {
   await getTrains(trainData.data.layoutUuid).refresh();
 });
 
-export const deleteTrain = form(async (data: FormData) => {
-  const trainSchema = z.object({
-    trainId: z.uuid(),
-    layoutId: z.uuid(),
-  });
+// Delete train using the trainId
+export const deleteTrain = command(z.uuid(), async (trainId) => {
+  const train = await getTrainFromDb(trainId);
 
-  const trainData = trainSchema.safeParse(Object.fromEntries(data));
-  if (!trainData.success) {
-    return error(400, z.prettifyError(trainData.error));
-  }
-
-  const res = await db.delete(TrainTable).where(eq(TrainTable.uuid, trainData.data.trainId)).returning();
+  const res = await db.delete(TrainTable).where(eq(TrainTable.uuid, trainId)).returning();
 
   if (res.length === 0) error(404, "Train not found");
 
-  await getTrains(trainData.data.layoutId).refresh();
+  await getTrains(train.layoutUuid).refresh();
 });

@@ -3,8 +3,13 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import type { Connection } from "$lib/server/db/schema/connection";
   import ConnectionFormContent from "./ConnectionFormContent.svelte";
-  import { editConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  import {
+    deleteConnection,
+    editConnection,
+  } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
   import { toast } from "svelte-sonner";
+    import ConformationDialog from "../Common/ConformationDialog/ConformationDialog.svelte";
+    import { Trash2 } from "lucide-svelte";
 
   interface Props {
     connection: Connection | undefined;
@@ -46,6 +51,33 @@
     >
       <ConnectionFormContent bind:connection />
     </form>
+
+    <!-- Delete Connection -->
+    <ConformationDialog title="Delete Connection">
+      {#snippet trigger()}
+        <Button class="w-full mb-3" variant="destructive">
+          <Trash2 />Delete Connection
+        </Button>
+      {/snippet}
+      {#snippet primaryButton()}
+        <Button
+          variant="destructive"
+          class="w-32"
+          onclick={() => {
+            if (connection) {
+              deleteConnection(connection.uuid);
+              closeDialog();
+            }
+          }}
+        >
+          Delete Connection</Button
+        >
+      {/snippet}
+      {#snippet secondaryButton()}
+        <Button variant="outline" class="w-32">Cancel</Button>
+      {/snippet}
+      <p>Are you sure you want to delete this connection?</p>
+    </ConformationDialog>
 
     <Dialog.Footer>
       <Button type="reset" class="w-28" variant="outline" onclick={closeDialog}

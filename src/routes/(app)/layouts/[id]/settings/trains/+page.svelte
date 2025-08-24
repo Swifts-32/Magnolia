@@ -1,18 +1,21 @@
 <script lang="ts">
   import type { LayoutProps } from "../$types";
-  import { createTrain, getTrains } from "./trains.remote";
-  import { toast } from "svelte-sonner";
-  import { Plus } from "lucide-svelte";
-  import TrainWidget from "$lib/components/Settings/Trains/TrainWidget.svelte";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { getTrains } from "./trains.remote";
+  import { Plus, TrainFront } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
-  import ConnectionSelector from "$lib/components/Settings/Connections/ConnectionSelector.svelte";
+  import AddTrainDialog from "$lib/components/Settings/Trains/AddTrainDialog.svelte";
+  import { getConnection } from "../connections/connections.remote";
+  import type { Train } from "$lib/server/db/schema/trains";
+  import EditTrainDialog from "$lib/components/Settings/Trains/EditTrainDialog.svelte";
 
   let { data }: LayoutProps = $props();
 
   let isDialogOpen = $state(false);
+  let selTrain: Train | undefined = $state();
 </script>
+
+<EditTrainDialog bind:train={selTrain} />
 
 <div class="m-4">
   <h1 class="text-4xl my-10">Trains</h1>
@@ -20,7 +23,23 @@
   <div class="flex flex-wrap gap-3">
     <svelte:boundary>
       {#each await getTrains(data.id) as train}
-        <TrainWidget {train} />
+        <button
+          onclick={() => (selTrain = train)}
+          class="border-primary cursor-pointer border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
+        >
+          <TrainFront size={40} strokeWidth={1} />
+
+          <p class="text-2xl text-start">{train.name}</p>
+          <div class="flex-col flex items-start">
+            <p class="text-sm text-gray-400">Address: {train.address}</p>
+
+            {#await getConnection(train.connectionUuid) then connection}
+              <p class="text-sm text-gray-400">Connection: {connection.name}</p>
+            {:catch}
+              <p class="text-sm text-red-400">No Connection</p>
+            {/await}
+          </div>
+        </button>
       {/each}
 
       {#snippet pending()}
@@ -40,84 +59,4 @@
   <Plus class="size-8" />
 </Fab>
 
-<!-- Add Train Dialog -->
-<Dialog.Root open={isDialogOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Create Train</Dialog.Title>
-    </Dialog.Header>
-
-    <form
-      id="create-train-form"
-      {...createTrain.enhance(async ({ submit, form, data: sd }) => {
-        sd.set("layoutUuid", data.id);
-
-        try {
-          isDialogOpen = false;
-          await submit();
-          form.reset();
-          toast.success("Created train");
-        } catch (error) {
-          toast.error("Error creating train: " + error + "  " + data.id);
-        } finally {
-          isDialogOpen = false;
-        }
-      })}
-    >
-      <!-- Train Name -->
-      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
-        <p>Name</p>
-        <input
-          class="border border-gray-300 col-span-3 rounded-md p-2 w-full"
-          type="text"
-          name="name"
-          id="name"
-          placeholder="Thomas"
-          required
-        />
-      </label>
-
-      <!-- Train Description -->
-      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
-        <p>Description</p>
-        <input
-          class="border border-gray-300 col-span-3 rounded-md p-2 w-full"
-          type="text"
-          name="comment"
-          id="comment"
-          placeholder="This is a steam train"
-          required
-        />
-      </label>
-
-      <!-- Train Address -->
-      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
-        <p>Address</p>
-        <input
-          class="border border-gray-300 col-span-3 rounded-md p-2 w-full"
-          type="text"
-          name="address"
-          id="address"
-          placeholder="e.g. 135"
-          required
-        />
-      </label>
-
-      <!-- Connection -->
-      <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
-        <p>Connection</p>
-        <ConnectionSelector layoutId={data.id} />
-      </label>
-    </form>
-
-    <Dialog.Footer>
-      <Button
-        onclick={() => (isDialogOpen = false)}
-        variant="destructive"
-        class="w-32">Cancel</Button
-      >
-      <Button type="submit" form="create-train-form" class="w-32">Submit</Button
-      >
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<AddTrainDialog bind:open={isDialogOpen} layoutId={data.id} />

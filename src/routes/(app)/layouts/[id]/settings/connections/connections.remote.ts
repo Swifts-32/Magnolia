@@ -6,15 +6,18 @@ import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { string, uuid, z } from "zod/v4";
 
-// Get a connection using the connection Id
-export const getConnection = query(z.uuid().nullable(), async (connectionId) => {
-  if (connectionId === null) error(404, "No Connection provided");
-
+async function getConnectionFromDb(connectionId: string) {
   const connections: Connection[] = await db.select().from(ConnectionTable).where(eq(ConnectionTable.uuid, connectionId));
 
   if (connections.length < 1 || connections.length > 1) error(404, "Not found");
 
   return connections[0];
+}
+
+// Get a connection using the connection Id
+export const getConnection = query(z.uuid().nullable(), async (connectionId) => {
+  if (connectionId === null) error(404, "No Connection provided");
+  return await getConnectionFromDb(connectionId);
 });
 
 // Get connections for a specific layout
@@ -26,11 +29,15 @@ export const getConnections = query(z.uuid(), async (layoutId) => {
 
 
 export const deleteConnection = command(z.uuid(), async (connectionId) => {
+  const connection = await getConnectionFromDb(connectionId);
+
   const res = await db.delete(ConnectionTable)
     .where(eq(ConnectionTable.uuid, connectionId))
     .returning();
 
   if (res.length === 0) error(404, "Connection not found");
+
+  await getConnections(connection.layoutUuid).refresh();
 });
 
 export const editConnection = form(async (data: FormData) => {
