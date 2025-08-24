@@ -49,21 +49,23 @@ export const createTrain = form(async (data: FormData) => {
 export const editTrain = form(async (data: FormData) => {
   const trainSchema = z.object({
     layoutUuid: z.uuid(),
+    uuid: z.uuid(),
     address: z.string().trim().min(1),
     name: z.string().trim().min(1).max(255),
     comment: z.string().trim().min(1).max(255),
+    connectionId: z.uuid(),
   });
   const trainData = trainSchema.safeParse(Object.fromEntries(data));
 
-  if (!trainData.success) error(400, trainData.error.message);
+  if (!trainData.success) error(400, z.prettifyError(trainData.error));
 
-  await db.insert(TrainTable).values({
+  await db.update(TrainTable).set({
     name: trainData.data.name,
     comment: trainData.data.comment,
     layoutUuid: trainData.data.layoutUuid,
     uuid: crypto.randomUUID(),
     address: trainData.data.address,
-  });
+  }).where(eq(TrainTable.uuid, trainData.data.uuid));
 
 
   await getTrains(trainData.data.layoutUuid).refresh();

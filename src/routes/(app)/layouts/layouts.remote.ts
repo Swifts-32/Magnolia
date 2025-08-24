@@ -1,4 +1,4 @@
-import { form, query } from "$app/server";
+import { command, form, query } from "$app/server";
 import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { db } from "$lib/server/db";
 import { LayoutTable } from "$lib/server/db/schema/layouts";
@@ -49,17 +49,9 @@ export const createLayout = form(async (data: FormData) => {
   redirect(303, `/layouts/${layout.uuid}`);
 });
 
-export const deleteLayout = form(async (data: FormData) => {
-  const layoutSchema = z.object({
-    uuid: z.uuid()
-  });
-  const layoutData = layoutSchema.safeParse(Object.fromEntries(data));
-  if (!layoutData.success) {
-    return error(400, layoutData.error.message);
-  }
-
-  const res = await db.delete(LayoutTable).where(eq(LayoutTable.uuid, layoutData.data.uuid)).returning();
+export const deleteLayout = command(z.uuid(), async (layoutId) => {
+  const res = await db.delete(LayoutTable).where(eq(LayoutTable.uuid, layoutId)).returning();
 
   if (res.length === 0) error(404, "Layout not found");
-  redirect(303, `/`);
+  await getLayouts().refresh();
 });

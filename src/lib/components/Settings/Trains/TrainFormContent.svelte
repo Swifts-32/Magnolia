@@ -5,10 +5,14 @@
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import type { Train, TrainFunction } from "$lib/server/db/schema/trains";
   import { Plus } from "lucide-svelte";
-  import ConnectionSelector from "../Connections/ConnectionSelector.svelte";
   import FunctionSelector from "./Functions/FunctionSelector.svelte";
   import { createDefaultTrainFunction } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
+  import * as Select from "$lib/components/ui/select/index.js";
+  import {
+    getConnection,
+    getConnections,
+  } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
 
   interface Props {
     train?: Train | undefined;
@@ -18,6 +22,9 @@
   let { train = $bindable(undefined), layoutId }: Props = $props();
 
   let selFunction: TrainFunction | undefined = $state();
+  let selConnectionId: string | undefined = $state(
+    train?.connectionUuid ?? undefined,
+  );
 </script>
 
 <div class="flex-col flex gap-2">
@@ -60,7 +67,30 @@
   <!-- Train Connections -->
   <div class="grid grid-cols-4 items-center gap-4">
     <Label for="connectionId" class="text-right">Connections</Label>
-    <ConnectionSelector {layoutId} />
+
+    <Select.Root
+      type="single"
+      name="connectionId"
+      bind:value={selConnectionId}
+      allowDeselect={true}
+    >
+      <Select.Trigger class="col-span-3">
+        {selConnectionId
+          ? (await getConnection(selConnectionId)).name
+          : "Select Connection"}
+      </Select.Trigger>
+      <Select.Content>
+        {#each await getConnections(layoutId) as connection}
+          <Select.Item
+            value={connection.uuid}
+            label={connection.name}
+            class={selConnectionId === connection.uuid
+              ? "cursor-default"
+              : "cursor-pointer"}>{connection.name}</Select.Item
+          >
+        {/each}
+      </Select.Content>
+    </Select.Root>
   </div>
 
   <!-- Train Functions -->
