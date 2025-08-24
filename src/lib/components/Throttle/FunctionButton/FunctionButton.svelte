@@ -1,55 +1,70 @@
 <script lang="ts">
-	import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 	import FunctionIcons from "$lib/components/Settings/Trains/Functions/FunctionIcons.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import Toggle from "$lib/components/ui/toggle/toggle.svelte";
+	import {
+		getTrainFunction,
+		selectTrainFunction,
+		toggleTrainFunction,
+	} from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
 
 	interface Props {
 		disabled?: boolean;
-		trainFunction: TrainClientFunction;
+		trainId: string;
+		functValue: string;
 		[key: string]: any;
 	}
 
-	let {
-		trainFunction = $bindable(),
-		disabled,
-		...props
-	}: Props = $props();
-
+	let { trainId, functValue, disabled, ...props }: Props = $props();
 </script>
 
-{#if trainFunction.mode == "Toggle"}
-	<Toggle
-		{disabled}
-		size="icon"
-		bind:pressed={trainFunction.state}
-		class="size-14 p-2 flex flex-col gap-1"
-		{...props}
-	>
-		<FunctionIcons
-			size={18}
-			selectedIcon={trainFunction.icon}
-			orientation="vertical"
-		/>
-	</Toggle>
-{:else if trainFunction.mode == "Select"}
-	<Button
-		{disabled}
-		size="icon"
-		class="size-14 p-2 flex flex-col gap-1 bg-primary active:bg-secondary active:text-secondary-foreground text-primary-foreground"
-		variant="default"
-		onmousedown={() => {
-			trainFunction.state = true;
-		}}
-		onmouseup={() => {
-			trainFunction.state = false;
-		}}
-		{...props}
-	>
-		<FunctionIcons
-			size={18}
-			selectedIcon={trainFunction.icon}
-			orientation="vertical"
-		/>
-	</Button>
-{/if}
+{#await getTrainFunction({ trainId, value: functValue }) then trainFunction}
+	{#if trainFunction.mode == "Toggle"}
+		<Toggle
+			{disabled}
+			size="icon"
+			bind:pressed={
+				() => trainFunction.state,
+				(v) => {
+					toggleTrainFunction({
+						trainId: trainFunction.trainUuid,
+						value: trainFunction.functValue,
+						state: v,
+					});
+				}
+			}
+			class="size-14 p-2 flex flex-col gap-1 cursor-pointer"
+			{...props}
+		>
+			<FunctionIcons
+				size={18}
+				selectedIcon={trainFunction.icon}
+				orientation="vertical"
+			/>
+		</Toggle>
+	{:else if trainFunction.mode == "Select"}
+		<Button
+			{disabled}
+			size="icon"
+			class="size-14 p-2 flex flex-col gap-1 bg-primary active:bg-secondary active:text-secondary-foreground text-primary-foreground"
+			variant="default"
+			onmousedown={() => {
+				selectTrainFunction({
+					trainId: trainFunction.trainUuid,
+					value: trainFunction.functValue,
+				});
+				trainFunction.state = true;
+			}}
+			onmouseup={() => {
+				trainFunction.state = false;
+			}}
+			{...props}
+		>
+			<FunctionIcons
+				size={18}
+				selectedIcon={trainFunction.icon}
+				orientation="vertical"
+			/>
+		</Button>
+	{/if}
+{/await}

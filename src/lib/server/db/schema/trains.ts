@@ -6,8 +6,9 @@ import { relations, type InferSelectModel } from "drizzle-orm";
 import { UserTable } from "./users";
 import { ConnectionTable } from "./connection";
 import { z } from "zod/v4";
+import { TrainDirectionsList } from "$lib/types/Trains/Train";
 
-export const TrainDirection = pgEnum("trainDirection", ["Forward", "Reverse", "Unknown"]);
+export const TrainDirection = pgEnum("trainDirection", TrainDirectionsList);
 export const TrainFunctionIcon = pgEnum("trainFunctionIcon", TrainFunctionIconsList);
 export const TrainFunctionMode = pgEnum("trainFunctionMode", TrainFunctionModesList);
 

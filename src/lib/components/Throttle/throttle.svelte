@@ -7,7 +7,11 @@
   import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import Button from "../ui/button/button.svelte";
   import type { TrainUuid } from "$lib/types/Trains/Train";
-  import { getTrain } from "../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
+  import {
+    getTrain,
+    setTrainMotion,
+    trainEmergencyStop,
+  } from "../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
 
   interface Props {
     layoutId: string;
@@ -25,7 +29,7 @@
   const disabled: boolean = $derived(disabledProp || selTrainId == undefined);
 </script>
 
-<Card class="p-5 w-[300px] h-[375px] flex flex-col select-none gap-4">
+<Card class="p-5 min-w-[300px] w-fit h-[375px] flex flex-col select-none gap-4">
   <!-- Loco Select -->
   <LocoSelect bind:selTrainId {layoutId} disabled={disabledProp} />
 
@@ -41,8 +45,15 @@
           orientation="vertical"
           step={1}
           {disabled}
-          onValueCommit={(value) =>
-            curTrain != undefined && (curTrain.speed = value)}
+          onValueCommit={(value) => {
+            if (!curTrain) return;
+
+            setTrainMotion({
+              direction: curTrain.direction,
+              speed: value,
+              trainId: curTrain.uuid,
+            });
+          }}
         />
 
         <h1 class="text-xl text-center mt-2">
@@ -54,31 +65,35 @@
 
       <div class="flex flex-col gap-2 h-full">
         <!-- Emergency Stop -->
-        <!-- <Button
+        <Button
           {disabled}
           class="size-[54px] m-0"
-          onclick={() => curTrain?.emergencyStop()}
           variant="destructive"
           size="icon"
+          onclick={() => curTrain && trainEmergencyStop(curTrain.uuid)}
         >
           <CircleAlert />
-        </Button> -->
+        </Button>
 
         <!-- Direction Selector -->
         <DirectionSelector
           bind:direction={
             () => (curTrain != undefined ? curTrain.direction : "Unknown"),
-            (direction) =>
-              curTrain != undefined && (curTrain.direction = direction)
+            (direction) => {
+              if (!curTrain) return;
+
+              setTrainMotion({
+                direction,
+                speed: curTrain.speed,
+                trainId: curTrain.uuid,
+              });
+            }
           }
           {disabled}
         />
       </div>
-<!-- 
-      <FunctionCarousel
-        functions={curTrain?.functions ?? new Map()}
-        {disabled}
-      /> -->
+
+      <FunctionCarousel trainId={curTrain?.uuid} {disabled} />
     {/await}
   </div>
 </Card>

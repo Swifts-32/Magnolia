@@ -5,8 +5,13 @@ import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
-// Get the train's functions using the train id
+// Schema with the function key
+const trainFunctionSchema = z.object({
+  value: z.string(),
+  trainId: z.uuid(),
+});
 
+// Get the train's functions using the train id
 async function getTrainFunctionsFromDb(trainId: string) {
   const trains: TrainFunction[] = await db.select().from(TrainFunctionTable).where(eq(TrainFunctionTable.trainUuid, trainId));
   return trains;
@@ -16,9 +21,11 @@ export const getTrainFunctions = query(z.uuid(), async (trainId) => {
   return await getTrainFunctionsFromDb(trainId);
 });
 
-const trainFunctionSchema = z.object({
-  value: z.string(),
-  trainId: z.uuid(),
+export const getTrainFunction = query(trainFunctionSchema, async (data) => {
+  const trains: TrainFunction[] = await db.select().from(TrainFunctionTable)
+    .where(and(eq(TrainFunctionTable.functValue, data.value), eq(TrainFunctionTable.trainUuid, data.trainId)));
+
+  return trains[0];
 });
 
 
@@ -49,4 +56,31 @@ export const createDefaultTrainFunction = command(z.uuid(), async (trainId) => {
 
   await getTrainFunctions(trainId).refresh();
 });
+
+const toggleTrainFunctionSchema = z.object({
+  value: z.string(),
+  trainId: z.uuid(),
+  state: z.boolean(),
+});
+export const toggleTrainFunction = command(toggleTrainFunctionSchema, async (data) => {
+  await db.update(TrainFunctionTable).set({
+    state: data.state,
+  }).where(and(eq(TrainFunctionTable.functValue, data.value), eq(TrainFunctionTable.trainUuid, data.trainId)));
+
+  await getTrainFunction({
+    trainId: data.trainId,
+    value: data.value,
+  }).refresh();
+})
+
+const selectTrainFunctionSchema = z.object({
+  value: z.string(),
+  trainId: z.uuid(),
+});
+export const selectTrainFunction = command(selectTrainFunctionSchema, async (data) => {
+  // Update connection
+
+  await getTrainFunctions(data.trainId).refresh();
+
+})
 

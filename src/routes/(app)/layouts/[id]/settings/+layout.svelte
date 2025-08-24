@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
 
   let { children }: { children: Snippet } = $props();
@@ -20,15 +19,7 @@
     {
       name: "Trains",
       link: `/layouts/${page.params.id}/settings/trains`,
-    },
-    {
-      name: "Inputs",
-      link: `/layouts/${page.params.id}/settings/sensors`,
-    },
-    {
-      name: "Accessories",
-      link: ``,
-    },
+    }
   ];
 </script>
 
@@ -38,12 +29,12 @@
 
     <div class="flex flex-col gap-3">
       {#each pages as page}
-        <button
+        <a
           class="border-secondary border-2 p-4 rounded-md w-52 h-12 select-none flex items-center justify-start"
-          onclick={() => goto(page.link)}
+          href={page.link}
         >
           <p class="text-2xl">{page.name}</p>
-        </button>
+        </a>
       {/each}
     </div>
   </div>

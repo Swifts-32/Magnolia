@@ -2,16 +2,13 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
-  import { onDestroy, onMount } from "svelte";
   import { Trash2 } from "lucide-svelte";
   import { deleteLayout } from "../../../layouts.remote";
   import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import type { PageProps } from "./$types";
-    import { goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
 
   let { data }: PageProps = $props();
-  // const layout = getLayoutClientState();
-  let layoutName: string = $state("");
 
   //   onMount(() => {
   //     layoutName = layout.name;
@@ -59,7 +56,7 @@
   <!-- Layout Name -->
   <div class="grid grid-cols-4 items-center gap-4 my-4">
     <Label for="layoutName" class="text-right">Name</Label>
-    <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
+    <Input id="layoutName" value={data.name} class="col-span-3" />
   </div>
 
   <!-- Delete Layout Dialog -->

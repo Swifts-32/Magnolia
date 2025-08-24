@@ -1,6 +1,7 @@
 import { command, form, query } from "$app/server";
 import { db } from "$lib/server/db";
 import { TrainTable, type Train } from "$lib/server/db/schema/trains";
+import { TrainDirection } from "$lib/types/Trains/Train";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
@@ -80,4 +81,41 @@ export const deleteTrain = command(z.uuid(), async (trainId) => {
   if (res.length === 0) error(404, "Train not found");
 
   await getTrains(train.layoutUuid).refresh();
+});
+
+// Set the trains speed and direction
+const trainMotionSchema = z.object({
+  trainId: z.uuid(),
+  speed: z.number(),
+  direction: TrainDirection,
+});
+
+export const setTrainMotion = command(trainMotionSchema, async (data) => {
+
+
+  const train = await getTrainFromDb(data.trainId);
+
+  // TODO Send to Connection and validate user is allowed to control
+
+  await db.update(TrainTable).set({
+    speed: data.speed,
+    direction: data.direction,
+  }).where(eq(TrainTable.uuid, data.trainId));
+
+  await getTrain(data.trainId).refresh();
+});
+
+export const trainEmergencyStop = command(z.uuid(), async (trainId) => {
+
+// TODO Perform emergency stop
+  const train = await getTrainFromDb(trainId);
+
+  // TODO Send to Connection and validate user is allowed to control
+
+  await db.update(TrainTable).set({
+    speed: 0,
+    direction: "Forward",
+  }).where(eq(TrainTable.uuid, trainId));
+
+  await getTrain(trainId).refresh();
 });
