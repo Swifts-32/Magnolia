@@ -1,57 +1,41 @@
 <script lang="ts">
-  import { Power, PowerOff } from "lucide-svelte";
-  import Throttle from "$lib/components/Throttle/throttle.svelte";
   import Button from "$lib/components/ui/button/button.svelte";
-  import Switch from "$lib/components/ui/switch/switch.svelte";
-  import Label from "$lib/components/ui/label/label.svelte";
-  import type { LayoutData } from "../$types";
-  import { Toaster } from "$lib/components/ui/sonner";
+  import Throttle from "$lib/components/Throttle/throttle.svelte";
+  import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
+  import Fab from "$lib/components/FAB/Fab.svelte";
+  import { Plus } from "lucide-svelte";
+    import type { PageProps } from "../$types";
 
-  let { data }: { data: LayoutData } = $props();
+  let {data}: PageProps = $props();
 
-  async function disconnect() {
-    for (const connection of data.layout.connections.values()) {
-      if (connection.isConnected) {
-        await data.layout.disconnect(connection.uuid);
-      }
-    }
-  }
-
-  async function connect() {
-    for (const connection of data.layout.connections.values()) {
-      if (!connection.isConnected) {
-        await data.layout.connect(connection.uuid);
-      }
-    }
-  }
+  // const layout = getLayoutClientState();
+  let noOfThrottles: number = $state(1);
 </script>
 
-{#if data.layout}
-  <main class="m-5">
-    <div class="flex gap-2 content-center mb-5">
-      <Button class="w-40" onclick={async () => await connect()}>
-        <Power />
-        Connect
-      </Button>
-      <Button class="w-40" onclick={async () => await disconnect()}>
-        <PowerOff />
-        Disconnect
-      </Button>
+<svelte:head>
+  <title>Throttle</title>
+</svelte:head>
 
-      <div class="flex items-center space-x-2">
-        <!-- TODO: Add power status to page-->
-        <Switch id="track-power" checked={false} />
-        <Label for="track-power">Track Power</Label>
-      </div>
-    </div>
+<main class="m-5">
+  <!-- Add Throttle -->
+  <Fab
+    disabled={noOfThrottles >= 10}
+    onclick={() => (noOfThrottles += 1)}
+    label="Add Throttle"
+  >
+    <Plus class="size-8" />
+  </Fab>
 
-    <div class="flex flex-row justify-center gap-4">
-      <Throttle layout={data.layout} />
-      <Throttle layout={data.layout} />
-    </div>
-  </main>
-{:else}
-  <p>Not valid layout</p>
-{/if}
+  
+  <Button
+    disabled={noOfThrottles === 0}
+    onclick={() => noOfThrottles > 0 && (noOfThrottles -= 1)}
+    >Delete Throttle</Button
+  >
 
-<Toaster />
+  <div class="flex flex-row flex-wrap justify-center gap-4">
+    {#each Array(noOfThrottles) as _}
+      <Throttle layoutId={data.id} />
+    {/each}
+  </div>
+</main>

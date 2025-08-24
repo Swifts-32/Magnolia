@@ -1,21 +1,19 @@
-import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import type { LayoutUUID } from "$lib/client/LayoutClient.svelte.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
-import { type RequestHandler } from "@sveltejs/kit";
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET = async ({ params }) => {
+  const { id } = params;
 
-    const { id } = params;
-    if (!id) return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
-
-    let layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
-    if (!layout) return new Response(JSON.stringify({ message: `${id} is not a valid layout.` }), { status: 404 });
-
-    return new Response(layout.createStream(), {
-        headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            Connection: 'keep-alive'
-        }
+  const layout = LayoutServerHandler.getLayout(id as LayoutUUID);
+  if (layout) {
+    return new Response(layout?.createStream(), {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive'
+      }
     });
-
+  } else {
+    return new Response("Layout does not exist");
+  }
 };

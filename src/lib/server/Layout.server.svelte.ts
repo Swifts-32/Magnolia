@@ -1,139 +1,235 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server";
-import { ConnectionProtocols } from "../client/Protocols/protocols";
 import { Connection } from "./Connections/connection.svelte";
-import { EmulatorConnection } from "./Connections/Hardware/Emulator/Emulator.server";
 import { ServerTrain } from "./Trains/Train.server";
-import { type TrainAddress, type TrainUUID } from "$lib/types/Trains/Train";
+import { type TrainAddress, type TrainUuid } from "$lib/types/Trains/Train";
+import { Sensor } from "./Sensors/Sensor";
+import type { SensorUuid } from "$lib/client/Sensors/SensorClient.svelte";
+import { LccSensor } from "./Sensors/LccSensor";
+import { LayoutServerHandler } from "./layoutHandler.server.svelte";
+import { db } from "./db";
+import { TrainTable } from "./db/schema/trains";
+
+export interface LayoutServerJsonWeb {
+
+}
 
 export class Layout {
   public name: string;
   public uuid: LayoutUUID;
   public position: number = 0;
+
   public connections: Map<ConnectionUUID, Connection> = new Map();
 
-  private controllers: Set<ReadableStreamDefaultController> = new Set();
+  // TODO to input
+  private sensors: Map<SensorUuid, Sensor> = new Map();
+
+  private trains: Map<TrainUuid, ServerTrain> = new Map();
+
+  private streamControllers: Set<ReadableStreamDefaultController> = new Set();
 
   constructor(name: string, uuid: LayoutUUID) {
     this.name = name;
     this.uuid = uuid;
+
+    this.loadTrainsFromServer();
   }
-  
+
+
+  public createStream(): ReadableStream {
+    let streamController: ReadableStreamDefaultController;
+
+    return new ReadableStream({
+      start: (controller) => {
+        streamController = controller;
+        this.streamControllers.add(controller);
+      },
+      cancel: (reason) => {
+        this.streamControllers.delete(streamController);
+      }
+    });
+  }
+
+  // TODO web and file
   toJSON() {
     return {
       name: this.name,
       uuid: this.uuid,
       position: this.position,
-      connections: Array.from(this.connections.values()).map(conn => conn.toJSON()),
+
+      connections: Array.from(this.connections.values()).map(conn => conn.toJsonWeb()),
+      sensors: Array.from(this.sensors.values()).map(sensor => sensor.toJsonWeb()),
+      trains: Array.from(this.trains.values()).map(train => train.toJsonWeb()),
     };
   }
 
-  static fromJSON(json: any): Layout | null {
-    if (json.uuid == undefined || json.name == undefined || json.position == undefined) {
-      console.log(`Invalid layout data, ${json.uuid} ${json.name} ${json.position}`);
+  public static fromJSON(json: any): Layout | null {
+    json = JSON.parse(json);
+
+    const name = json.name;
+    const uuid = json.uuid;
+
+    if (!name || !uuid) {
+      console.error("Failed to load layout: Undefined name or uuid");
       return null;
-    }
+    };
 
     const layout = new Layout(json.name, json.uuid);
     layout.position = json.position;
 
-    // Recreate connections
-    for (const conn of json.connections) {
-      const connection = Connection.fromJSON(conn);
-      if (connection) {
-        layout.createConnection(connection);
-      }
-    }
+    layout.loadConnectionsFromJson(json);
+    layout.loadTrainsFromJson(json);
+    layout.loadSensorsFromJson(json);
 
     return layout;
   }
-  
-  createStream(): ReadableStream {
-    let streamController: ReadableStreamDefaultController;
 
+  private loadConnectionsFromJson(json: any) {
+    this.connections.clear();
+    this.updateClientConnections();
 
-    console.log("Creating stream");
-    return new ReadableStream({
-      start: (controller) => {
-        streamController = controller;
-        this.controllers.add(controller);
-        controller.enqueue("Connected\n");
-      },
-      cancel: (reason) => {
-        this.controllers.delete(streamController);
+    for (const conn of json.connections) {
+      let connection = Connection.fromJsonWeb(conn);
+      if (!connection) continue;
+
+      this.createConnection(connection);
+
+      console.log("Recreated connection", connection.name);
+    }
+  }
+
+  private loadTrainsFromJson(json: any) {
+    const trains: Map<TrainUuid, ServerTrain> = new Map();
+    for (const trainJson of json.trains) {
+      let train = ServerTrain.fromJsonFile(trainJson);
+      if (train) {
+        trains.set(train.uuid, train);
       }
-    });
+    }
+
+    this.trains = trains;
   }
 
+  public async loadTrainsFromServer() {
+    console.log("Loadnig");
 
-  addTrain(address: TrainAddress, trainName: string, connUUID: ConnectionUUID, trainUUID: TrainUUID | undefined = undefined): ServerTrain | undefined {
-    const connection = this.connections.get(connUUID);
-    
-    if (connection) {
-      const train = new ServerTrain(address, trainName, connUUID, trainUUID);
-      connection.trains.set(train.uuid, train);
-      return train;
-    }   
+    const trains = await db.select().from(TrainTable);
+
+    trains.forEach((train) => {
+      const sTrain = new ServerTrain(train.uuid as TrainUuid, this.uuid);
+
+      sTrain.address = train.address;
+      sTrain.comment = train.comment;
+      sTrain.connUuid = train.connectionUuid ? train.connectionUuid as ConnectionUUID : undefined;
+      sTrain.name = train.name;
+
+      this.trains.set(sTrain.uuid, sTrain);
+    })
   }
 
+  private loadSensorsFromJson(json: any) {
+    this.sensors.clear();
 
-  /**
-   * Creates a DCC serial connection
-   * @param path 
-   * @param baudRate 
-   */
-  createSerialConnection(protocol: ConnectionProtocols, path: string, baudRate: number, connName: string): Connection {
-    const hardware = new SerialConnection(path, baudRate);
-    const connUUID = crypto.randomUUID();
+    for (const sensor of json.sensors) {
+      let newSensor = new Sensor(sensor.layoutUUID, sensor.uuid);
 
-    hardware.onDataReceived((data: string) => {
-      const message = `data: Cid:${connUUID}: ${data}\n\n`;
-      this.controllers.forEach(controller => controller.enqueue(message));
-    });
+      newSensor.connUuid = sensor.connUUID;
+      newSensor.name = sensor.name;
+      newSensor.delayToActivate = sensor.delayToActivate;
+      newSensor.delayToDeactivate = sensor.delayToDeactivate;
+      newSensor.state = sensor.state;
+      newSensor.comment = sensor.comment;
+      newSensor.inverted = sensor.inverted;
 
-    const connection = new Connection(hardware, connName, protocol, connUUID);
-    this.connections.set(connUUID, connection);
 
-    return connection;
+      if (sensor.type === "basic") {
+        newSensor.type = sensor.type;
+      }
+      else if (sensor.type === "lcc") {
+        newSensor = newSensor as LccSensor;
+        newSensor.type = sensor.type;
+
+        if (newSensor instanceof LccSensor) {
+          newSensor.activeEvents = sensor.activeEvents;
+          newSensor.inactiveEvents = sensor.inactiveEvents;
+        }
+      }
+      else {
+        console.log("Unknown sensor type", sensor.type);
+        continue;
+      }
+
+      this.sensors.set(sensor.uuid, newSensor);
+    }
   }
 
-  /**
-   * Creates an emulated DCC EX connection
-   */
-  createEmulatorConnection(protocol: ConnectionProtocols, connName: string): Connection {
-    const hardware = new EmulatorConnection();
-    const connUUID = crypto.randomUUID();
-    
-    hardware.onDataReceived((data: string) => {
-      const message = `data: Cid:${connUUID}: ${data}\n\n`;
-      this.controllers.forEach(controller => controller.enqueue(message));
-    });
-    
-    const connection = new Connection(hardware, connName, protocol, connUUID);
-    this.connections.set(connUUID, connection);
+  public createConnection(connection: Connection) {
+    connection.onDataRecieved((data: string) => {
+      const message = `LayoutUuid:${this.uuid}:ConnectionUuid:${connection.uuid}:${data}`
 
-    return connection;
-  }
-
-  createConnection(connection: Connection): Connection {
-    connection.hardware.onDataReceived((data: string) => {
-      const message = `data: Cid:${connection.uuid}: ${data}\n\n`;
-      this.controllers.forEach(controller => controller.enqueue(message));
+      if (LayoutServerHandler) {
+        LayoutServerHandler.sendMessage("LayoutConnectionDataReceived", message);
+      }
+      else {
+        console.log("Layout Server handler is undefined");
+      }
     });
 
     this.connections.set(connection.uuid, connection);
-    return connection;
+    this.updateClientConnections();
   }
 
+  public updateConnection(connection: Connection) {
+    this.connections.set(connection.uuid, connection);
+    this.updateClientConnections();
+  }
 
+  private updateClientConnections() {
+    const json = `{"connections": ${JSON.stringify(Array.from(this.connections.values()).map(conn => conn.toJsonWeb()))}}`;
+    const message = `LayoutUuid:${this.uuid}:${json}`;
 
-  getTrain(trainUUID: TrainUUID): ServerTrain | undefined {
-
-    for (const connection of this.connections.values()) {
-      const train = connection.trains.get(trainUUID);
-      if (train) {
-        return train;
-      }
+    if (LayoutServerHandler) {
+      LayoutServerHandler.sendMessage("UpdateLayoutConnections", message);
+    }
+    else {
+      console.log("Layout Server handler is undefined");
     }
   }
+
+  private updateClientSensors() {
+    const json = `{"sensors": ${JSON.stringify(Array.from(this.sensors.values()).map(sensor => sensor.toJsonWeb()))}}`;
+    const message = `LayoutUuid:${this.uuid}:${json}`;
+
+    if (LayoutServerHandler) {
+      LayoutServerHandler.sendMessage("UpdateLayoutSensors", message);
+    }
+    else {
+      console.log("Layout Server handler is undefined");
+    }
+
+  }
+
+  public addTrain(train: ServerTrain) {
+    this.trains.set(train.uuid, train);
+  }
+
+  public getTrain(trainUuid: TrainUuid): ServerTrain | undefined {
+    return this.trains.get(trainUuid);
+  }
+
+  public getTrains() {
+    return this.trains;
+  }
+
+  public createSensor(name: string) {
+    const sensor = new Sensor(this.uuid);
+    sensor.name = name;
+    this.sensors.set(sensor.uuid, sensor);
+
+    this.updateClientSensors();
+  }
+
+  public deleteSensor(uuid: SensorUuid) {
+    this.sensors.delete(uuid);
+  }
+
 }

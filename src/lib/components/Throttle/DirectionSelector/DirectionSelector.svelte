@@ -4,14 +4,14 @@
   import { cn } from "$lib/utils";
 
   interface Props {
-    direction?: TrainDirection;
+    direction: TrainDirection;
     disabled?: boolean;
     onchanged?: (value: TrainDirection) => void;
     class?: string;
   }
 
   let {
-    direction = $bindable(TrainDirection.Forward),
+    direction = $bindable(),
     onchanged,
     disabled = false,
     class: className,
@@ -30,7 +30,7 @@
   class={cn(
     "p-[6px] rounded-md flex h-full flex-col gap-1 max-w-min",
     disabled ? "bg-primary-disabled" : "bg-primary",
-    className
+    className,
   )}
   {...restProps}
 >
@@ -38,12 +38,11 @@
   <button
     {disabled}
     type="button"
-    onclick={() => selectDir(TrainDirection.Forward)}
-    class="w-10 grow rounded-sm flex justify-center items-center
-
-            {direction == TrainDirection.Forward
+    onclick={() => selectDir("Forward")}
+    class="w-10 grow rounded-sm flex justify-center items-center {direction ==
+    'Forward'
       ? 'text-white bg-secondary cursor-default disabled:bg-secondary-disabled'
-      : 'text-black bg-primary cursor-pointer disabled:cursor-default disabled:bg-primary-disabled'}          "
+      : 'text-black bg-primary cursor-pointer disabled:cursor-default disabled:bg-primary-disabled'}"
   >
     <ChevronUp size="35px" />
   </button>
@@ -52,10 +51,10 @@
   <button
     {disabled}
     type="button"
-    onclick={() => selectDir(TrainDirection.Reverse)}
+    onclick={() => selectDir("Reverse")}
     class="w-10 grow rounded-sm flex justify-center items-center
 
-            {direction == TrainDirection.Reverse
+            {direction == 'Reverse'
       ? 'text-white bg-secondary cursor-default disabled:bg-secondary-disabled'
       : 'text-black bg-primary cursor-pointer disabled:cursor-default disabled:bg-primary-disabled'}          "
   >

@@ -1,5 +1,8 @@
 <script lang="ts">
-    import { CellTypes } from "$lib/components/canvas/canvasTypes.svelte";
+    import {
+        CellTypes,
+        EditMode,
+    } from "$lib/components/canvas/canvasTypes.svelte";
     import { gStore } from "$lib/components/canvas/cellStore.svelte";
     import ToolbarTools from "$lib/components/canvas/Toolbar/ToolbarTools.svelte";
     import ToolbarButton from "$lib/components/canvas/ToolbarButton.svelte";
@@ -15,6 +18,28 @@
         Trash2,
         Undo2,
     } from "lucide-svelte";
+
+    function handleRotateLeft() {
+        const cell = gStore.getSelectedCell();
+        if (!cell) return;
+
+        cell.rotateLeft();
+
+        if (gStore.mode instanceof EditMode) {
+            gStore.mode.selRotation = cell.rotation;
+        }
+    }
+
+    function handleRotateRight() {
+        const cell = gStore.getSelectedCell();
+        if (!cell) return;
+
+        cell.rotateRight();
+
+        if (gStore.mode instanceof EditMode) {
+            gStore.mode.selRotation = cell.rotation;
+        }
+    }
 </script>
 
 <Separator orientation="vertical" />
@@ -38,16 +63,10 @@
             <Redo2 />
         </Button>
 
-        <Button
-            size="icon"
-            onclick={() => gStore.rotateCellLeft(gStore.getSelectedCell())}
-        >
+        <Button size="icon" onclick={handleRotateLeft}>
             <RotateCcw />
         </Button>
-        <Button
-            size="icon"
-            onclick={() => gStore.rotateCellRight(gStore.getSelectedCell())}
-        >
+        <Button size="icon" onclick={handleRotateRight}>
             <RotateCw />
         </Button>
     </div>

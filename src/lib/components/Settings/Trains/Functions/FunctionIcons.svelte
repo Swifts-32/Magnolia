@@ -5,13 +5,14 @@
     interface Props {
         size: number;
         selectedIcon: TrainFunctionIcons;
+        orientation?: "horizontal" | "vertical";
         text?: boolean;
     }
 
-    let { size, selectedIcon, text = true }: Props = $props();
+    let { size, selectedIcon, orientation = "horizontal", text = true }: Props = $props();
 </script>
 
-<div class="flex items-center">
+<div class="{orientation === "horizontal" ? "flex-row gap-1" : "flex-col "} flex items-center">
     {#if selectedIcon === "Bell"}
         <Bell {size} />
     {:else if selectedIcon === "Speaker"}
@@ -25,6 +26,6 @@
     {/if}
 
     {#if text}
-        <p class="text-md ml-2">{selectedIcon}</p>
+        <p class="text-md">{selectedIcon}</p>
     {/if}
 </div>

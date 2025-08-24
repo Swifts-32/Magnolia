@@ -1,24 +1,28 @@
 <script lang="ts">
+  import { cn } from "$lib/utils.js";
+  import { tick } from "svelte";
+  import { Plus } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
   import Check from "lucide-svelte/icons/check";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
-  import { tick } from "svelte";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { cn } from "$lib/utils.js";
-  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
-  import type { ClientTrain } from "$lib/client/Trains/Train.svelte";
-  import { Plus } from "lucide-svelte";
-    import TrainAdd from "$lib/components/Settings/Trains/TrainAddDialog.svelte";
+  import { getTrains } from "../../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
+  import { getConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
 
   interface Props {
-    curTrain: ClientTrain | undefined;
+    selTrainId: string | undefined;
     disabled?: boolean;
-    layout: LayoutClient;
+    layoutId: string;
   }
 
-  let { curTrain = $bindable(), disabled = false, layout }: Props = $props();
+  let {
+    selTrainId = $bindable(),
+    disabled = false,
+    layoutId,
+  }: Props = $props();
 
+  let selTrainName: string | undefined = $state();
   let open = $state(false);
   let trainSearch: string = $state("");
   let triggerRef = $state<HTMLButtonElement>(null!);
@@ -42,17 +46,18 @@
         aria-expanded={open}
         {disabled}
       >
-        {curTrain?.name || "Select a train..."}
+        {selTrainName || "Select a train..."}
         <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
       </Button>
     {/snippet}
   </Popover.Trigger>
+
   <Popover.Content class="w-[275px] p-0">
     <Command.Root
       filter={(value, search, keywords) => {
         if (value === "create-train") return 1;
         return keywords?.some((k) =>
-          k.toLowerCase().includes(search.trim().toLowerCase())
+          k.toLowerCase().includes(search.trim().toLowerCase()),
         )
           ? 1
           : 0;
@@ -66,16 +71,20 @@
       <Command.List>
         <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
-          {#each layout.trains.values() as train}
+          {#each await getTrains(layoutId) as train}
             <Command.Item
-              {disabled}
+              disabled={disabled || train.userControllingId !== null}
               value={train.uuid}
-              keywords={[train.name, train.address.toString()]}
-              onSelect={() => {
-                curTrain = train;
-                closeAndFocusTrigger();
+              keywords={[train.name, train.address]}
+              onSelect={async () => {
+                if (train.userControllingId === null) {
+                  selTrainId = train.uuid;
+                  selTrainName = train.name;
+                  closeAndFocusTrigger();
+                }
               }}
-              class=" h-10 flex justify-between {train.uuid == curTrain?.uuid
+              class="h-10 flex justify-between {train.uuid == selTrainId ||
+              train.userControllingId
                 ? 'cursor-default'
                 : 'cursor-pointer'}"
             >
@@ -85,34 +94,39 @@
                   class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
                 >
                   <p>Address: {train.address}</p>
-                  <p>
-                    Connection: {layout.connections.get(train.connUUID)?.name ??
-                      "Undefined"}
-                  </p>
+                  {#await getConnection(train.connectionUuid) then connection}
+                    <p class="text-sm text-gray-400">
+                      Connection: {connection.name}
+                    </p>
+                  {:catch}
+                    <p class="text-sm text-red-400">No Connection</p>
+                  {/await}
                 </div>
               </div>
               <Check
                 class={cn(
                   "mr-2 size-4",
-                  curTrain?.uuid !== train.uuid && "text-transparent"
+                  selTrainId !== train.uuid && "text-transparent",
                 )}
               />
             </Command.Item>
           {/each}
 
-          <Command.Separator class="my-1" />
+          <Command.Separator class="my-1 h-[0.5px]" />
 
           <Command.Item
             {disabled}
             value="create-train"
-            class="h-10 flex justify-center"
+            class="h-10 w-full flex-col justify-center"
           >
-            <TrainAdd {layout}>
-              <div class="flex items-center justify-center gap-2">
-                <Plus class="size-6" />
-                <p>Create Train</p>
-              </div>
-            </TrainAdd>
+            <p>Add Train</p>
+            <!-- <TrainAdd
+              {layoutId}
+              class="flex size-full items-center justify-center gap-2"
+            >
+              <Plus class="size-6" />
+              <p>Create Train</p>
+            </TrainAdd> -->
           </Command.Item>
         </Command.Group>
       </Command.List>

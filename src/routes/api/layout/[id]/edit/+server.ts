@@ -1,34 +1,22 @@
-import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
+import { db } from "$lib/server/db/index.js";
+import { LayoutTable } from "$lib/server/db/schema/layouts.js";
+import { eq } from "drizzle-orm";
 
 export const POST = async ({ request, params }) => {
-    const { id } = params;
-    let layout = LayoutServerHandler.layouts.get(id as LayoutUUID);
+  const { id } = params;
 
-    if (!layout) {
-        return new Response(
-            JSON.stringify({ message: `${id} is not a valid layout.` }),
-            { status: 404 }
-        );
-    }
+  const data = await request.json();
 
-    try {
-        const data = await request.json();
+  await db.update(LayoutTable)
+    .set({
+      name: data.layoutName,
+    })
+    .where(eq(LayoutTable.uuid, id));
 
-        // Update basic connection properties
-        if (data.layoutName) layout.name = data.layoutName;
-        LayoutServerHandler.saveLayouts();
-
-        return new Response(
-            JSON.stringify({
-                message: 'Layout updated successfully',
-            }),
-            { status: 200 }
-        );
-    } catch (error) {
-        return new Response(
-            JSON.stringify({ message: 'Invalid request body' }),
-            { status: 400 }
-        );
-    }
+  return new Response(
+    JSON.stringify({
+      message: 'Layout updated successfully',
+    }),
+    { status: 200 }
+  );
 };

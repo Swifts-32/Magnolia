@@ -1,26 +1,74 @@
 <script lang="ts">
-    import { goto } from "$app/navigation";
-    import { layoutClientHandler } from "../../services/Layouts/LayoutClientHandler.svelte";
-    import LayoutAdd from "$lib/components/Settings/Layouts/LayoutAdd.svelte";
-    import Button from "$lib/components/ui/button/button.svelte";
+	import { createLayout, getLayouts } from "../(app)/layouts/layouts.remote";
+	import { Plus } from "lucide-svelte";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import Fab from "$lib/components/FAB/Fab.svelte";
+	import Button from "$lib/components/ui/button/button.svelte";
+
+	let isDialogOpen = $state(false);
 </script>
 
-<div class="mx-10 flex flex-col justify-center">
-    <h1 class="text-center text-8xl mx-10 my-5">Your are Home</h1>
-    <hr class="my-10" />
+<svelte:head>
+	<title>Magnolia</title>
+</svelte:head>
 
-    
-    <div class="flex flex-wrap">
-        {#each layoutClientHandler.layouts.values() as layout (layout.uuid)}
-            <button
-                class="border-primary border-2 p-2 rounded-md size-52 m-5 select-none"
-                onclick={() => goto(`/layouts/${layout.uuid}`)}
-            >
-                <p class="text-3xl text-center">{layout.name}</p>
-            </button>
-        {/each}
-        <LayoutAdd/>
-    </div>
+<div class="mx-2 flex flex-wrap">
+	<svelte:boundary>
+		{#each await getLayouts() as layout}
+			<a
+				class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
+				href={`/layouts/${layout.id}`}
+			>
+				<p class="text-3xl">{layout.name}</p>
+			</a>
+		{/each}
 
-    <Button onclick={() => layoutClientHandler.refreshLayouts()}>Refresh</Button>
+		{#snippet pending()}
+			<p>Loading Layouts...</p>
+		{/snippet}
+
+		{#snippet failed(error, reset)}
+			<p>{error}</p>
+			<Button onclick={reset}>Try Again</Button>
+		{/snippet}
+	</svelte:boundary>
 </div>
+
+<!-- Add Layout Button -->
+<Fab onclick={() => (isDialogOpen = true)} label="Add Layout">
+	<Plus class="size-8" />
+</Fab>
+
+<!-- Add Layout Dialog -->
+<Dialog.Root bind:open={isDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Create Layout</Dialog.Title>
+		</Dialog.Header>
+
+		<form {...createLayout}>
+			<!-- Layout Name -->
+			<label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
+				<p>Layout Name</p>
+				<input
+					class="border border-gray-300 col-span-3 rounded-md p-2 w-full"
+					type="text"
+					name="name"
+					id="name"
+					placeholder="New Layout"
+					required
+				/>
+			</label>
+
+			<Dialog.Footer>
+				<Button
+					type="reset"
+					onclick={() => (isDialogOpen = false)}
+					variant="outline"
+					class="w-32">Cancel</Button
+				>
+				<Button type="submit" class="w-32">Create</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>

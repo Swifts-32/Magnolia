@@ -1,56 +1,192 @@
-import type { ConnectionUUID } from "$lib/client/LayoutClient.svelte";
+import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import type { TrainAddress, TrainUuid } from "$lib/types/Trains/Train";
 import { ServerTrainFunctions } from "./Functions.server";
-import { isFunctionData, type TrainFunctionIcons, type TrainFunctionModes } from "../../types/Trains/Functions/Functions";
-import { type TrainUUID, type TrainAddress, type ITrainData, isTrainData } from "$lib/types/Trains/Train";
+import { TrainDirection } from "$lib/client/Trains/Train.svelte";
+import { db } from "../db";
+import { TrainTable } from "../db/schema/trains";
+import { eq } from "drizzle-orm";
 
 export class ServerTrain {
-	public uuid: TrainUUID;
-	public connUUID: ConnectionUUID;
-	public address: TrainAddress;
-	public name: string;
+	public uuid: TrainUuid;
+	public layoutUuid: LayoutUUID;
+
+	public address: TrainAddress | undefined;
+	public connUuid: ConnectionUUID | undefined;
+
+	public name: string = "New Train";
+	public comment: string = "";
+
 	public functions: Map<string, ServerTrainFunctions> = new Map();
+	public speed: number = 0;
+	public direction: TrainDirection = "Unknown";
 
-	constructor(address: TrainAddress, name: string, connUUID: ConnectionUUID, uuid: TrainUUID | undefined = undefined) {
-		this.address = address;
-		this.name = name;
-		this.uuid = uuid ?? crypto.randomUUID();
-		this.connUUID = connUUID;
+	constructor(uuid: TrainUuid, layoutUuid: LayoutUUID) {
+		this.uuid = uuid;
+		this.layoutUuid = layoutUuid;
 	}
 
-	toJSON(): ITrainData {
-		return {
+	public toJsonWeb(): string {
+		return JSON.stringify({
 			uuid: this.uuid,
-			connUUID: this.connUUID,
+			layoutUuid: this.layoutUuid,
 			address: this.address,
+			connUuid: this.connUuid,
 			name: this.name,
-			functions: Array.from(this.functions.values()).map(funct => funct.toJSON()),
-		};
+			comment: this.comment,
+			functions: Array.from(this.functions.values()).map(funct => funct.toJson()),
+			speed: this.speed,
+			direction: this.direction,
+		});
 	}
 
-	public static fromJSON(json: any): ServerTrain | null {
+	public toJsonFile(): string {
+		return JSON.stringify({
+			uuid: this.uuid,
+			layoutUuid: this.layoutUuid,
+			address: this.address,
+			connUuid: this.connUuid,
+			name: this.name,
+			comment: this.comment,
+			functions: Array.from(this.functions.values()).map(funct => funct.toJson()),
+		});
+	}
 
-		if (!isTrainData(json)) {
-			console.log(`Invalid train data`);
-			return null;
+	public static fromJsonWeb(json: any): ServerTrain | null {
+		try {
+			const uuid = json.uuid;
+			const layoutUuid = json.layoutUuid;
+
+			if (!uuid || !layoutUuid) return null;
+
+			const serverTrain = new ServerTrain(uuid, layoutUuid);
+
+			serverTrain.address = json.address;
+			serverTrain.connUuid = json.connUuid;
+			serverTrain.name = json.name;
+			serverTrain.comment = json.comment;
+			serverTrain.functions = ServerTrain.parseFunctionsFromJson(json.functions);
+			serverTrain.speed = json.speed;
+			serverTrain.direction = json.direction;
+
+			return serverTrain;
+		}
+		catch (e) {
+			console.warn(`Failed to parse train data from api: ${e}`);
 		}
 
-		let serverTrain = new ServerTrain(json.address, json.name, json.connUUID, json.uuid);
+		return null;
+	}
 
-		for (const funct of json.functions) {
-			if (!isFunctionData(funct)) {
-				console.log(`Invalid train function data`);
-				continue;
+	public static fromJsonFile(json: any): ServerTrain | null {
+		try {
+			const uuid = json.uuid;
+			const layoutUuid = json.layoutUuid;
+
+			if (!uuid || !layoutUuid) return null;
+
+			const serverTrain = new ServerTrain(uuid, layoutUuid);
+
+			serverTrain.address = json.address;
+			serverTrain.connUuid = json.connUuid;
+			serverTrain.name = json.name;
+			serverTrain.comment = json.comment;
+			serverTrain.functions = ServerTrain.parseFunctionsFromJson(json.functions);
+
+			return serverTrain;
+		}
+		catch (e) {
+			console.warn(`Failed to parse train data from file: ${e}`);
+		}
+
+		return null;
+	}
+
+	private static parseFunctionsFromJson(json: any): Map<string, ServerTrainFunctions> {
+		const functions = new Map<string, ServerTrainFunctions>();
+
+		for (const funct of json) {
+			const serverTrainFunctions = ServerTrainFunctions.fromJson(funct);
+			if (serverTrainFunctions) {
+				functions.set(serverTrainFunctions.value, serverTrainFunctions);
 			}
-
-			serverTrain.addFunction(funct.value, funct.name, funct.icon, funct.mode, funct.position);
 		}
 
-		return serverTrain;
+		return functions;
 	}
 
+	public static async getTrainFromDb(trainId: TrainUuid): Promise<ServerTrain | undefined> {
+		const dbTrains = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
+		const dbTrain = dbTrains[0];
+		if (!dbTrain) return;
 
-	addFunction(value: string, name: string, icon: TrainFunctionIcons, mode: TrainFunctionModes, position: number, visible: boolean = true) {
-		const funct = new ServerTrainFunctions(value, name, icon, mode, position);
-		this.functions.set(value, funct);
+		const train = new ServerTrain(dbTrain.uuid as TrainUuid, dbTrain.layoutUuid as LayoutUUID);
+
+		train.address = dbTrain.address;
+		train.comment = dbTrain.comment;
+		if (dbTrain.connectionUuid) train.connUuid = dbTrain.connectionUuid as ConnectionUUID;
+		train.direction = dbTrain.direction;
+		train.name = dbTrain.name;
+		train.speed = train.speed;
+		train.functions = await ServerTrainFunctions.getFunctionsFromDb(train.uuid);
+
+		return train;
 	}
+
+	public static async acquireTrain(trainId: TrainUuid): Promise<ServerTrain | undefined> {
+		const dbTrains = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
+		const dbTrain = dbTrains[0];
+		if (!dbTrain) return;
+
+		const train = new ServerTrain(dbTrain.uuid as TrainUuid, dbTrain.layoutUuid as LayoutUUID);
+
+		train.address = dbTrain.address;
+		train.comment = dbTrain.comment;
+		if (dbTrain.connectionUuid) train.connUuid = dbTrain.connectionUuid as ConnectionUUID;
+		train.direction = dbTrain.direction;
+		train.name = dbTrain.name;
+		train.speed = train.speed;
+		train.functions = await ServerTrainFunctions.getFunctionsFromDb(train.uuid);
+
+		await db.in
+
+		return train;
+	}
+
+	public static async setTrainDirection(trainId: TrainUuid, direction: TrainDirection) {
+
+		// TODO set train direction;
+		
+		// const connection = layoutClientHandler.layouts.get(this.layoutUuid)?.connections.get(this.connUuid);
+		// if (!connection) return;
+
+		// this._direction = value;
+
+		// switch (connection.protocol) {
+		// 	case ConnectionProtocols.DCCEX:
+		// 		fetch(`/api/layout/${this.layoutUuid}/${this.connUuid}/write?data=<t ${this.address} ${this.speed} ${this.direction}>`);
+		// 		break;
+		// 	default:
+		// 		console.log("Unknown protocol: " + connection.protocol);
+		// 		break;
+		// }
+	}
+	public static async setTrainSpeed(trainId: TrainUuid, speed: number) {
+
+		// TODO set train speed;
+
+		// const connection = layoutClientHandler.layouts.get(this.layoutUuid)?.connections.get(this.connUuid);
+		// if (!connection) return;
+
+		// this._direction = value;
+
+		// switch (connection.protocol) {
+		// 	case ConnectionProtocols.DCCEX:
+		// 		fetch(`/api/layout/${this.layoutUuid}/${this.connUuid}/write?data=<t ${this.address} ${this.speed} ${this.direction}>`);
+		// 		break;
+		// 	default:
+		// 		console.log("Unknown protocol: " + connection.protocol);
+		// 		break;
+		// }
+	}
+
 }

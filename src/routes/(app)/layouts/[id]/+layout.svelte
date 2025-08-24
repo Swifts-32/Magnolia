@@ -1,9 +1,12 @@
 <script lang="ts">
-    import { page } from "$app/state";
+	import { page } from "$app/state";
 	import { NavBarData } from "$lib/components/NavBar/linkUtils.svelte";
 	import NavBar from "$lib/components/NavBar/NavBar.svelte";
+	import { Toaster } from "svelte-sonner";
+	import type { LayoutProps } from "./$types";
+	import Button from "$lib/components/ui/button/button.svelte";
 
-	let { children } = $props();
+	let { children }: LayoutProps = $props();
 
 	const curLink = page.url.pathname;
 	const links = [
@@ -34,11 +37,25 @@
 	];
 
 	const navBarData = new NavBarData(links, curLink);
+
+	// This is causing page load error
+	// createLayoutClientState(data.layoutId, data.layoutName);
 </script>
 
-<div class="flex flex-col h-dvh">
-	<NavBar {navBarData} />
-	{@render children()}
-</div>
+<svelte:boundary>
+	<div class="flex flex-col h-dvh">
+		<NavBar {navBarData} />
+		{@render children()}
+	</div>
 
+	<Toaster richColors theme="dark" position="bottom-left" />
 
+	{#snippet pending()}
+		<p>Loading...</p>
+	{/snippet}
+
+	{#snippet failed(error, reset)}
+		<p>Error: {error.message}</p>
+		<Button onclick={reset}>Try again</Button>
+	{/snippet}
+</svelte:boundary>

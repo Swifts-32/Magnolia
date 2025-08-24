@@ -4,15 +4,15 @@
 	import * as Carousel from "$lib/components/ui/carousel/index";
 	import { Plus } from "lucide-svelte";
 	import FunctionButton from "./FunctionButton.svelte";
-    import FunctionViewer from "$lib/components/Settings/Trains/Functions/FunctionViewer.svelte";
+	import { goto } from "$app/navigation";
+	import { page } from "$app/state";
 
 	interface Props {
 		disabled?: boolean;
-		functions: Map<string, TrainClientFunction> | null;
-		onclick?: (value: string, state: boolean) => void;
+		functions: Map<string, TrainClientFunction>;
 	}
 
-	let { functions, onclick, disabled }: Props = $props();
+	let { functions, disabled }: Props = $props();
 
 	let api = $state<CarouselAPI>();
 	let current = $state(0);
@@ -27,26 +27,25 @@
 		}
 	});
 
-	// Function to chunk array into specified size
-	function chunkArray<T>(array: T[], size: number): T[][] {
-		const chunks: T[][] = [];
-		for (let i = 0; i < array.length; i += size) {
-			chunks.push(array.slice(i, i + size));
-		}
-		return chunks;
-	}
+	// Update the chunked functions array when the functions map changes
+	let chunkedFunctions: TrainClientFunction[][] = $derived.by(() => {
+		let functionArray: TrainClientFunction[] = [];
 
-	let entriesArray: TrainClientFunction[] = [];
-	if (functions) {
-		entriesArray = Array.from(functions.values()).filter(
+		functionArray = Array.from(functions.values()).filter(
 			(func) => func.visible,
 		);
-	}
 
-	const chunkedEntries = chunkArray(entriesArray, 8);
+		// Create a reactive chunked array (groups of 8)
+		let chunkedFunctions: TrainClientFunction[][] = [];
+		for (let i = 0; i < functionArray.length; i += 8) {
+			chunkedFunctions.push(functionArray.slice(i, i + 8));
+		}
+
+		return chunkedFunctions;
+	});
 </script>
 
-{#if functions}
+{#if chunkedFunctions.length > 1}
 	<Carousel.Root
 		class="w-32 max-w-fit h-full"
 		opts={{
@@ -56,17 +55,16 @@
 		setApi={(embleApi) => (api = embleApi)}
 	>
 		<Carousel.Content>
-			{#each chunkedEntries as funcs}
+			{#each chunkedFunctions as chunk, chunkIndex}
 				<Carousel.Item>
-					<div
-						class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full"
-					>
-						{#each funcs as func}
+					<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
+						{#each chunk, index}
 							<FunctionButton
 								{disabled}
-								trainFunction={func}
-								bind:selected={func.state}
-								{onclick}
+								bind:trainFunction={
+									() => chunkedFunctions[chunkIndex]?.[index],
+									(funct) => (chunkedFunctions[chunkIndex][index] = funct)
+								}
 							/>
 						{/each}
 					</div>
@@ -75,32 +73,45 @@
 		</Carousel.Content>
 
 		<!-- Dots -->
-		{#if chunkedEntries.length > 1}
-			<div class="flex justify-center m-1 h-5 items-center">
-				{#each Array(count) as _, dot}
-					<button
+		<div class="flex justify-center m-1 h-5 items-center">
+			{#each Array(count) as _, dot}
+				<button
+					{disabled}
+					class="rounded-full m-1 border-primary disabled:border-primary-disabled {dot +
+						1 ==
+					current
+						? 'border-0 size-4 bg-secondary disabled:bg-secondary-disabled cursor-default'
+						: 'border-2 size-3 bg-transparent cursor-pointer disabled:cursor-default'}"
+					onclick={() => api?.scrollTo(dot)}
+					aria-label="Dot"
+				></button>
+			{/each}
+		</div>
+	</Carousel.Root>
+{:else if chunkedFunctions.length == 1 && chunkedFunctions[0].length > 0}
+	<div class="w-32 max-w-fit h-full">
+		{#each chunkedFunctions as chunk, chunkIndex}
+			<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
+				{#each chunk, index}
+					<FunctionButton
 						{disabled}
-						class="rounded-full m-1 border-primary disabled:border-primary-disabled {dot +
-							1 ==
-						current
-							? 'border-0 size-4 bg-secondary disabled:bg-secondary-disabled cursor-default'
-							: 'border-2 size-3 bg-transparent cursor-pointer disabled:cursor-default'}"
-						onclick={() => api?.scrollTo(dot)}
-						aria-label="Dot"
-					></button>
+						bind:trainFunction={
+							() => chunkedFunctions[chunkIndex]?.[index],
+							(funct) => (chunkedFunctions[chunkIndex][index] = funct)
+						}
+					/>
 				{/each}
 			</div>
-		{/if}
-	</Carousel.Root>
+		{/each}
+	</div>
 {:else}
 	<button
 		class="w-32 text-lg flex flex-col justify-center items-center"
 		onclick={() => {
-
+			goto(`/layouts/${page.params.id}/settings/trains`);
 		}}
 	>
 		<Plus size={32} />
 		<p>Add a Function</p>
 	</button>
-	<FunctionViewer functions={new Map()}/>
 {/if}

@@ -1,51 +1,85 @@
 import { LayoutClient, type LayoutUUID } from "$lib/client/LayoutClient.svelte";
+import { SvelteMap } from "svelte/reactivity";
 
 class LayoutClientHandler {
-    public layouts: Map<LayoutUUID, LayoutClient> = $state(new Map());
+  private appEventSource: EventSource | null = null;
 
-    public async refreshLayouts() {
-        const json = await fetch("/api/layout").then(res => res.json());
-        const layouts = json.map((layout: { uuid: LayoutUUID, name: string, position: number, connections: any[] }) => ({
-            uuid: layout.uuid,
-            name: layout.name,
-            position: layout.position,
-        }));
-        // Get set of server layout UUIDs
-        const serverLayoutUUIDs = new Set(layouts.map((layout: { uuid: LayoutUUID }) => layout.uuid));
+  public clientId: string | undefined;
+  public layouts: SvelteMap<LayoutUUID, LayoutClient> = new SvelteMap();
 
-        // Remove layouts that don't exist on server
-        for (const uuid of this.layouts.keys()) {
-            if (!serverLayoutUUIDs.has(uuid)) {
-                this.layouts.delete(uuid);
-                console.log(`Layout ${uuid} removed from client`);
-            }
-        }
+  public async loadLayouts() {
+    const layoutHandlerJson = await fetch("/api/layout").then(res => res.json());
+    const layoutServerUuids = new Set();
 
-        for (const layout of layouts) {
-            if (!this.layouts.has(layout.uuid)) {
-                // Layout does not exist, create it
-                const layoutClient = await LayoutClient.create(layout.uuid, fetch);
-                this.layouts.set(layout.uuid, layoutClient);
+    for (const layoutJson of layoutHandlerJson.layouts) {
+      const layout = LayoutClient.fromJsonWeb(layoutJson);
+      if (!layout) continue;
 
-                console.log(`Layout ${layout.uuid} added to client`);
-            } else {
-                // Layout exists, update it
-                let layoutClient = this.layouts.get(layout.uuid);
-                if (!layoutClient) {
-                    console.log(`Layout client not found for layout ${layout.uuid}`);
-                    continue;
-                }
+      layoutServerUuids.add(layoutJson.uuid);
 
-                layoutClient.name = layout.name;
-                await layoutClient.refreshLayout();
-
-                console.log(`Layout ${layout.uuid} updated on client`);
-            }
-        }
-
-        // Trigger reactivity by reassigning the map
-        this.layouts = new Map(this.layouts);
+      this.layouts.set(layout.uuid, layout);
     }
+
+    // Remove layouts that no longer exist on server
+    for (const uuid of this.layouts.keys()) {
+      if (!layoutServerUuids.has(uuid)) {
+        this.layouts.delete(uuid);
+      }
+    }
+  }
+
+  public connectToSse() {
+    this.appEventSource = new EventSource(`/api/stream`);
+
+    this.appEventSource.addEventListener("Update", (event) => {
+      const message = event.data.trim();
+
+      if (message === "Layouts") {
+        this.loadLayouts();
+        return;
+      }
+    });
+
+    this.appEventSource.addEventListener("UpdateLayoutConnections", (event) => {
+      const message = event.data.trim().match(/^LayoutUuid:([^:]+):(.+)/);
+
+      const layoutUuid = message[1] as LayoutUUID;
+      const layout = this.layouts.get(layoutUuid);
+      if (!layout) return;
+
+      const data = message[2];
+      if (!data) return;
+
+      try {
+        layout.loadConnectionsFromJson(JSON.parse(data));
+      } catch (error) {
+        console.error("Failed to parse JSON:", error);
+      }
+    });
+
+    this.appEventSource.addEventListener("UpdateLayoutSensors", (event) => {
+      const message = event.data.trim().match(/^LayoutUuid:([^:]+):(.+)/);
+
+      const layoutUuid = message[1] as LayoutUUID;
+      const layout = this.layouts.get(layoutUuid);
+      if (!layout) return;
+
+      const data = message[2];
+      if (!data) return;
+
+      try {
+        // layout.loadSensorsFromJson(JSON.parse(data));
+      } catch (error) {
+        console.error("Failed to parse JSON:", error);
+      }
+    });
+
+    this.appEventSource.onerror = (event) => {
+      console.error("EventSource failed:", event);
+      this.appEventSource?.close();
+      this.appEventSource = null;
+    };
+  }
 }
 
 export const layoutClientHandler = new LayoutClientHandler();

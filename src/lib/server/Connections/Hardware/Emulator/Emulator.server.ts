@@ -1,10 +1,10 @@
-import { ConnectionProtocols, ConnectionTypes } from "$lib/client/Protocols/protocols";
-import type { IEmulatorConnection } from "../hardware";
+import { ConnectionType } from "$lib/client/Protocols/protocols";
+import type { HardwareClass } from "../hardware";
 
 
-export class EmulatorConnection implements IEmulatorConnection {
+export class EmulatorConnection implements HardwareClass {
   public isConnected: boolean = false;
-  public connType: ConnectionTypes.Emulator = ConnectionTypes.Emulator;
+  public connType: ConnectionType = "Emulator";
 
 
   private dataReceived: ((data: string) => void) | null = null;
@@ -106,9 +106,9 @@ export class EmulatorConnection implements IEmulatorConnection {
     }
   }
 
-  toJSON() {
-    return {
+  toJson() {
+    return JSON.stringify({
       connType: this.connType
-    };
+    });
   }
 }

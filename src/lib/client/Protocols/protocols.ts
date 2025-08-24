@@ -1,33 +1,32 @@
-export enum ConnectionTypes {
-    Serial = 0,
-    Emulator = 5,
+import { z } from "zod/v4";
+
+// Connection Protocol
+export const connectionProtocolList = ["DccEx", "Lcc"] as const;
+export const ConnectionProtocol = z.enum(connectionProtocolList);
+export type ConnectionProtocol = z.infer<typeof ConnectionProtocol>;
+
+export const connectionTypeList = ["Serial", "Emulator"] as const;
+export const ConnectionType = z.enum(connectionTypeList);
+export type ConnectionType = z.infer<typeof ConnectionType>;
+
+export function getProtocolName(protocol: ConnectionProtocol): string {
+  switch (protocol) {
+    case "DccEx":
+      return "DCC EX";
+    case "Lcc":
+      return "LCC";
+    default:
+      return "Unknown";
+  }
 }
 
-export enum ConnectionProtocols {
-    DCCEX = 0,
-    LCC = 1,
-}
-
-
-export function getProtocolName(protocol: ConnectionProtocols): string {
-    switch (protocol) {
-        case ConnectionProtocols.DCCEX:
-            return "DCC EX";
-        case ConnectionProtocols.LCC:
-            return "LCC";
-        default:
-            return "Unknown";
-    }
-}
-
-export function getConnectionTypeName(connType: ConnectionTypes): string {
-    switch (connType) {
-        case ConnectionTypes.Serial:
-            return "Serial";
-        case ConnectionTypes.Emulator:
-            return "Emulator";
-        default:
-            return "Unknown Connection Type";
-
-    }
+export function getConnectionTypeName(connType: ConnectionType): string {
+  switch (connType) {
+    case "Serial":
+      return "Serial";
+    case "Emulator":
+      return "Emulator";
+    default:
+      return "Unknown Connection Type";
+  }
 }

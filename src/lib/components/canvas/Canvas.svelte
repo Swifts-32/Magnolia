@@ -2,17 +2,16 @@
   import { onMount } from "svelte";
   import {
     MouseMoving,
-    Straight,
     type Cell,
     CellTypes,
-    Buffer,
-    Turnout,
-    Curve,
     convertCoordinatesToNumber,
     EditMode,
   } from "./canvasTypes.svelte";
   import { gStore } from "./cellStore.svelte";
   import * as Dialog from "$lib/components/ui/dialog";
+    import { StraightTrackCell } from "./Cells/Track/StraightTrackCell";
+    import { CurveTrackCell } from "./Cells/Track/CurveTrackCell";
+    import { BufferTrackCell } from "./Cells/Track/BufferTrackCell";
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let ctx: CanvasRenderingContext2D | null = null;
@@ -23,50 +22,67 @@
   const maxScale: number = 1.5; // 300% of original size
   let curScale: number = $state(1);
 
-  let offsetX: number = 0;
-  let offsetY: number = 0;
+  let offsetCanvasX: number = 0;
+  let offsetCanvasY: number = 0;
 
-  let mouseX: number = $state(0);
-  let mouseY: number = $state(0);
-  let lastMouseX: number = 0;
-  let lastMouseY: number = 0;
+  let lastMouseCanvasX: number = 0;
+  let lastMouseCanvasY: number = 0;
+
+  let mouseGridX: number = $state(0);
+  let mouseGridY: number = $state(0);
 
   let dragging: MouseMoving = MouseMoving.None; // Mouse not moving
 
   let dialogOpen = $state(false);
 
-  $effect(() => {
-    if (gStore.isEdit) {
-      updateGrid();
-    }
-    else {
-      updateGrid();
+  let animationFrameId: number | null = null;
+
+  function requestCanvasUpdate() {
+    if (animationFrameId !== null) return;
+
+    animationFrameId = requestAnimationFrame(() => {
+      updateCanvas();
+      animationFrameId = null;
+    });
+  }
+
+  onMount(() => {
+    if (canvas) {
+      ctx = canvas.getContext("2d");
+      updateCanvas();
     }
   });
+
   $effect(() => {
-    if ((gStore.isEditMode() && gStore.mode.selRotation)) {
-      updateGrid();
-    }
-    else {
-      updateGrid();
+    // Need to update on rotation
+    // And mode change
+    if (gStore.mode instanceof EditMode && gStore.mode.selRotation) {
+      updateCanvas();
+    } else {
+      updateCanvas();
     }
   });
 
-  function updateGrid() {
-    updateCanvasSize();
+  function updateCanvas() {
+    if (!ctx || !canvas) return;
 
-    if (ctx != null && canvas != null) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const desiredWidth = gStore.columns * gStore.cellSize * curScale;
+    const desiredHeight = gStore.rows * gStore.cellSize * curScale;
 
-      ctx.save();
-      ctx.scale(curScale, curScale);
-      ctx.translate(offsetX, offsetY);
+    if (canvas.width !== desiredWidth) canvas.width = desiredWidth;
+    if (canvas.height !== desiredHeight) canvas.height = desiredHeight;
 
-      // Draw Grid
-      gStore.isEditMode() && drawGrid();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Highlight selected cell
-      if (gStore.selectedCell != null && gStore.isEditMode()) {
+    ctx.save();
+    ctx.scale(curScale, curScale);
+    ctx.translate(offsetCanvasX, offsetCanvasY);
+
+    if (gStore.mode instanceof EditMode) {
+      drawGrid();
+
+      // Draw selected cell
+      if (gStore.selectedCell != null) {
         const path = new Path2D();
         path.rect(
           gStore.selectedCell.x * gStore.cellSize,
@@ -79,34 +95,37 @@
         ctx.lineWidth = 2;
         ctx.stroke(path);
       }
-
-      // Draw Track
-      gStore.cells.forEach((cell, coordinates) => {
-        const { x, y } = convertCoordinatesToNumber(coordinates);
-
-        if (cell.type && ctx) {
-          cell.type.DrawPath(x, y, gStore.cellSize, ctx);
-        }
-      });
-
-      ctx.restore();
     }
+
+    // Draw Track
+    gStore.cells.forEach((cell, coordinates) => {
+      const { x, y } = convertCoordinatesToNumber(coordinates);
+
+      if (cell && ctx) {
+        cell.DrawPath(x, y, gStore.cellSize, ctx);
+      }
+    });
+
+    ctx.restore();
   }
 
   function drawGrid() {
-    if (ctx != null) {
-      ctx.strokeStyle = "gray";
-      ctx.lineWidth = 1.1;
+    if (!ctx) return;
+    ctx.strokeStyle = "gray";
+    ctx.lineWidth = 0.12;
 
-      for (let i = 0; i <= gStore.columns; i++) {
-        for (let j = 0; j <= gStore.rows; j++) {
-          const x = i * gStore.cellSize + 0.5; // Snap to nearest pixel
-          const y = j * gStore.cellSize + 0.5; // Snap to nearest pixel
+    const path = new Path2D();
 
-          ctx.strokeRect(x, y, gStore.cellSize, gStore.cellSize);
-        }
+    for (let i = 0; i <= gStore.columns; i++) {
+      for (let j = 0; j <= gStore.rows; j++) {
+        const x = i * gStore.cellSize + 0.5; // Snap to nearest pixel
+        const y = j * gStore.cellSize + 0.5; // Snap to nearest pixel
+
+        path.rect(x, y, gStore.cellSize, gStore.cellSize);
       }
     }
+
+    ctx.stroke(path);
   }
 
   function handleZoom(event: WheelEvent) {
@@ -127,89 +146,91 @@
     newScale = Math.min(Math.max(newScale, minScale), maxScale);
     newScale = Number(newScale.toFixed(2));
 
-    offsetX += mouseX * (newScale - curScale);
-    offsetY += mouseY * (newScale - curScale);
+    offsetCanvasX += mouseX * (newScale - curScale);
+    offsetCanvasY += mouseY * (newScale - curScale);
     curScale = newScale;
 
-    updateCanvasSize();
     clampCanvasOffset();
-    updateGrid();
+    requestCanvasUpdate();
   }
 
   function handleClick(event: MouseEvent) {
-    if (canvas && ctx) {
-      const rect = canvas.getBoundingClientRect();
+    if (!canvas || !ctx) return;
 
-      // Transform the mouse coordinates into the grid's coordinate system
-      const x = snapToGrid((event.clientX - rect.left) / curScale - offsetX);
-      const y = snapToGrid((event.clientY - rect.top) / curScale - offsetY);
+    const [x, y] = calculateMouseGridPositions(event);
+    if (x === undefined || y === undefined) return;
 
-      // Select the cell
-      gStore.selectCell(x, y);
+    // Select the cell
+    gStore.selectCell(x, y);
 
-      const isOperateMode = gStore.isOperateMode();
+    if (gStore.mode instanceof EditMode) {
+      // Assign Clicked cell the current tool
+      if (gStore.mode.selectedTool != null) {
+        let cell: Cell | null = null;
 
-      if (isOperateMode) {
-        // Operating Mode
-        // TODO Edit Cell Properties e.g. Switch Point
-      } else if (gStore.isEditMode()) {
-        // Edit Mode
-        console.log("Edit Mode CLick");
-        // Assign Clicked cell the current tool
-        if (gStore.mode.selectedTool != null) {
-          const cell: Cell = {
-            type: null,
-          };
+        const rotation = gStore.mode.selRotation;
 
-          const rotation = gStore.mode.selRotation;
+        switch (gStore.mode.selectedTool) {
+          case CellTypes.delete:
+            cell = null;
+            break;
 
-          switch (gStore.mode.selectedTool) {
-            case CellTypes.delete:
-              cell.type = null;
-              break;
+          case CellTypes.straight:
+            cell = new StraightTrackCell(rotation);
+            break;
+          case CellTypes.curve:
+            cell = new CurveTrackCell(rotation);
+            break;
+          case CellTypes.buffer:
+            cell = new BufferTrackCell(rotation);
+            break;
+          default:
+            console.log("Unknown cell type");
+            break;
+        }
 
-            case CellTypes.straight:
-              cell.type = new Straight(rotation);
-              break;
-            case CellTypes.curve:
-              cell.type = new Curve(rotation);
-              break;
-            case CellTypes.buffer:
-              cell.type = new Buffer(rotation);
-              break;
-
-            case CellTypes.turnout:
-              cell.type = new Turnout(false, "Unnamed Turnout", 0);
-              break;
-          }
-
+        if (cell) {
           gStore.addCell(x, y, cell);
         }
-      }
+        else {
+          gStore.removeCell(x, y);
+        }
 
-      updateGrid();
+      }
     }
+
+    updateCanvas();
   }
 
-  function calculateMousePositions(event: MouseEvent) {
-    if (canvas) {
-      const rect = canvas.getBoundingClientRect();
+  function calculateMouseGridPositions(
+    event: MouseEvent,
+  ): [number, number] | [undefined, undefined] {
+    if (!canvas) return [undefined, undefined];
 
-      mouseX = snapToGrid((event.clientX - rect.left) / curScale - offsetX);
-      mouseY = snapToGrid((event.clientY - rect.left) / curScale - offsetY);
-    }
+    const rect = canvas.getBoundingClientRect();
+
+    const x = snapToGrid(
+      (event.clientX - rect.left) / curScale - offsetCanvasX,
+    );
+    const y = snapToGrid((event.clientY - rect.top) / curScale - offsetCanvasY);
+
+    return [x, y];
   }
 
   function handleMouseDown(event: MouseEvent) {
-    calculateMousePositions(event);
+    const [x, y] = calculateMouseGridPositions(event);
+    if (x === undefined || y === undefined) return;
+
+    mouseGridX = x;
+    mouseGridY = y;
 
     if (event.shiftKey) {
-      // Pan or Zoom
+      // Canvas movement
       dragging = MouseMoving.Viewing;
 
-      lastMouseX = mouseX * gStore.cellSize;
-      lastMouseY = mouseY * gStore.cellSize;
-    } else if (gStore.isEditMode()) {
+      lastMouseCanvasX = mouseGridX * gStore.cellSize;
+      lastMouseCanvasY = mouseGridY * gStore.cellSize;
+    } else if (gStore.mode instanceof EditMode) {
       // Edit mode
       dragging = MouseMoving.Dragging;
       handleClick(event);
@@ -217,78 +238,66 @@
   }
 
   function handleMouseMove(event: MouseEvent) {
-    calculateMousePositions(event);
+    const [x, y] = calculateMouseGridPositions(event);
+    if (x === undefined || y === undefined) return;
+    mouseGridX = x;
+    mouseGridY = y;
 
     if (dragging == MouseMoving.Viewing) {
       // Clamp Offsets
 
-      const canvasMouseX = mouseX * gStore.cellSize;
-      const canvasMouseY = mouseY * gStore.cellSize;
+      const mouseCanvasX = mouseGridX * gStore.cellSize;
+      const mouseCanvasY = mouseGridY * gStore.cellSize;
 
-      offsetX += canvasMouseX - lastMouseX;
-      offsetY -= canvasMouseY - lastMouseY;
+      offsetCanvasX += mouseCanvasX - lastMouseCanvasX;
+      offsetCanvasY += mouseCanvasY - lastMouseCanvasY;
 
       clampCanvasOffset();
 
-      lastMouseX = canvasMouseX;
-      lastMouseY = canvasMouseY;
+      lastMouseCanvasX = mouseCanvasX;
+      lastMouseCanvasY = mouseCanvasY;
 
-      updateGrid();
-    } else if (gStore.isEditMode() && dragging == MouseMoving.Dragging) {
-      // Drag some track
-      console.log("Handling Click");
+      requestCanvasUpdate();
+      // updateCanvas();
+    } else if (
+      gStore.mode instanceof EditMode &&
+      dragging == MouseMoving.Dragging
+    ) {
       handleClick(event);
     }
   }
 
   // Return top left of cell
   function snapToGrid(value: number): number {
-    // TODO Fix rounding so that cells are accurate
-    return Math.round(value / gStore.cellSize);
+    return Math.floor(value / gStore.cellSize);
   }
 
   function handleMouseUp() {
     dragging = MouseMoving.None;
   }
 
-  function updateCanvasSize() {
-    if (canvas) {
-      canvas.width = gStore.columns * gStore.cellSize * curScale;
-      canvas.height = gStore.rows * gStore.cellSize * curScale;
-    }
-  }
-
   function clampCanvasOffset() {
-    if (canvas) {
-      const parentElement = canvas.parentElement;
+    if (!canvas) return;
 
-      if (parentElement) {
-        const maxOffsetX = canvas.width - parentElement.clientWidth;
-        const maxOffsetY = canvas.height - parentElement.clientHeight;
+    const parentElement = canvas.parentElement;
+    if (!parentElement) return;
 
-        offsetX = Math.min(0, Math.max(offsetX, -maxOffsetX));
-        offsetY = Math.min(0, Math.max(offsetY, maxOffsetY));
-      }
-    }
+    const maxOffsetX = canvas.width - parentElement.clientWidth;
+    const maxOffsetY = canvas.height - parentElement.clientHeight;
+
+    offsetCanvasX = Math.min(0, Math.max(offsetCanvasX, -maxOffsetX));
+    offsetCanvasY = Math.max(0, Math.min(offsetCanvasY, maxOffsetY));
   }
-
-  onMount(() => {
-    if (canvas) {
-      ctx = canvas.getContext("2d");
-      updateGrid();
-    }
-  });
-
 
   // Only open dialog on editable cells
   function handleDoubleClick(event: MouseEvent) {
     event.preventDefault();
 
-    if (gStore.isEditMode() && gStore.selectedCell) {
-      const {x, y} = gStore.selectedCell;
-      const cell = gStore.getCell(x,y);
+    if (gStore.mode instanceof EditMode && gStore.selectedCell) {
+      const { x, y } = gStore.selectedCell;
+      const cell = gStore.getCell(x, y);
       if (cell) {
-        if (cell.type instanceof Turnout) {
+        if (cell instanceof StraightTrackCell) {
           dialogOpen = true;
         }
       }
@@ -317,8 +326,8 @@
   <div
     class="absolute flex gap-2 bottom-0 right-0 py-1 px-3 bg-gray-700 rounded-tl-md text-white"
   >
-    <p class="text-sm">X: {mouseX}</p>
-    <p class="text-sm">Y: {mouseY}</p>
+    <p class="text-sm">X: {mouseGridX}</p>
+    <p class="text-sm">Y: {mouseGridY}</p>
     <p class="text-sm">Scale: {curScale}</p>
   </div>
 
