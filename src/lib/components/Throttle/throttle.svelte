@@ -33,7 +33,7 @@
   <!-- Loco Select -->
   <LocoSelect bind:selTrainId {layoutId} disabled={disabledProp} />
 
-  <div class="flex gap-4 justify-between items-center flex-1 grow">
+  <div class="flex gap-4 justify-between items-center h-full w-full">
     {#await selTrainId && getTrain(selTrainId) then curTrain}
       <!-- Speed Slider -->
       <!-- Using onValueCommit to prevent spamming the server with speed updates -->

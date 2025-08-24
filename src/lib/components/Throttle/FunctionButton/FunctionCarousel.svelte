@@ -54,51 +54,55 @@
 	);
 </script>
 
-<!-- {#await chunkedFunctions2 then chunkedFunctions} -->
 <!-- {#if chunkedFunctions.length > 1} -->
 {#if trainId}
-	<Carousel.Root
-		class="w-fit h-full"
-		opts={{
-			loop: true,
-			align: "start",
-			
-		}}
-		setApi={(embleApi) => (api = embleApi)}
-	>
-		<Carousel.Content>
-			{#each await chunkedFunctions2 as chunk}
-				<Carousel.Item>
-					<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
-						{#each chunk as trainFunction}
-							<FunctionButton
-								{trainId}
-								functValue={trainFunction.functValue}
-								{disabled}
-							/>
-						{/each}
-					</div>
-				</Carousel.Item>
-			{/each}
-		</Carousel.Content>
+	{#await chunkedFunctions2 then chunkedFunctions}
+	<div class="inline-block">
+		<Carousel.Root
+			class="w-fit h-full overflow-hidden"
+			opts={{
+				loop: true,
+				align: "start",
+				active: chunkedFunctions.length > 1,
+			}}
+			setApi={(emblaApi: CarouselAPI) => (api = emblaApi)}
+		>
+			<Carousel.Content class="border border-red-300 flex w-fit">
+				{#each chunkedFunctions as chunk}
+					<Carousel.Item class="!w-auto	 flex-shrink-0">
+						<div
+							class="grid grid-cols-2  auto-rows-min gap-2 w-fit"
+						>
+							{#each chunk as trainFunction}
+								<FunctionButton
+									{trainId}
+									functValue={trainFunction.functValue}
+									{disabled}
+								/>
+							{/each}
+						</div>
+					</Carousel.Item>
+				{/each}
+			</Carousel.Content>
 
-		<!-- Dots -->
-		<div class="flex justify-center m-1 h-5 items-center">
-			{#each Array(count) as _, dot}
-				<button
-					{disabled}
-					class="rounded-full m-1 border-primary disabled:border-primary-disabled {dot +
-						1 ==
-					current
-						? 'border-0 size-4 bg-secondary disabled:bg-secondary-disabled cursor-default'
-						: 'border-2 size-3 bg-transparent cursor-pointer disabled:cursor-default'}"
-					onclick={() => api?.scrollTo(dot)}
-					aria-label="Dot"
-				></button>
-			{/each}
+			<!-- Dots -->
+			<div class="flex justify-center m-1 h-5 w-full items-center">
+				{#each Array(count) as _, dot}
+					<button
+						{disabled}
+						class="rounded-full m-1 border-primary disabled:border-primary-disabled {dot +
+							1 ==
+						current
+							? 'border-0 size-4 bg-secondary disabled:bg-secondary-disabled cursor-default'
+							: 'border-2 size-3 bg-transparent cursor-pointer disabled:cursor-default'}"
+						onclick={() => api?.scrollTo(dot)}
+						aria-label="Dot"
+					></button>
+				{/each}
+			</div>
+		</Carousel.Root>
 		</div>
-	</Carousel.Root>
-	<!-- {:else if chunkedFunctions.length == 1 && chunkedFunctions[0].length > 0}
+		<!-- {:else if chunkedFunctions.length == 1 && chunkedFunctions[0].length > 0}
 		<div class="w-32 max-w-fit h-full">
 			{#each chunkedFunctions as chunk, chunkIndex}
 				<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
@@ -124,10 +128,10 @@
 			<Plus size={32} />
 			<p>Add a Function</p>
 		</button>
-	{/if}
-{/await} -->
+	{/if} -->
+	{/await}
 {:else}
-	<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
+	<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-fit h-full">
 		{#each Array(8) as _, index}
 			<Button
 				disabled={true}
@@ -135,7 +139,12 @@
 				class="size-14 p-2 flex flex-col gap-1 bg-primary active:bg-secondary active:text-secondary-foreground text-primary-foreground"
 				variant="default"
 			>
-				<FunctionIcons size={18} selectedIcon={"Text"} text={false} orientation="vertical"/>
+				<FunctionIcons
+					size={18}
+					selectedIcon={"Text"}
+					text={false}
+					orientation="vertical"
+				/>
 				<p>F{index}</p>
 			</Button>
 		{/each}
