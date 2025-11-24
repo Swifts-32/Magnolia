@@ -7,7 +7,7 @@ import { error, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
-export const getLayouts = query(async () => {
+export const getLayouts = query(async () => {  
   const layouts = await db.select({
     id: LayoutTable.uuid,
     name: LayoutTable.name,

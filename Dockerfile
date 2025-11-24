@@ -2,9 +2,6 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Create data directory first
-# RUN mkdir -p /app/data/layouts
-
 # Copy package files first for better caching
 COPY package*.json ./
 
@@ -33,6 +30,9 @@ COPY --from=builder /app/server.js ./
 
 # Install production dependencies only
 RUN npm install --omit=dev
+
+# Add USB utilities for runtime inspection
+RUN apk add --no-cache udev usbutils
 
 # Create a volume for persistent data
 VOLUME /app/data

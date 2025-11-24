@@ -7,6 +7,7 @@
   import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 
   let { data }: PageProps = $props();
 
@@ -60,27 +61,29 @@
   </div>
 
   <!-- Delete Layout Dialog -->
-  <ConformationDialog title="Delete Layout">
-    {#snippet trigger()}
+  <AlertDialog.Root>
+    <AlertDialog.Trigger>
       <Button class="w-64" variant="destructive">
         <Trash2 />Delete Layout
       </Button>
-    {/snippet}
-    {#snippet primaryButton()}
-      <Button
-        variant="destructive"
-        class="w-32"
-        onclick={async () => {
-          await deleteLayout(data.id);
-          goto("/");
-        }}
-      >
-        Delete Layout</Button
-      >
-    {/snippet}
-    {#snippet secondaryButton()}
-      <Button variant="outline" class="w-32">Cancel</Button>
-    {/snippet}
-    <p>Are you sure you want to delete this layout?</p>
-  </ConformationDialog>
+    </AlertDialog.Trigger>
+    <AlertDialog.Content>
+      <AlertDialog.Header>
+        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+        <AlertDialog.Description>
+          This action cannot be undone. Are you sure you want to delete this
+          layout?
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+        <AlertDialog.Action
+          onclick={async () => {
+            await deleteLayout(data.id);
+            goto("/");
+          }}>Delete Layout</AlertDialog.Action
+        >
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Root>
 </div>
