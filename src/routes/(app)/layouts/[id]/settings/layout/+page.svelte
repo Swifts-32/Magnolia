@@ -4,7 +4,6 @@
   import Label from "$lib/components/ui/label/label.svelte";
   import { Trash2 } from "lucide-svelte";
   import { deleteLayout } from "../../../layouts.remote";
-  import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";

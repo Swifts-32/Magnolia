@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import { LayoutClient } from "$lib/client/LayoutClient.svelte";
   import type { Snippet } from "svelte";
   import { createLayout } from "../../../routes/(app)/layouts/layouts.remote";
   import { Button } from "../ui/button";
@@ -21,26 +20,31 @@
     interactOutsideBehavior={"ignore"}
   >
     <Dialog.Header>
-      <Dialog.Title>Create Scene</Dialog.Title>
+      <Dialog.Title>Create Layout</Dialog.Title>
     </Dialog.Header>
 
-    <form {...createLayout}>
+    <form {...createLayout} oninput={() => createLayout.validate()}>
       <!-- Layout Name -->
       <label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
         <p>Layout Name</p>
-        <input
-          class="border border-gray-300 col-span-3 rounded-md p-2 w-full"
-          type="text"
-          name="name"
-          id="name"
-          placeholder="New Layout"
-          required
-        />
+        <div class="col-span-3">
+          <input
+            class="border rounded-md p-2 w-full {createLayout.fields.issues()
+              ? 'border-red-600 focus:border-red-600'
+              : 'border-gray-300'}"
+            type="text"
+            id="name"
+            {...createLayout.fields.name.as("text")}
+          />
+          {#each createLayout.fields.name.issues() as issue}
+            <p class="text-xs text-red-600">{issue.message}</p>
+          {/each}
+        </div>
       </label>
 
       <Dialog.Footer>
         <Dialog.Close>
-          <Button type="" variant="outline" class="w-32">Cancel</Button>
+          <Button type="reset" variant="outline" class="w-32">Cancel</Button>
         </Dialog.Close>
         <Button type="submit" class="w-32">Create</Button>
       </Dialog.Footer>

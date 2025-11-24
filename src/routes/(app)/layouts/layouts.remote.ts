@@ -7,7 +7,7 @@ import { error, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
-export const getLayouts = query(async () => {  
+export const getLayouts = query(async () => {
   const layouts = await db.select({
     id: LayoutTable.uuid,
     name: LayoutTable.name,
@@ -27,27 +27,22 @@ export const getLayout = query(z.uuid(), async (id) => {
   return layouts[0];
 });
 
-export const createLayout = form(async (data: FormData) => {
-  const layoutSchema = z.object({
+export const createLayout = form(
+  z.object({
     name: z.string().trim().min(1, "Name is required"),
+  }),
+  async ({ name }) => {
+    const layouts = await db.insert(LayoutTable).values({
+      name,
+      position: 0,
+    }).returning();
+
+    const layout = layouts[0];
+    LayoutServerHandler.addNewLayout(layout.name, layout.uuid as LayoutUUID, layout.position);
+
+    await getLayouts().refresh();
+    redirect(303, `/layouts/${layout.uuid}`);
   });
-  const layoutData = layoutSchema.safeParse(Object.fromEntries(data));
-
-  if (!layoutData.success) {
-    return error(400, layoutData.error.message);
-  }
-
-  const layouts = await db.insert(LayoutTable).values({
-    name: layoutData.data.name,
-    position: 0,
-  }).returning();
-
-  const layout = layouts[0];
-  LayoutServerHandler.addNewLayout(layout.name, layout.uuid as LayoutUUID, layout.position);
-
-  await getLayouts().refresh();
-  redirect(303, `/layouts/${layout.uuid}`);
-});
 
 export const deleteLayout = command(z.uuid(), async (layoutId) => {
   const res = await db.delete(LayoutTable).where(eq(LayoutTable.uuid, layoutId)).returning();
