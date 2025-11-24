@@ -40,51 +40,40 @@ export const deleteConnection = command(z.uuid(), async (connectionId) => {
   await getConnections(connection.layoutUuid).refresh();
 });
 
-export const editConnection = form(async (data: FormData) => {
-  const connectionSchema = z.object({
+export const editConnection = form(
+  z.object({
     uuid: z.uuid(),
     name: z.string().trim().max(255).min(1),
-    layoutUuid: uuid(),
+    layoutId: uuid(),
     protocol: ConnectionProtocol,
     hardware: ConnectionType,
+  }),
+  async ({ uuid, name, layoutId, protocol, hardware }) => {
+    await db.update(ConnectionTable).set({
+      name: name,
+      protocol: protocol,
+      hardware: hardware,
+    }).where(eq(ConnectionTable.uuid, uuid));
+
+    await getConnections(layoutId).refresh();
   });
 
-  const connectionData = connectionSchema.safeParse(Object.fromEntries(data));
-
-  if (!connectionData.success) {
-    return error(400, z.prettifyError(connectionData.error));
-  }
-
-  await db.update(ConnectionTable).set({
-    name: connectionData.data.name,
-    protocol: connectionData.data.protocol,
-    hardware: connectionData.data.hardware,
-  }).where(eq(ConnectionTable.uuid, connectionData.data.uuid));
-
-  await getConnections(connectionData.data.layoutUuid).refresh();
-});
-
-export const createConnection = form(async (data: FormData) => {
-  const connectionSchema = z.object({
+export const createConnection = form(
+  z.object({
     name: z.string().trim().max(255).min(1),
-    layoutUuid: uuid(),
+    layoutId: z.uuid(),
     protocol: ConnectionProtocol,
     hardware: ConnectionType,
+  }),
+  async ({ name, layoutId, hardware, protocol }) => {
+
+    await db.insert(ConnectionTable).values({
+      uuid: crypto.randomUUID(),
+      layoutUuid: layoutId,
+      name,
+      protocol,
+      hardware,
+    });
+
+    await getConnections(layoutId).refresh();
   });
-
-  const connectionData = connectionSchema.safeParse(Object.fromEntries(data));
-
-  if (!connectionData.success) {
-    return error(400, z.prettifyError(connectionData.error));
-  }
-
-  await db.insert(ConnectionTable).values({
-    uuid: crypto.randomUUID(),
-    layoutUuid: connectionData.data.layoutUuid,
-    name: connectionData.data.name,
-    protocol: connectionData.data.protocol,
-    hardware: connectionData.data.hardware,
-  });
-
-  await getConnections(connectionData.data.layoutUuid).refresh();
-});

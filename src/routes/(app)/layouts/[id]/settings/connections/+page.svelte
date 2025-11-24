@@ -13,17 +13,18 @@
 
   let { data }: PageProps = $props();
   let selConnection: Connection | undefined = $state();
-
-  let isAddConnectionDialogOpen = $state(false);
 </script>
 
-<EditConnectionDialog bind:connection={selConnection} />
-<AddConnectionDialog layoutId={data.id} bind:open={isAddConnectionDialogOpen} />
+<!-- <EditConnectionDialog bind:connection={selConnection} /> -->
+<!-- <AddConnectionDialog layoutId={data.id} bind:open={isAddConnectionDialogOpen} /> -->
 
 <!-- Add Connection Button -->
-<Fab label="Add Connection" onclick={() => (isAddConnectionDialogOpen = true)}>
-  <Plus class="size-8" />
-</Fab>
+<AddConnectionDialog layoutId={data.id}>
+  <Fab label="Add Connection">
+    <Plus class="size-8" />
+  </Fab>
+</AddConnectionDialog>
+
 <div class="m-4">
   <h1 class="text-4xl my-10">Connections</h1>
 

@@ -19,7 +19,7 @@
     {
       name: "Trains",
       link: `/layouts/${page.params.id}/settings/trains`,
-    }
+    },
   ];
 </script>
 
@@ -38,5 +38,6 @@
       {/each}
     </div>
   </div>
+
   {@render children()}
 </div>

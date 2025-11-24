@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Button from "$lib/components/ui/button/button.svelte";
-  import Input from "$lib/components/ui/input/input.svelte";
-  import Label from "$lib/components/ui/label/label.svelte";
   import { Trash2 } from "lucide-svelte";
   import { deleteLayout } from "../../../layouts.remote";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { Button } from "$lib/components/ui/button";
+  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$lib/components/ui/input";
 
   let { data }: PageProps = $props();
 
@@ -74,6 +74,7 @@
           layout?
         </AlertDialog.Description>
       </AlertDialog.Header>
+
       <AlertDialog.Footer>
         <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
         <AlertDialog.Action
