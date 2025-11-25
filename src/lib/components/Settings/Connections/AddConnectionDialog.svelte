@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import { createConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
   import { toast } from "svelte-sonner";
   import type { Snippet } from "svelte";
   import { Button } from "$lib/components/ui/button";
@@ -12,6 +11,7 @@
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
+  import { createConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
 
   interface Props {
     layoutId: string;
@@ -34,11 +34,7 @@
     </Dialog.Header>
 
     <form
-      {...createConnection.enhance(async ({ form, submit }) => {
-        createConnection.fields.layoutId.set(layoutId);
-
-        console.log(createConnection.fields.value())
-
+      {...createConnection.enhance(async ({ form, data, submit }) => {
         try {
           await submit();
           form.reset();
@@ -54,6 +50,8 @@
       id="add-connection-form"
     >
       <div class="flex-col flex gap-2">
+        <input {...createConnection.fields.layoutId.as("hidden", layoutId)} />
+
         <!-- Connection Name -->
         <div class="grid grid-cols-4 items-center gap-4">
           <Label for="name" class="text-right">Name</Label>

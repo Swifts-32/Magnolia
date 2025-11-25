@@ -24,53 +24,47 @@ export const getTrain = query(z.uuid(), async (trainId) => {
   return await getTrainFromDb(trainId);
 });
 
-export const createTrain = form(async (data: FormData) => {
-  const trainSchema = z.object({
-    layoutUuid: z.uuid(),
-    address: z.string().trim().min(1),
-    name: z.string().trim().min(1).max(255),
-    comment: z.string().trim().min(1).max(255),
-    connectionId: z.uuid(),
-  });
-  const trainData = trainSchema.safeParse(Object.fromEntries(data));
-  if (!trainData.success) error(400, z.prettifyError(trainData.error));
+export const createTrain = form(z.object({
+  layoutId: z.uuid(),
+  address: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(255),
+  comment: z.string().trim().min(1).max(255),
+  connectionId: z.uuid(),
+}), async ({ name, address, comment, connectionId, layoutId }) => {
 
   await db.insert(TrainTable).values({
-    name: trainData.data.name,
-    comment: trainData.data.comment,
-    layoutUuid: trainData.data.layoutUuid,
-    address: trainData.data.address,
-    connectionUuid: trainData.data.connectionId,
+    name,
+    comment,
+    layoutUuid: layoutId,
+    address,
+    connectionUuid: connectionId,
   });
 
 
-  await getTrains(trainData.data.layoutUuid).refresh();
+  await getTrains(layoutId).refresh();
 });
 
-export const editTrain = form(async (data: FormData) => {
-  const trainSchema = z.object({
-    layoutUuid: z.uuid(),
-    uuid: z.uuid(),
-    address: z.string().trim().min(1),
-    name: z.string().trim().min(1).max(255),
-    comment: z.string().trim().min(1).max(255),
-    connectionId: z.uuid(),
+export const editTrain = form(z.object({
+  layoutId: z.uuid(),
+  uuid: z.uuid(),
+  address: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(255),
+  comment: z.string().trim().min(1).max(255),
+  connectionId: z.uuid().optional(),
+}),
+  async ({ address, comment, connectionId, layoutId, name, uuid }) => {
+    await db.update(TrainTable).set({
+      name,
+      comment,
+      layoutUuid: layoutId,
+      uuid: crypto.randomUUID(),
+      address,
+      connectionUuid: connectionId,
+    }).where(eq(TrainTable.uuid, uuid));
+
+
+    await getTrains(layoutId).refresh();
   });
-  const trainData = trainSchema.safeParse(Object.fromEntries(data));
-
-  if (!trainData.success) error(400, z.prettifyError(trainData.error));
-
-  await db.update(TrainTable).set({
-    name: trainData.data.name,
-    comment: trainData.data.comment,
-    layoutUuid: trainData.data.layoutUuid,
-    uuid: crypto.randomUUID(),
-    address: trainData.data.address,
-  }).where(eq(TrainTable.uuid, trainData.data.uuid));
-
-
-  await getTrains(trainData.data.layoutUuid).refresh();
-});
 
 // Delete train using the trainId
 export const deleteTrain = command(z.uuid(), async (trainId) => {
@@ -107,7 +101,7 @@ export const setTrainMotion = command(trainMotionSchema, async (data) => {
 
 export const trainEmergencyStop = command(z.uuid(), async (trainId) => {
 
-// TODO Perform emergency stop
+  // TODO Perform emergency stop
   const train = await getTrainFromDb(trainId);
 
   // TODO Send to Connection and validate user is allowed to control

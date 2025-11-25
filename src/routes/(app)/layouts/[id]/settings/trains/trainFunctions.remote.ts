@@ -18,7 +18,13 @@ async function getTrainFunctionsFromDb(trainId: string) {
 }
 
 export const getTrainFunctions = query(z.uuid(), async (trainId) => {
-  return await getTrainFunctionsFromDb(trainId);
+
+  const functions = await getTrainFunctionsFromDb(trainId);
+
+  return functions.map(fn => ({
+    ...fn,
+    id: fn.functValue, // add id property equal to functValue
+  }));
 });
 
 export const getTrainFunction = query(trainFunctionSchema, async (data) => {

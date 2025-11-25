@@ -2,7 +2,7 @@ import { command, form, query } from "$app/server";
 import { ConnectionProtocol, ConnectionType } from "$lib/client/Protocols/protocols";
 import { db } from "$lib/server/db";
 import { ConnectionProtocolEnum, ConnectionTable, ConnectionTypeEnum, type Connection } from "$lib/server/db/schema/connection";
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { string, uuid, z } from "zod/v4";
 
@@ -20,7 +20,7 @@ export const getConnection = query(z.uuid().nullable(), async (connectionId) => 
   return await getConnectionFromDb(connectionId);
 });
 
-// Get connections for a specific layout
+// Get connections for a specific layoutl
 export const getConnections = query(z.uuid(), async (layoutId) => {
   const connections: Connection[] = await db.select().from(ConnectionTable).where(eq(ConnectionTable.layoutUuid, layoutId));
 
@@ -58,22 +58,31 @@ export const editConnection = form(
     await getConnections(layoutId).refresh();
   });
 
+
+
 export const createConnection = form(
   z.object({
     name: z.string().trim().max(255).min(1),
-    layoutId: z.uuid(),
+    layoutId: z.string(),
     protocol: ConnectionProtocol,
     hardware: ConnectionType,
   }),
   async ({ name, layoutId, hardware, protocol }) => {
 
-    await db.insert(ConnectionTable).values({
-      uuid: crypto.randomUUID(),
-      layoutUuid: layoutId,
-      name,
-      protocol,
-      hardware,
-    });
+    try {
+
+      await db.insert(ConnectionTable).values({
+        uuid: crypto.randomUUID(),
+        layoutUuid: layoutId,
+        name,
+        protocol,
+        hardware,
+      });
+    }
+    catch (e) {
+      error(500, "Failed to insert");
+      console.error(e, layoutId, name);
+    }
 
     await getConnections(layoutId).refresh();
   });
