@@ -1,19 +1,14 @@
 <script lang="ts">
-	import type { TrainClientFunction } from "$lib/client/Trains/Functions/Function.svelte";
 	import type { CarouselAPI } from "$lib/components/ui/carousel/context";
 	import * as Carousel from "$lib/components/ui/carousel/index";
-	import { Plus } from "lucide-svelte";
 	import FunctionButton from "./FunctionButton.svelte";
-	import { goto } from "$app/navigation";
-	import { page } from "$app/state";
 	import { getTrainFunctions } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
 	import type { TrainFunction } from "$lib/server/db/schema/trains";
-	import Button from "$lib/components/ui/button/button.svelte";
-	import FunctionIcons from "$lib/components/Settings/Trains/Functions/FunctionIcons.svelte";
+	import EmptyFunctionCarousel from "./EmptyFunctionCarousel.svelte";
 
 	interface Props {
 		disabled?: boolean;
-		trainId: string | undefined;
+		trainId: string;
 	}
 
 	let { disabled, trainId }: Props = $props();
@@ -54,38 +49,36 @@
 	);
 </script>
 
-<!-- {#if chunkedFunctions.length > 1} -->
-{#if trainId}
-	{#await chunkedFunctions2 then chunkedFunctions}
-	<div class="inline-block">
-		<Carousel.Root
-			class="w-fit h-full overflow-hidden"
-			opts={{
-				loop: true,
-				align: "start",
-				active: chunkedFunctions.length > 1,
-			}}
-			setApi={(emblaApi: CarouselAPI) => (api = emblaApi)}
-		>
-			<Carousel.Content class="border border-red-300 flex w-fit">
-				{#each chunkedFunctions as chunk}
-					<Carousel.Item class="!w-auto	 flex-shrink-0">
-						<div
-							class="grid grid-cols-2  auto-rows-min gap-2 w-fit"
-						>
-							{#each chunk as trainFunction}
-								<FunctionButton
-									{trainId}
-									functValue={trainFunction.functValue}
-									{disabled}
-								/>
-							{/each}
-						</div>
-					</Carousel.Item>
-				{/each}
-			</Carousel.Content>
+{#await chunkedFunctions2}
+	<EmptyFunctionCarousel />
+{:then chunkedFunctions}
+	<Carousel.Root
+		class="h-full w-30 flex flex-col justify-between"
+		opts={{
+			loop: true,
+			align: "start",
+			active: chunkedFunctions.length > 1,
+		}}
+		setApi={(emblaApi) => (api = emblaApi)}
+	>
+		<Carousel.Content class="borderflex w-fit">
+			{#each chunkedFunctions as chunk}
+				<Carousel.Item class="w-auto!	shrink-0">
+					<div class="grid grid-cols-2 auto-rows-min gap-2 w-fit">
+						{#each chunk as trainFunction}
+							<FunctionButton
+								{trainId}
+								functValue={trainFunction.functValue}
+								{disabled}
+							/>
+						{/each}
+					</div>
+				</Carousel.Item>
+			{/each}
+		</Carousel.Content>
 
-			<!-- Dots -->
+		<!-- Dots -->
+		{#if chunkedFunctions.length > 1}
 			<div class="flex justify-center m-1 h-5 w-full items-center">
 				{#each Array(count) as _, dot}
 					<button
@@ -96,13 +89,13 @@
 							? 'border-0 size-4 bg-secondary disabled:bg-secondary-disabled cursor-default'
 							: 'border-2 size-3 bg-transparent cursor-pointer disabled:cursor-default'}"
 						onclick={() => api?.scrollTo(dot)}
-						aria-label="Dot"
+						aria-label="Function page {dot}"
 					></button>
 				{/each}
 			</div>
-		</Carousel.Root>
-		</div>
-		<!-- {:else if chunkedFunctions.length == 1 && chunkedFunctions[0].length > 0}
+		{/if}
+	</Carousel.Root>
+	<!-- {:else if chunkedFunctions.length == 1 && chunkedFunctions[0].length > 0}
 		<div class="w-32 max-w-fit h-full">
 			{#each chunkedFunctions as chunk, chunkIndex}
 				<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
@@ -129,24 +122,4 @@
 			<p>Add a Function</p>
 		</button>
 	{/if} -->
-	{/await}
-{:else}
-	<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-fit h-full">
-		{#each Array(8) as _, index}
-			<Button
-				disabled={true}
-				size="icon"
-				class="size-14 p-2 flex flex-col gap-1 bg-primary active:bg-secondary active:text-secondary-foreground text-primary-foreground"
-				variant="default"
-			>
-				<FunctionIcons
-					size={18}
-					selectedIcon={"Text"}
-					text={false}
-					orientation="vertical"
-				/>
-				<p>F{index}</p>
-			</Button>
-		{/each}
-	</div>
-{/if}
+{/await}

@@ -1,15 +1,30 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button/button.svelte";
   import Throttle from "$lib/components/Throttle/throttle.svelte";
-  import { getLayoutClientState } from "$lib/client/LayoutClient.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import { Plus } from "lucide-svelte";
-    import type { PageProps } from "../$types";
+  import type { PageProps } from "../$types";
+  import { SvelteMap } from "svelte/reactivity";
 
-  let {data}: PageProps = $props();
+  let { data }: PageProps = $props();
 
-  // const layout = getLayoutClientState();
-  let noOfThrottles: number = $state(1);
+  interface Throttle {
+    id: string;
+  }
+
+  let throttles: SvelteMap<string, Throttle> = $state(new SvelteMap());
+
+  function deleteThrottle(id: string) {
+    throttles.delete(id);
+  }
+
+  function createThrottle() {
+    const id = crypto.randomUUID();
+
+    throttles.set(id, {
+      id,
+    });
+  }
 </script>
 
 <svelte:head>
@@ -18,24 +33,15 @@
 
 <main class="m-5">
   <!-- Add Throttle -->
-  <Fab
-    disabled={noOfThrottles >= 10}
-    onclick={() => (noOfThrottles += 1)}
-    label="Add Throttle"
-  >
-    <Plus class="size-8" />
-  </Fab>
-
-  
-  <Button
-    disabled={noOfThrottles === 0}
-    onclick={() => noOfThrottles > 0 && (noOfThrottles -= 1)}
-    >Delete Throttle</Button
-  >
+  <button onclick={createThrottle}>
+    <Fab disabled={throttles.size >= 10} label="Add Throttle">
+      <Plus class="size-8" />
+    </Fab>
+  </button>
 
   <div class="flex flex-row flex-wrap justify-center gap-4">
-    {#each Array(noOfThrottles) as _}
-      <Throttle layoutId={data.id} />
+    {#each throttles as [id]}
+      <Throttle layoutId={data.id} throttleId={id} {deleteThrottle} />
     {/each}
   </div>
 </main>

@@ -27,6 +27,17 @@ export const getTrainFunctions = query(z.uuid(), async (trainId) => {
   }));
 });
 
+export const setTrainFunctionPosition = command(trainFunctionSchema.extend({
+  position: z.number(),
+}), async ({ trainId, value, position }) => {
+
+  await db.update(TrainFunctionTable).set({
+    position
+  }).where(and(eq(TrainFunctionTable.functValue, value), eq(TrainFunctionTable.trainUuid, trainId)))
+
+  getTrainFunctions(trainId).refresh();
+});
+
 export const getTrainFunction = query(trainFunctionSchema, async (data) => {
   const trains: TrainFunction[] = await db.select().from(TrainFunctionTable)
     .where(and(eq(TrainFunctionTable.functValue, data.value), eq(TrainFunctionTable.trainUuid, data.trainId)));

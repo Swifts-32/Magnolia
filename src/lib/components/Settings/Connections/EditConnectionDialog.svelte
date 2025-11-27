@@ -14,10 +14,12 @@
   import { Input } from "$lib/components/ui/input";
   import {
     connectionProtocolList,
+    ConnectionType,
     connectionTypeList,
     getConnectionTypeName,
   } from "$lib/client/Protocols/protocols";
   import { Separator } from "$lib/components/ui/separator";
+  import SerialConnection from "./Serial/SerialConnection.svelte";
 
   interface Props {
     connection: Connection;
@@ -33,7 +35,7 @@
   // Reset the form values
   function onOpenChange() {
     name.set(connection.name);
-    hardware.set(connection.hardware);
+    // hardware.set(connection.hardware);
     protocol.set(connection.protocol);
   }
 </script>
@@ -61,78 +63,94 @@
       })}
       oninput={() => editConnForm.validate()}
       id="edit-connection-form"
+      class="flex-col flex gap-2"
     >
-      <div class="flex-col flex gap-2">
-        <input {...layoutId.as("hidden", connection.layoutUuid)} />
-        <input {...uuid.as("hidden", connection.uuid)} />
+      <input {...layoutId.as("hidden", connection.layoutUuid)} />
+      <input {...uuid.as("hidden", connection.uuid)} />
 
-        <!-- Connection Name -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="name" class="text-right">Name</Label>
-          <div class="col-span-3">
-            <Input id="name" {...name.as("text")} />
-            {#each name.issues() as issue}
-              <p class="text-s text-red-600">{issue.message}</p>
-            {/each}
-          </div>
-        </div>
-
-        <!-- Connection Protocol e.g. DCC Ex, LCC, etc. -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="protocol" class="text-right">Protocol</Label>
-          <div class="col-span-3">
-            <select
-              id="protocol"
-              {...protocol.as("select")}
-              class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {#each connectionProtocolList as protocolName}
-                <option
-                  value={protocolName}
-                  class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  {protocolName}
-                </option>
-              {/each}
-            </select>
-            {#each protocol.issues() as issue}
-              <p class="text-s text-red-600">{issue.message}</p>
-            {/each}
-          </div>
-        </div>
-
-        <Separator />
-
-        <!-- Connection Type e.g. Serial, Bluetooth, etc. -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="hardware" class="text-right">Hardware</Label>
-          <div class="col-span-3">
-            <select
-              id="hardware"
-              {...hardware.as("select")}
-              class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {#each connectionTypeList as connType}
-                <option
-                  value={connType}
-                  class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  {getConnectionTypeName(connType)}
-                </option>
-              {/each}
-            </select>
-            {#each hardware.issues() as issue}
-              <p class="text-s text-red-600">{issue.message}</p>
-            {/each}
-          </div>
+      <!-- Connection Name -->
+      <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="name" class="text-right">Name</Label>
+        <div class="col-span-3">
+          <Input id="name" {...name.as("text")} />
+          {#each name.issues() as issue}
+            <p class="text-s text-red-600">{issue.message}</p>
+          {/each}
         </div>
       </div>
+
+      <!-- Connection Protocol e.g. DCC Ex, LCC, etc. -->
+      <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="protocol" class="text-right">Protocol</Label>
+        <div class="col-span-3">
+          <select
+            id="protocol"
+            {...protocol.as("select")}
+            class="flex h-10 w-full items-center justify-between rounded-md border border-input
+                       bg-background px-3 py-2 text-sm ring-offset-background
+                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+                       disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {#each connectionProtocolList as protocolName}
+              <option
+                value={protocolName}
+                class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                {protocolName}
+              </option>
+            {/each}
+          </select>
+          {#each protocol.issues() as issue}
+            <p class="text-s text-red-600">{issue.message}</p>
+          {/each}
+        </div>
+      </div>
+
+      <Separator />
+
+      <!-- Connection Type e.g. Serial, Bluetooth, etc. -->
+      <!-- <div class="grid grid-cols-4 items-center gap-4">
+        <Label for="hardware" class="text-right">Hardware</Label>
+        <div class="col-span-3">
+          <select
+            id="hardware"
+            {...hardware.as("select")}
+            class="flex h-10 w-full items-center justify-between rounded-md border border-input
+                       bg-background px-3 py-2 text-sm ring-offset-background
+                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+                       disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {#each connectionTypeList as connType}
+              <option
+                value={connType}
+                class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                {getConnectionTypeName(connType)}
+              </option>
+            {/each}
+          </select>
+          {#each hardware.issues() as issue}
+            <p class="text-s text-red-600">{issue.message}</p>
+          {/each}
+        </div>
+      </div> -->
+
+      {#if editConnForm.fields.hardware.value().type === "Serial"}
+        <SerialConnection
+          bind:serialPath={
+            () => {
+              const a = editConnForm.fields.hardware.value();
+
+              if (a.type === "Serial") {
+                return a.path;
+              }
+            },
+            (v) => {
+              editConnForm.fields.hardware.
+            }
+          }
+        />
+      {/if}
     </form>
 
     <!-- Delete Connection Dialog -->

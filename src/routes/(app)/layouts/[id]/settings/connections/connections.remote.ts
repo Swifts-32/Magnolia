@@ -40,25 +40,47 @@ export const deleteConnection = command(z.uuid(), async (connectionId) => {
   await getConnections(connection.layoutUuid).refresh();
 });
 
+
+const BaseHardware = z.object({
+  type: z.string(),
+});
+
+const SerialSchema = BaseHardware.extend({
+  type: z.literal("Serial"),
+  baudRate: z.number(),
+  path: z.string().trim().min(1),
+});
+const WifiSchema = BaseHardware.extend({
+  type: z.literal("Wifi"),
+  address: z.number(),
+});
+const EmulatorSchema = BaseHardware.extend({
+  type: z.literal("Emulator"),
+});
+
+const HardwareSchema = z.discriminatedUnion("type", [
+  SerialSchema,
+  WifiSchema,
+  EmulatorSchema
+]);
+
 export const editConnection = form(
   z.object({
     uuid: z.uuid(),
     name: z.string().trim().max(255).min(1),
     layoutId: uuid(),
     protocol: ConnectionProtocol,
-    hardware: ConnectionType,
+    hardware: HardwareSchema,
   }),
   async ({ uuid, name, layoutId, protocol, hardware }) => {
-    await db.update(ConnectionTable).set({
-      name: name,
-      protocol: protocol,
-      hardware: hardware,
-    }).where(eq(ConnectionTable.uuid, uuid));
+    // await db.update(ConnectionTable).set({
+    //   name: name,
+    //   protocol: protocol,
+    //   hardware: hardware,
+    // }).where(eq(ConnectionTable.uuid, uuid));
 
     await getConnections(layoutId).refresh();
   });
-
-
 
 export const createConnection = form(
   z.object({
@@ -81,7 +103,6 @@ export const createConnection = form(
     }
     catch (e) {
       error(500, "Failed to insert");
-      console.error(e, layoutId, name);
     }
 
     await getConnections(layoutId).refresh();

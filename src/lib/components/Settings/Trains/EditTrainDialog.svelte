@@ -1,4 +1,6 @@
 <script lang="ts">
+  import FunctionTable from "./Functions/FunctionTable.svelte";
+
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
@@ -17,7 +19,7 @@
     createDefaultTrainFunction,
     getTrainFunctions,
   } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
-  import { dragHandle, dragHandleZone } from "svelte-dnd-action";
+  import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
 
@@ -39,15 +41,6 @@
     comment.set(train.comment);
     connectionId.set(train.connectionUuid as string);
     name.set(train.name);
-  }
-
-  const flipDurationMs = 300;
-  let functs = $derived(await getTrainFunctions(train.uuid));
-  function handleDndConsider(e) {
-    functs = e.detail.items;
-  }
-  function handleDndFinalize(e) {
-    functs = e.detail.items;
   }
 </script>
 
@@ -139,7 +132,7 @@
 
       <!-- Add Function Button -->
       <Button
-        class="w-full my-2"
+        class="w-full mt-2"
         variant="outline"
         onclick={async () =>
           train && (await createDefaultTrainFunction(train.uuid))}
@@ -149,88 +142,9 @@
 
       <!-- TODO Add ability to reorder functions and then update their position -->
       <div
-        class="relative flex flex-col w-full h-100 overflow-auto text-card-foreground bg-card shadow-md rounded-xl bg-clip-border"
+        class="w-full h-fit max-h-100 overflow-y-auto"
       >
-        <table class="w-full text-left table-auto min-w-max">
-          <thead>
-            <tr>
-              <th class="p-4 border-b">
-                <p
-                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-                ></p>
-              </th>
-              <th class="p-4 border-b">
-                <p
-                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-                >
-                  Value
-                </p>
-              </th>
-              <th class="p-4 border-b">
-                <p
-                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-                >
-                  Name
-                </p>
-              </th>
-              <th class="p-4 border-b">
-                <p
-                  class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-                ></p>
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            use:dragHandleZone={{
-              items: functs,
-              flipDurationMs: flipDurationMs,
-            }}
-            onconsider={handleDndConsider}
-            onfinalize={handleDndFinalize}
-          >
-            {#each functs as funct (funct.id)}
-              <tr
-                animate:flip={{ duration: 200 }}
-                class="hover:bg-secondary hover:text-secondary-foreground"
-              >
-                <td
-                  class="p-4 border-b border-blue-gray-50 flex items-center justify-center cursor-grab"
-                  use:dragHandle
-                  aria-label="drag-handle for {funct.id}"
-                >
-                  <p
-                    class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-                  >
-                    <GripVertical class="w-5 h-5" />
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <p
-                    class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-                  >
-                    {funct.functValue}
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <p
-                    class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-                  >
-                    {funct.name}
-                  </p>
-                </td>
-                <td class="p-4 border-b border-blue-gray-50">
-                  <FunctionViewer {funct} trainId={train.uuid}>
-                    <p
-                      class="block cursor-pointer font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
-                    >
-                      Edit
-                    </p>
-                  </FunctionViewer>
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+        <FunctionTable trainId={train.uuid} />
       </div>
     </form>
 
