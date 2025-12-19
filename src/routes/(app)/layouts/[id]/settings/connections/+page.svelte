@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    getConnectionTypeName,
+    getConnectionHardwareName,
     getProtocolName,
   } from "$lib/client/Protocols/protocols";
   import { getConnections } from "./connections.remote";
@@ -35,7 +35,7 @@
               Protocol: {getProtocolName(connection.protocol)}
             </p>
             <p class="text-sm text-gray-400">
-              Type: {getConnectionTypeName(connection.hardware)}
+              Type: {getConnectionHardwareName(connection.hardware.type)}
             </p>
           </div>
         </div>

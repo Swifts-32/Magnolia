@@ -6,12 +6,13 @@
   import {
     connectionProtocolList,
     connectionTypeList,
-    getConnectionTypeName,
+    getConnectionHardwareName,
   } from "$lib/client/Protocols/protocols";
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import { createConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  import SerialConnection from "./Serial/SerialConnection.svelte";
 
   interface Props {
     layoutId: string;
@@ -102,7 +103,7 @@
           <div class="col-span-3">
             <select
               id="hardware"
-              {...hardware.as("select")}
+              {...hardware.type.as("select")}
               class="flex h-10 w-full items-center justify-between rounded-md border border-input
                        bg-background px-3 py-2 text-sm ring-offset-background
                        focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
@@ -113,7 +114,7 @@
                   value={connType}
                   class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
                 >
-                  {getConnectionTypeName(connType)}
+                  {getConnectionHardwareName(connType)}
                 </option>
               {/each}
             </select>
@@ -123,10 +124,13 @@
           </div>
         </div>
 
-        <!-- {#if connection.hardware === "Serial"}
-    <p>Serial editor goes here</p>
-    <SerialConnection bind:serialPath bind:serialBaudRate />
-  {/if} -->
+        {#if hardware.type.value() === "Serial"}
+          <SerialConnection path={hardware.path} baudRate={hardware.baudRate} />
+        {:else if hardware.type.value() === "Wifi"}
+          <p>Wifi editor goes here</p>
+        {:else if hardware.type.value() === "Emulator"}
+          <p>Emulator</p>
+        {/if}
         <Separator />
       </div>
     </form>

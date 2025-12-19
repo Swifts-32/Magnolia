@@ -7,13 +7,11 @@ const require = createRequire(import.meta.url);
 const { autoDetect } = require('@serialport/bindings-cpp');
 
 export class SerialConnection implements HardwareClass {
-
-
 	private serialPort: SerialPort | null = null;
 
 	public path: string;
 	public baudRate: number;
-	public connType: ConnectionType.Serial = ConnectionType.Serial;
+	public connType: ConnectionType = "Serial";
 
 	private dataReceived: ((data: string) => void) | null = null;
 	public onDataReceived(callback: (data: string) => void) {
@@ -29,8 +27,8 @@ export class SerialConnection implements HardwareClass {
 		this.baudRate = baudRate;
 	}
 
-	async connect(): Promise<string> {
-		return new Promise<string>((resolve, reject) => {
+	public async connect(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
 
 			this.serialPort = new SerialPort({
 				binding: autoDetect(),
@@ -44,11 +42,7 @@ export class SerialConnection implements HardwareClass {
 			this.serialPort.pipe(parser);
 
 			parser.on('data', (data) => {
-				console.log("Serial Rx: ", data);
-				if (this.dataReceived) {
-					console.log("Data received callback");
-					this.dataReceived(data as string);
-				}
+				if (this.dataReceived) this.dataReceived(data as string);
 			});
 
 			this.serialPort.open((err) => {
@@ -56,20 +50,20 @@ export class SerialConnection implements HardwareClass {
 					reject(`Failed to open port on ${this.path}: ${err.message}`);
 				}
 
-				resolve(`Successfully opened port on ${this.path}`);
+				resolve(true);
 			});
 		});
 	}
 
-	disconnect(): Promise<string> {
-		return new Promise<string>((resolve, reject) => {
+	public disconnect(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
 			if (this.serialPort) {
 				this.serialPort.close((err) => {
 					if (err) {
 						reject(err.message);
 					}
 
-					resolve(`Successfully closed port on ${this.path}`);
+					resolve(true);
 				});
 			}
 			else {
@@ -93,13 +87,5 @@ export class SerialConnection implements HardwareClass {
 			console.log("Port is not open. Connecting...")
 			this.connect();
 		}
-	}
-
-	toJson() {
-		return JSON.stringify({
-			path: this.path,
-			baudRate: this.baudRate,
-			connType: this.connType
-		});
 	}
 }

@@ -16,7 +16,7 @@
     connectionProtocolList,
     ConnectionType,
     connectionTypeList,
-    getConnectionTypeName,
+    getConnectionHardwareName,
   } from "$lib/client/Protocols/protocols";
   import { Separator } from "$lib/components/ui/separator";
   import SerialConnection from "./Serial/SerialConnection.svelte";
@@ -32,11 +32,17 @@
   const { name, uuid, hardware, layoutId, protocol } = editConnForm.fields;
   let open = $state(false);
 
+  let serialPath: string | undefined = $state();
+  let baudRate: number | undefined = $state();
+
   // Reset the form values
   function onOpenChange() {
     name.set(connection.name);
-    // hardware.set(connection.hardware);
+    hardware.set(connection.hardware);
     protocol.set(connection.protocol);
+
+    serialPath = hardware.path.value();
+    baudRate = hardware.baudRate.value();
   }
 </script>
 
@@ -109,12 +115,12 @@
       <Separator />
 
       <!-- Connection Type e.g. Serial, Bluetooth, etc. -->
-      <!-- <div class="grid grid-cols-4 items-center gap-4">
+      <div class="grid grid-cols-4 items-center gap-4">
         <Label for="hardware" class="text-right">Hardware</Label>
         <div class="col-span-3">
           <select
             id="hardware"
-            {...hardware.as("select")}
+            {...hardware.type.as("select")}
             class="flex h-10 w-full items-center justify-between rounded-md border border-input
                        bg-background px-3 py-2 text-sm ring-offset-background
                        focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
@@ -125,7 +131,7 @@
                 value={connType}
                 class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
               >
-                {getConnectionTypeName(connType)}
+                {getConnectionHardwareName(connType)}
               </option>
             {/each}
           </select>
@@ -133,23 +139,14 @@
             <p class="text-s text-red-600">{issue.message}</p>
           {/each}
         </div>
-      </div> -->
+      </div>
 
-      {#if editConnForm.fields.hardware.value().type === "Serial"}
-        <SerialConnection
-          bind:serialPath={
-            () => {
-              const a = editConnForm.fields.hardware.value();
-
-              if (a.type === "Serial") {
-                return a.path;
-              }
-            },
-            (v) => {
-              editConnForm.fields.hardware.
-            }
-          }
-        />
+      {#if hardware.type.value() === "Serial"}
+        <SerialConnection path={hardware.path} baudRate={hardware.baudRate} />
+      {:else if hardware.type.value() === "Wifi"}
+        <p>Wifi editor goes here</p>
+      {:else if hardware.type.value() === "Emulator"}
+        <p>Emulator</p>
       {/if}
     </form>
 
@@ -171,15 +168,14 @@
 
         <AlertDialog.Footer>
           <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-          <Dialog.Close>
-            <AlertDialog.Action
-              onclick={() => {
-                if (connection) {
-                  deleteConnection(connection.uuid);
-                }
-              }}>Delete Connection</AlertDialog.Action
-            >
-          </Dialog.Close>
+          <AlertDialog.Action
+            onclick={() => {
+              if (connection) {
+                deleteConnection(connection.uuid);
+                open = false;
+              }
+            }}>Delete Connection</AlertDialog.Action
+          >
         </AlertDialog.Footer>
       </AlertDialog.Content>
     </AlertDialog.Root>
