@@ -2,7 +2,7 @@
   import {
     getConnectionHardwareName,
     getProtocolName,
-  } from "$lib/client/Protocols/protocols";
+  } from "$lib/client/Connections/Protocols/protocols";
   import { getConnections } from "./connections.remote";
   import type { PageProps } from "./$types";
   import Fab from "$lib/components/FAB/Fab.svelte";

@@ -1,5 +1,5 @@
 import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import { ConnectionType } from "$lib/client/Protocols/protocols";
+import { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 import { EmulatorConnection } from "$lib/server/Connections/Hardware/Emulator/Emulator.server.js";
 import { SerialConnection } from "$lib/server/Connections/Hardware/Serial/SerialConnection.server.js";
 import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte.js";

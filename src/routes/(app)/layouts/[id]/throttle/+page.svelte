@@ -13,10 +13,7 @@
   }
 
   let throttles: SvelteMap<string, Throttle> = $state(new SvelteMap());
-
-  function deleteThrottle(id: string) {
-    throttles.delete(id);
-  }
+  createThrottle();
 
   function createThrottle() {
     const id = crypto.randomUUID();
@@ -28,7 +25,7 @@
 </script>
 
 <svelte:head>
-  <title>Throttle</title>
+  <title>{data.name} - Throttle</title>
 </svelte:head>
 
 <main class="m-5">
@@ -41,7 +38,11 @@
 
   <div class="flex flex-row flex-wrap justify-center gap-4">
     {#each throttles as [id]}
-      <Throttle layoutId={data.id} throttleId={id} {deleteThrottle} />
+      <Throttle
+        layoutId={data.id}
+        throttleId={id}
+        deleteThrottle={(i) => throttles.delete(i)}
+      />
     {/each}
   </div>
 </main>

@@ -1,7 +1,7 @@
 import { db } from "$lib/server/db";
 import { eq } from "drizzle-orm";
 import { ConnectionTable } from "$lib/server/db/schema/connection";
-import { getProtocolName } from "$lib/client/Protocols/protocols.js";
+import { getProtocolName } from "$lib/client/Connections/Protocols/protocols.js";
 
 export const GET = async ({ params }) => {
   const { id } = params;

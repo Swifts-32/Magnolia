@@ -17,7 +17,7 @@
     ConnectionType,
     connectionTypeList,
     getConnectionHardwareName,
-  } from "$lib/client/Protocols/protocols";
+  } from "$lib/client/Connections/Protocols/protocols";
   import { Separator } from "$lib/components/ui/separator";
   import SerialConnection from "./Serial/SerialConnection.svelte";
 

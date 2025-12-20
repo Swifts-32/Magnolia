@@ -1,4 +1,4 @@
-import type { ConnectionProtocol, ConnectionType } from "$lib/client/Protocols/protocols";
+import type { ConnectionProtocol, ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 
 export interface IProtocol {
   protocolType: ConnectionProtocol;

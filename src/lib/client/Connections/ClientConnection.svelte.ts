@@ -1,6 +1,6 @@
 import { toast } from "svelte-sonner";
 import type { ConnectionUUID, LayoutUUID } from "../LayoutClient.svelte";
-import { ConnectionProtocol, ConnectionType } from "../Protocols/protocols";
+import { ConnectionProtocol, ConnectionType } from "./Protocols/protocols";
 
 export class ClientConnection {
   public uuid: ConnectionUUID;

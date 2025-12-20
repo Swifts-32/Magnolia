@@ -7,7 +7,7 @@
     connectionProtocolList,
     connectionTypeList,
     getConnectionHardwareName,
-  } from "$lib/client/Protocols/protocols";
+  } from "$lib/client/Connections/Protocols/protocols";
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";

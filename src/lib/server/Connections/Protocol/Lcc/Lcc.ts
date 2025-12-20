@@ -1,4 +1,4 @@
-import type { ConnectionProtocol } from "$lib/client/Protocols/protocols";
+import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import type { IProtocol } from "../IProtocol";
 
 export class Lcc implements IProtocol {

@@ -1,5 +1,4 @@
 import { z } from "zod/v4";
-import type { ConnectionHardwareType } from "../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
 
 // Connection Protocol
 export const connectionProtocolList = ["DccEx", "Lcc"] as const;

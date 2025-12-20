@@ -1,6 +1,6 @@
 import type { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
 import type { TrainUuid } from "$lib/types/Trains/Train";
-import { ConnectionProtocol } from "$lib/client/Protocols/protocols";
+import { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import { layoutClientHandler } from "../../../../services/Layouts/LayoutClientHandler.svelte";
 
 export class TrainClientFunction {

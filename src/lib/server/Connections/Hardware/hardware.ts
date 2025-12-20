@@ -1,4 +1,4 @@
-import type { ConnectionType } from "$lib/client/Protocols/protocols";
+import type { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 
 export interface HardwareClass {
     connect: () => Promise<boolean>;

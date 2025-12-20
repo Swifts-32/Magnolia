@@ -4,7 +4,7 @@ import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import { getConnections, type ConnectionHardwareType } from "../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
 import type { HardwareClass } from "./Hardware/hardware";
-import type { ConnectionProtocol } from "$lib/client/Protocols/protocols";
+import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import type { IProtocol } from "./Protocol/IProtocol";
 import { DccEx } from "./Protocol/DccEx/DccEx";
 import { Lcc } from "./Protocol/Lcc/Lcc";
@@ -28,7 +28,7 @@ export class Connection {
 
     switch (protocol) {
       case "DccEx":
-        this.protocol = new DccEx();
+        this.protocol = new DccEx(this.id);
         break;
 
       case "Lcc":

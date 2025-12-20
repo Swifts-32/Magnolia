@@ -1,5 +1,5 @@
 import { command, form, query } from "$app/server";
-import { ConnectionProtocol, ConnectionType } from "$lib/client/Protocols/protocols";
+import { ConnectionProtocol, ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 import { App } from "$lib/server/App.server.svelte";
 import { getConnectionsFromDb } from "$lib/server/Connections/Connection.server";
 import { db } from "$lib/server/db";

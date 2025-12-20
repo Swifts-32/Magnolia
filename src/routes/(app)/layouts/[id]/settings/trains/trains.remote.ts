@@ -1,4 +1,6 @@
 import { command, form, query } from "$app/server";
+import { App } from "$lib/server/App.server.svelte";
+import { DccEx } from "$lib/server/Connections/Protocol/DccEx/DccEx";
 import { db } from "$lib/server/db";
 import { TrainTable, type Train } from "$lib/server/db/schema/trains";
 import { TrainDirection } from "$lib/types/Trains/Train";
@@ -86,30 +88,47 @@ const trainMotionSchema = z.object({
 
 export const setTrainMotion = command(trainMotionSchema, async (data) => {
 
-
-  const train = await getTrainFromDb(data.trainId);
-
-  // TODO Send to Connection and validate user is allowed to control
-
+  // TODO Validate user is allowed to control
   await db.update(TrainTable).set({
     speed: data.speed,
     direction: data.direction,
   }).where(eq(TrainTable.uuid, data.trainId));
 
+  const train = await getTrainFromDb(data.trainId);
+
+  const connection = await App.getConnection(train.connectionUuid ?? "");
+  if (!connection) error(500, "Set train motion failed: Connection not found");
+
+  if ((connection.protocol instanceof DccEx)) {
+    const dirBit = train.direction === "Forward" ? 1 : 0;
+    connection.write(`<t ${train.address} ${train.speed} ${dirBit}>`);
+  }
+  else {
+    error(500, `Set train motion failed: Protocol no yet implemented: ${connection.protocol?.protocolType}`);
+  }
+
   await getTrain(data.trainId).refresh();
 });
 
 export const trainEmergencyStop = command(z.uuid(), async (trainId) => {
-
-  // TODO Perform emergency stop
   const train = await getTrainFromDb(trainId);
 
-  // TODO Send to Connection and validate user is allowed to control
+  // TODO Validate user is allowed to control
 
   await db.update(TrainTable).set({
     speed: 0,
     direction: "Forward",
   }).where(eq(TrainTable.uuid, trainId));
+
+  const connection = await App.getConnection(train.connectionUuid ?? "");
+  if (!connection) error(500, "Emergency stop failed: Connection not found");
+
+  if ((connection.protocol instanceof DccEx)) {
+    connection.write(`<!>`);
+  }
+  else {
+    error(500, `Emergency stop failed: Protocol no yet implemented: ${connection.protocol?.protocolType}`);
+  }
 
   await getTrain(trainId).refresh();
 });

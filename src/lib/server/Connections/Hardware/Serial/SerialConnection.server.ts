@@ -1,6 +1,6 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 import type { HardwareClass } from "../hardware";
-import { ConnectionType } from '$lib/client/Protocols/protocols';
+import { ConnectionType } from '$lib/client/Connections/Protocols/protocols';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -84,8 +84,7 @@ export class SerialConnection implements HardwareClass {
 			});
 		}
 		else {
-			console.log("Port is not open. Connecting...")
-			this.connect();
+			console.log("Port is not open.")
 		}
 	}
 }
