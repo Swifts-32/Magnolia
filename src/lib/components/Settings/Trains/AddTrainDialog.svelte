@@ -2,14 +2,14 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
-  import { createTrain } from "../../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
+  import { createTrain } from "../../../client/Trains/trains.remote";
   import TrainFormContent from "./TrainFormContent.svelte";
   import type { Snippet } from "svelte";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
   import FunctionSelector from "./Functions/FunctionSelector.svelte";
   import { Separator } from "$lib/components/ui/separator";
-  import { getConnections } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  import { getConnections } from "../../../client/Connections/connections.remote";
 
   interface Props {
     layoutId: string;

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
-import { getConnections, type ConnectionHardwareType } from "../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+import { getConnections, type ConnectionHardwareType } from "../../client/Connections/connections.remote";
 import type { HardwareClass } from "./Hardware/hardware";
 import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import type { IProtocol } from "./Protocol/IProtocol";

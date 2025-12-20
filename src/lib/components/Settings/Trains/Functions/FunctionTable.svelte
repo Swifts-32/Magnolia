@@ -3,7 +3,7 @@
   import {
     getTrainFunctions,
     setTrainFunctionPosition,
-  } from "../../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
+  } from "../../../../client/Trains/Functions/trainFunctions.remote";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
   import FunctionViewer from "./FunctionViewer.svelte";

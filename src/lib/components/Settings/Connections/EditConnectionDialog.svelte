@@ -5,7 +5,7 @@
   import {
     deleteConnection,
     editConnection,
-  } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  } from "../../../client/Connections/connections.remote";
   import { toast } from "svelte-sonner";
   import { Trash2 } from "lucide-svelte";
   import type { Snippet } from "svelte";

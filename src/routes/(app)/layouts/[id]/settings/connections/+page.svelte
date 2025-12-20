@@ -3,12 +3,12 @@
     getConnectionHardwareName,
     getProtocolName,
   } from "$lib/client/Connections/Protocols/protocols";
-  import { getConnections } from "./connections.remote";
-  import type { PageProps } from "./$types";
+  import { getConnections } from "../../../../../../lib/client/Connections/connections.remote";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import { Plus } from "lucide-svelte";
   import AddConnectionDialog from "$lib/components/Settings/Connections/AddConnectionDialog.svelte";
   import EditConnectionDialog from "$lib/components/Settings/Connections/EditConnectionDialog.svelte";
+  import type { PageProps } from "./$types";
 
   let { data }: PageProps = $props();
 </script>

@@ -20,6 +20,10 @@
       name: "Trains",
       link: `/layouts/${page.params.id}/settings/trains`,
     },
+    {
+      name: "Sensors",
+      link: `/layouts/${page.params.id}/settings/sensors`,
+    },
   ];
 </script>
 

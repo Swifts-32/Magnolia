@@ -1,27 +1,17 @@
 <script lang="ts">
   import FunctionTable from "./Functions/FunctionTable.svelte";
-
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
-  import {
-    deleteTrain,
-    editTrain,
-  } from "../../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
+  import { deleteTrain, editTrain } from "../../../client/Trains/trains.remote";
   import type { Train } from "$lib/server/db/schema/trains";
-  import { GripVertical, Plus, Trash2 } from "lucide-svelte";
+  import { Plus, Trash2 } from "lucide-svelte";
   import type { Snippet } from "svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
-  import { getConnections } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
-  import {
-    createDefaultTrainFunction,
-    getTrainFunctions,
-  } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
-  import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
-  import { flip } from "svelte/animate";
-  import FunctionViewer from "./Functions/FunctionViewer.svelte";
+  import { getConnections } from "../../../client/Connections/connections.remote";
+  import { createDefaultTrainFunction } from "../../../client/Trains/Functions/trainFunctions.remote";
 
   interface Props {
     train: Train;
@@ -141,9 +131,7 @@
       </Button>
 
       <!-- TODO Add ability to reorder functions and then update their position -->
-      <div
-        class="w-full h-fit max-h-100 overflow-y-auto"
-      >
+      <div class="w-full h-fit max-h-100 overflow-y-auto">
         <FunctionTable trainId={train.uuid} />
       </div>
     </form>

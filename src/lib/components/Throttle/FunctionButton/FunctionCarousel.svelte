@@ -2,7 +2,7 @@
 	import type { CarouselAPI } from "$lib/components/ui/carousel/context";
 	import * as Carousel from "$lib/components/ui/carousel/index";
 	import FunctionButton from "./FunctionButton.svelte";
-	import { getTrainFunctions } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
+	import { getTrainFunctions } from "../../../client/Trains/Functions/trainFunctions.remote";
 	import type { TrainFunction } from "$lib/server/db/schema/trains";
 	import EmptyFunctionCarousel from "./EmptyFunctionCarousel.svelte";
 

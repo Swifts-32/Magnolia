@@ -5,10 +5,10 @@
     connectConnection,
     unloadConnection,
     getConnections,
-  } from "./settings/connections/connections.remote";
+    writeToConnection,
+  } from "../../../../lib/client/Connections/connections.remote";
   import { Button } from "$lib/components/ui/button";
   import DccEx from "$lib/components/Protocols/DccEx.svelte";
-  import { writeToConnection } from "$lib/client/Connections/Connections.remote";
   import { Input } from "$lib/components/ui/input";
 
   let { data }: PageProps = $props();
@@ -54,7 +54,7 @@
       </Card.Header>
       <Card.Content>
         <div class="flex gap-2 items-center">
-          <Input bind:value class="h-9"/>
+          <Input bind:value class="h-9" />
           <Button
             onclick={() =>
               writeToConnection({ id: connection.uuid, command: value })}

@@ -11,7 +11,7 @@
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
-  import { createConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  import { createConnection } from "../../../client/Connections/connections.remote";
   import SerialConnection from "./Serial/SerialConnection.svelte";
 
   interface Props {

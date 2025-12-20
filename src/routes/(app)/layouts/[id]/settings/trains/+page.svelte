@@ -1,11 +1,11 @@
 <script lang="ts">
   import type { LayoutProps } from "../$types";
-  import { getTrains } from "./trains.remote";
+  import { getTrains } from "../../../../../../lib/client/Trains/trains.remote";
   import { Plus, TrainFront } from "lucide-svelte";
   import Button from "$lib/components/ui/button/button.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import AddTrainDialog from "$lib/components/Settings/Trains/AddTrainDialog.svelte";
-  import { getConnection } from "../connections/connections.remote";
+  import { getConnection } from "../../../../../../lib/client/Connections/connections.remote";
   import EditTrainDialog from "$lib/components/Settings/Trains/EditTrainDialog.svelte";
 
   let { data }: LayoutProps = $props();

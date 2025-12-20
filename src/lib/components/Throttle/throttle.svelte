@@ -11,7 +11,7 @@
     getTrain,
     setTrainMotion,
     trainEmergencyStop,
-  } from "../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
+  } from "../../client/Trains/trains.remote";
   import EmptyFunctionCarousel from "./FunctionButton/EmptyFunctionCarousel.svelte";
 
   interface Props {

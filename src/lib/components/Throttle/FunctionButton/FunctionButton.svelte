@@ -6,7 +6,7 @@
 		getTrainFunction,
 		selectTrainFunction,
 		toggleTrainFunction,
-	} from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
+	} from "../../../client/Trains/Functions/trainFunctions.remote";
 
 	interface Props {
 		disabled?: boolean;

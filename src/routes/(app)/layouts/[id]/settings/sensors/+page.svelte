@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { page } from "$app/state";
-  import type { LayoutClient } from "$lib/client/LayoutClient.svelte";
-  import AddSensorDialog from "$lib/components/Settings/Sensor/AddSensorDialog.svelte";
-  import Button from "$lib/components/ui/button/button.svelte";
+  import { Button } from "$lib/components/ui/button";
+  import type { LayoutProps } from "../$types";
 
-  const layout: LayoutClient = $derived(page.data.layout as LayoutClient);
+  let { data }: LayoutProps = $props();
+
   let isAddSensorDialogOpen: boolean = $state(false);
 </script>
 
-<AddSensorDialog bind:open={isAddSensorDialogOpen} layoutUuid={layout.uuid} />
+<!-- <AddSensorDialog bind:open={isAddSensorDialogOpen} layoutUuid={layout.uuid} /> -->
 
 <div class="flex flex-wrap gap-4 p-4">
   <Button onclick={() => (isAddSensorDialogOpen = true)}>Add</Button>

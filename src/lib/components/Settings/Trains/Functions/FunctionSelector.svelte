@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getTrainFunctions } from "../../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
+  import { getTrainFunctions } from "../../../../client/Trains/Functions/trainFunctions.remote";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
