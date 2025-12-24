@@ -1,13 +1,14 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
+import { Lcc } from "./Protocol/Lcc/Lcc";
+import { DccEx } from "./Protocol/DccEx/DccEx";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import { getConnections, type ConnectionHardwareType } from "../../client/Connections/connections.remote";
 import type { HardwareClass } from "./Hardware/hardware";
-import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import type { IProtocol } from "./Protocol/IProtocol";
-import { DccEx } from "./Protocol/DccEx/DccEx";
-import { Lcc } from "./Protocol/Lcc/Lcc";
+import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
+import { protocolEvents } from "$lib/server/events";
 
 export class Connection {
   public id: string;
@@ -32,9 +33,13 @@ export class Connection {
         break;
 
       case "Lcc":
-        this.protocol = new Lcc();
+        // this.protocol = new Lcc(this.id);
       default:
         break;
+    }
+
+    if (this.protocol) {
+      this.protocol.setEventEmitter(protocolEvents);
     }
 
     // Reset connection status

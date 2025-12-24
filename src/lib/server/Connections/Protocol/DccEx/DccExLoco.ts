@@ -49,9 +49,6 @@ export class DccExLocoManager {
     };
 
     this.locos.set(cab, loco);
-
-    // Could emit internal events here later if you want
-    console.log("Updated loco:", loco);
   }
 
   // <t cab> - request deliberate update

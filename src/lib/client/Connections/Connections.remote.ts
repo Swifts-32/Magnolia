@@ -62,7 +62,9 @@ export const editConnection = form(
       hardware: hardware,
     }).where(eq(ConnectionTable.uuid, uuid));
 
-    await getConnections(layoutId).refresh();
+    await unloadConnection(uuid);
+    await connectConnection(uuid);
+    getConnections(layoutId).refresh();
   });
 
 export const createConnection = form(

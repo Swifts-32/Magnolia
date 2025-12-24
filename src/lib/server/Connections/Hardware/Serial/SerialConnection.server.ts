@@ -35,15 +35,20 @@ export class SerialConnection implements HardwareClass {
 				path: this.path,
 				baudRate: this.baudRate,
 				autoOpen: false
-
 			});
 
-			const parser = new ReadlineParser();
-			this.serialPort.pipe(parser);
+			try {
+				const parser = new ReadlineParser();
+				this.serialPort.pipe(parser);
+	
+				parser.on('data', (data) => {
+					if (this.dataReceived) this.dataReceived(data as string);
+				});
+			}
+			catch (e) {
+				reject("Error creating pipe");
+			}
 
-			parser.on('data', (data) => {
-				if (this.dataReceived) this.dataReceived(data as string);
-			});
 
 			this.serialPort.open((err) => {
 				if (err) {

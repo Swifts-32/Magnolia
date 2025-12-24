@@ -1,8 +1,10 @@
 <script lang="ts">
   import { Button } from "../ui/button";
   import { Separator } from "../ui/separator";
-  import { RefreshCcw } from "lucide-svelte";
   import { getTracksStatus } from "$lib/client/Connections/Protocols/DccEx.remote";
+  import { onMount } from "svelte";
+  import { writeToConnection } from "$lib/client/Connections/connections.remote";
+  import { Input } from "../ui/input";
   import * as Card from "$lib/components/ui/card/index.js";
 
   interface Props {
@@ -10,6 +12,37 @@
   }
 
   let { connectionId }: Props = $props();
+
+  let value: string = $state("<>");
+
+  onMount(() => {
+    const es = new EventSource("/api/protocol-events");
+
+    es.onmessage = async (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.connectionId !== connectionId) return;
+
+      if (
+        data.type === "tracks" ||
+        data.type === "power" ||
+        data.type === "currents"
+      ) {
+        getTracksStatus(connectionId).refresh();
+      }
+
+      if (data.type === "locos") {
+        console.warn("Update Dcc Ex Locos");
+      }
+    };
+
+    writeToConnection({
+      command: "<=>",
+      id: connectionId,
+    });
+
+    return () => es.close();
+  });
 </script>
 
 <svelte:boundary>
@@ -17,21 +50,21 @@
     <p>loading...</p>
   {/snippet}
   {#snippet failed(error, reset)}
-    <button onclick={reset}>oops! try again</button>
+    <button onclick={reset}>oops! try again {error}</button>
   {/snippet}
 
   <div>
-    <Separator class="my-4" />
-    <p>Protocol DCC EX</p>
-
-    <div class="flex gap-4 items-center justify-between my-2">
-      <p>Tracks Status</p>
+    <div class="flex gap-2 items-center">
+      <Input bind:value class="h-9" />
       <Button
-        size="icon"
-        onclick={() => getTracksStatus(connectionId).refresh()}
-        ><RefreshCcw /></Button
+        onclick={() => writeToConnection({ id: connectionId, command: value })}
+        >Write</Button
       >
     </div>
+
+    <Separator class="my-4" />
+    <h2>Protocol DCC EX</h2>
+    <p>Tracks Status</p>
 
     <div class="flex flex-wrap gap-2">
       {#each await getTracksStatus(connectionId) as track}
