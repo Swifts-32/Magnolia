@@ -1,19 +1,17 @@
 import { SerialPort, ReadlineParser } from 'serialport';
 import type { HardwareClass } from "../hardware";
-import { ConnectionType } from '$lib/client/Protocols/protocols';
+import { ConnectionType } from '$lib/client/Connections/Protocols/protocols';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const { autoDetect } = require('@serialport/bindings-cpp');
 
 export class SerialConnection implements HardwareClass {
-
-
 	private serialPort: SerialPort | null = null;
 
 	public path: string;
 	public baudRate: number;
-	public connType: ConnectionType.Serial = ConnectionType.Serial;
+	public connType: ConnectionType = "Serial";
 
 	private dataReceived: ((data: string) => void) | null = null;
 	public onDataReceived(callback: (data: string) => void) {
@@ -29,47 +27,48 @@ export class SerialConnection implements HardwareClass {
 		this.baudRate = baudRate;
 	}
 
-	async connect(): Promise<string> {
-		return new Promise<string>((resolve, reject) => {
+	public async connect(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
 
 			this.serialPort = new SerialPort({
 				binding: autoDetect(),
 				path: this.path,
 				baudRate: this.baudRate,
 				autoOpen: false
-
 			});
 
-			const parser = new ReadlineParser();
-			this.serialPort.pipe(parser);
+			try {
+				const parser = new ReadlineParser();
+				this.serialPort.pipe(parser);
+	
+				parser.on('data', (data) => {
+					if (this.dataReceived) this.dataReceived(data as string);
+				});
+			}
+			catch (e) {
+				reject("Error creating pipe");
+			}
 
-			parser.on('data', (data) => {
-				console.log("Serial Rx: ", data);
-				if (this.dataReceived) {
-					console.log("Data received callback");
-					this.dataReceived(data as string);
-				}
-			});
 
 			this.serialPort.open((err) => {
 				if (err) {
 					reject(`Failed to open port on ${this.path}: ${err.message}`);
 				}
 
-				resolve(`Successfully opened port on ${this.path}`);
+				resolve(true);
 			});
 		});
 	}
 
-	disconnect(): Promise<string> {
-		return new Promise<string>((resolve, reject) => {
+	public disconnect(): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
 			if (this.serialPort) {
 				this.serialPort.close((err) => {
 					if (err) {
 						reject(err.message);
 					}
 
-					resolve(`Successfully closed port on ${this.path}`);
+					resolve(true);
 				});
 			}
 			else {
@@ -90,16 +89,7 @@ export class SerialConnection implements HardwareClass {
 			});
 		}
 		else {
-			console.log("Port is not open. Connecting...")
-			this.connect();
+			console.log("Port is not open.")
 		}
-	}
-
-	toJson() {
-		return JSON.stringify({
-			path: this.path,
-			baudRate: this.baudRate,
-			connType: this.connType
-		});
 	}
 }

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
 
   let { children }: { children: Snippet } = $props();
@@ -22,30 +21,43 @@
       link: `/layouts/${page.params.id}/settings/trains`,
     },
     {
-      name: "Inputs",
+      name: "Sensors",
       link: `/layouts/${page.params.id}/settings/sensors`,
-    },
-    {
-      name: "Accessories",
-      link: ``,
     },
   ];
 </script>
 
-<div class="flex size-full p-4">
-  <div class="w-max p-4 h-full border-primary border-2 rounded-md">
-    <h1 class="text-4xl my-10">Settings</h1>
-
-    <div class="flex flex-col gap-3">
-      {#each pages as page}
-        <button
-          class="border-secondary border-2 p-4 rounded-md w-52 h-12 select-none flex items-center justify-start"
-          onclick={() => goto(page.link)}
-        >
-          <p class="text-2xl">{page.name}</p>
-        </button>
-      {/each}
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <aside
+    class="w-64 bg-card border-r border-card-foreground shadow-sm flex flex-col"
+  >
+    <div class="p-6 border-b border-card-foreground">
+      <h1 class="text-2xl font-bold text-card-foreground">Settings</h1>
     </div>
-  </div>
-  {@render children()}
+
+    <nav class="flex-1 p-4 space-y-2">
+      {#each pages as page1}
+        {#if page1.link == page.url.pathname}
+          <div
+            class="block px-4 py-2 rounded-md text-primary-disabled text-lg font-medium"
+          >
+            {page1.name}
+          </div>
+        {:else}
+          <a
+            href={page1.link} 
+            class="block px-4 py-2 rounded-md text-card-foreground text-lg font-medium hover:text-primary transition-colors"
+          >
+            {page1.name}
+          </a>
+        {/if}
+      {/each}
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 p-6 overflow-y-auto">
+    {@render children()}
+  </main>
 </div>

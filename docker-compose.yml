@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: postgres_db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrations:
+    image: swifts32/magnoliawebapp:latest
+    container_name: magnolia-migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: 
+      NODE_ENV: production 
+      DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres
+    command: > 
+      sh -c " 
+        echo 'Waiting for DB...' && 
+        until pg_isready -h db -U postgres; do sleep 1; done && 
+        echo 'Running Drizzle migrations...' && 
+        drizzle-kit migrate --config=drizzle-prod.config.ts --force &&
+        echo 'Migrations complete.' &&
+        exit 0
+      "
+
+  app:
+    image: swifts32/magnoliawebapp:latest
+    container_name: magnolia-app
+    restart: always
+    ports:
+      - "8080:8080"
+
+    # Full USB access (you don't need to know device names)
+    privileged: true
+    # If you prefer a more restrictive option, replace privileged with:
+    # devices:
+    #   - "/dev/bus/usb:/dev/bus/usb"
+
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres
+
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+
+    volumes:
+      - app_data:/app/data
+
+
+volumes:
+  app_data:
+  postgres_data:

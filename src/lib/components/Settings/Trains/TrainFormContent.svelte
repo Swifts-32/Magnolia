@@ -6,13 +6,13 @@
   import type { Train, TrainFunction } from "$lib/server/db/schema/trains";
   import { Plus } from "lucide-svelte";
   import FunctionSelector from "./Functions/FunctionSelector.svelte";
-  import { createDefaultTrainFunction } from "../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
+  import { createDefaultTrainFunction } from "../../../client/Trains/Functions/trainFunctions.remote";
   import FunctionViewer from "./Functions/FunctionViewer.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
   import {
     getConnection,
     getConnections,
-  } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  } from "../../../client/Connections/connections.remote";
 
   interface Props {
     train?: Train | undefined;

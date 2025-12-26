@@ -1,55 +1,28 @@
 <script lang="ts">
-  import Check from "lucide-svelte/icons/check";
-  import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
-  import { onMount, tick } from "svelte";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
-  import { cn } from "$lib/utils.js";
-  import Label from "$lib/components/ui/label/label.svelte";
-  import Input from "$lib/components/ui/input/input.svelte";
-  import Button from "$lib/components/ui/button/button.svelte";
+  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$lib/components/ui/input";
+  import { tick } from "svelte";
+  import {
+    getSerialPorts,
+    type SerialPortInfo,
+  } from "./SerialConnections.remote";
+  import type { RemoteFormField } from "@sveltejs/kit";
 
   interface Props {
-    serialPath: string | undefined;
-    serialBaudRate: number | undefined;
+    path: RemoteFormField<string>;
+    baudRate: RemoteFormField<number>;
   }
 
-  let { serialPath = $bindable(), serialBaudRate = $bindable() }: Props =
-    $props();
+  // path ,
+  let { baudRate, path }: Props = $props();
 
-  interface SerialPortInfo {
-    path: string;
-    manufacturer?: string;
-    serialNumber?: string;
-    pnpId?: string;
-    locationId?: string;
-    vendorId?: string;
-    productId?: string;
-    friendlyName?: string;
-    isCustom?: boolean; // Track custom ports
-  }
-
-  async function getSerialPorts(): Promise<SerialPortInfo[]> {
-    const ports: SerialPortInfo[] = await fetch(
-      "/api/connections/serial/list"
-    ).then(async (response) => {
-      const data = await response.json();
-      return data.message;
-    });
-    return ports;
-  }
-
-  let serialPorts: SerialPortInfo[] = $state([]);
+  let serialPorts = $state(await getSerialPorts());
   let serialPathSearch: string = $state("");
-
-  onMount(async () => {
-    serialPorts = await getSerialPorts();
-  });
 
   let serialPathOpen = $state(false);
   let triggerRef = $state<HTMLButtonElement>(null!);
   const selectedSerialPath = $derived(
-    serialPorts.find((port) => port.path === serialPath)
+    serialPorts.find((port) => port.path === path.value()),
   );
 
   function closeAndFocusSerialPathTrigger() {
@@ -80,7 +53,12 @@
 <!-- Serial Path -->
 <div class="grid grid-cols-4 items-center gap-4 w-full">
   <Label for="serialPath" class="text-right">Serial Path</Label>
-  <Popover.Root bind:open={serialPathOpen}>
+  {#each serialPorts as port}
+    <p>{port.path}</p>
+  {/each}
+  <Input id="serialPath" {...path.as("text")} class="col-span-3" />
+
+  <!-- <Popover.Root bind:open={serialPathOpen}>
     <Popover.Trigger bind:ref={triggerRef} class="col-span-3">
       {#snippet child({ props })}
         <Button
@@ -120,10 +98,10 @@
                       isCustom: true,
                     },
                   ];
-                  serialPath = serialPathSearch;
+                  path.set(serialPathSearch);
                   closeAndFocusSerialPathTrigger();
                 }}
-                class="w-80 h-10 flex justify-between {serialPath ==
+                class="w-80 h-10 flex justify-between {path.value() ==
                 serialPathSearch
                   ? 'cursor-default'
                   : 'cursor-pointer'}"
@@ -136,7 +114,7 @@
                 <Check
                   class={cn(
                     "mr-2 size-4",
-                    serialPath !== serialPathSearch && "text-transparent"
+                    path.value() !== serialPathSearch && "text-transparent",
                   )}
                 />
               </Command.Item>
@@ -147,21 +125,21 @@
                 <Command.Item
                   value={port.path}
                   onSelect={() => {
-                    if (serialPath == port.path) {
+                    if (path.value() == port.path) {
                       // If selecting the same port again (deselecting)
                       if (port.isCustom) {
                         serialPorts = serialPorts.filter(
-                          (p) => p.path !== port.path
+                          (p) => p.path !== port.path,
                         );
-                        serialPath = undefined;
+                        path.set("");
                       }
                     } else {
                       // Selecting a different port
-                      serialPath = port.path;
+                      path.set(port.path);
                     }
                     closeAndFocusSerialPathTrigger();
                   }}
-                  class="h-10 flex justify-between {serialPath == port.path
+                  class="h-10 flex justify-between {path.value() == port.path
                     ? 'cursor-default'
                     : 'cursor-pointer'}"
                 >
@@ -169,7 +147,7 @@
                   <Check
                     class={cn(
                       "mr-2 size-4",
-                      serialPath !== port.path && "text-transparent"
+                      path.value() !== port.path && "text-transparent",
                     )}
                   />
                 </Command.Item>
@@ -179,15 +157,10 @@
         </Command.List>
       </Command.Root>
     </Popover.Content>
-  </Popover.Root>
+  </Popover.Root> -->
 </div>
 <!-- Serial Baud Rate -->
 <div class="grid grid-cols-4 items-center gap-4">
   <Label for="serialBaudRate" class="text-right">Baud Rate</Label>
-  <Input
-    id="serialBaudRate"
-    type="number"
-    bind:value={serialBaudRate}
-    class="col-span-3"
-  />
+  <Input id="serialBaudRate" {...baudRate.as("number")} class="col-span-3" />
 </div>

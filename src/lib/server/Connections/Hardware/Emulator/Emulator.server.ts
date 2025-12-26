@@ -1,4 +1,4 @@
-import { ConnectionType } from "$lib/client/Protocols/protocols";
+import { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 import type { HardwareClass } from "../hardware";
 
 

@@ -1,17 +1,14 @@
 <script lang="ts">
-  import Button from "$lib/components/ui/button/button.svelte";
-  import Input from "$lib/components/ui/input/input.svelte";
-  import Label from "$lib/components/ui/label/label.svelte";
-  import { onDestroy, onMount } from "svelte";
   import { Trash2 } from "lucide-svelte";
   import { deleteLayout } from "../../../layouts.remote";
-  import ConformationDialog from "$lib/components/Settings/Common/ConformationDialog/ConformationDialog.svelte";
   import type { PageProps } from "./$types";
-    import { goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { Button } from "$lib/components/ui/button";
+  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$lib/components/ui/input";
 
   let { data }: PageProps = $props();
-  // const layout = getLayoutClientState();
-  let layoutName: string = $state("");
 
   //   onMount(() => {
   //     layoutName = layout.name;
@@ -59,31 +56,34 @@
   <!-- Layout Name -->
   <div class="grid grid-cols-4 items-center gap-4 my-4">
     <Label for="layoutName" class="text-right">Name</Label>
-    <Input id="layoutName" bind:value={layoutName} class="col-span-3" />
+    <Input id="layoutName" value={data.name} class="col-span-3" />
   </div>
 
   <!-- Delete Layout Dialog -->
-  <ConformationDialog title="Delete Layout">
-    {#snippet trigger()}
+  <AlertDialog.Root>
+    <AlertDialog.Trigger>
       <Button class="w-64" variant="destructive">
         <Trash2 />Delete Layout
       </Button>
-    {/snippet}
-    {#snippet primaryButton()}
-      <Button
-        variant="destructive"
-        class="w-32"
-        onclick={async () => {
-          await deleteLayout(data.id);
-          goto("/");
-        }}
-      >
-        Delete Layout</Button
-      >
-    {/snippet}
-    {#snippet secondaryButton()}
-      <Button variant="outline" class="w-32">Cancel</Button>
-    {/snippet}
-    <p>Are you sure you want to delete this layout?</p>
-  </ConformationDialog>
+    </AlertDialog.Trigger>
+    <AlertDialog.Content>
+      <AlertDialog.Header>
+        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+        <AlertDialog.Description>
+          This action cannot be undone. Are you sure you want to delete this
+          layout?
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+        <AlertDialog.Action
+          onclick={async () => {
+            await deleteLayout(data.id);
+            goto("/");
+          }}>Delete Layout</AlertDialog.Action
+        >
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Root>
 </div>

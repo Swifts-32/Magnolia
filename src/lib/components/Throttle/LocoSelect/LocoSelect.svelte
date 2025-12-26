@@ -7,8 +7,9 @@
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { getTrains } from "../../../../routes/(app)/layouts/[id]/settings/trains/trains.remote";
-  import { getConnection } from "../../../../routes/(app)/layouts/[id]/settings/connections/connections.remote";
+  import { getTrains } from "../../../client/Trains/trains.remote";
+  import { getConnection } from "../../../client/Connections/connections.remote";
+  import AddTrainDialog from "$lib/components/Settings/Trains/AddTrainDialog.svelte";
 
   interface Props {
     selTrainId: string | undefined;
@@ -40,7 +41,7 @@
     {#snippet child({ props })}
       <Button
         variant="outline"
-        class="w-full justify-between"
+        class="w-60 justify-between"
         {...props}
         role="combobox"
         aria-expanded={open}
@@ -114,20 +115,16 @@
 
           <Command.Separator class="my-1 h-[0.5px]" />
 
-          <Command.Item
-            {disabled}
-            value="create-train"
-            class="h-10 w-full flex-col justify-center"
-          >
-            <p>Add Train</p>
-            <!-- <TrainAdd
-              {layoutId}
-              class="flex size-full items-center justify-center gap-2"
+          <AddTrainDialog {layoutId}>
+            <Command.Item
+              {disabled}
+              value="create-train"
+              class="h-10 w-full flex gap-2 items-center justify-center"
             >
               <Plus class="size-6" />
               <p>Create Train</p>
-            </TrainAdd> -->
-          </Command.Item>
+            </Command.Item>
+          </AddTrainDialog>
         </Command.Group>
       </Command.List>
     </Command.Root>

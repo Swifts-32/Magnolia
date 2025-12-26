@@ -1,21 +1,18 @@
-import type { ConnectionType } from "$lib/client/Protocols/protocols";
+import type { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 
 export interface HardwareClass {
-    connect: () => Promise<string>;
+    connect: () => Promise<boolean>;
     isConnected: boolean;
     connType: ConnectionType;
-    disconnect: () => Promise<string>;
+    disconnect: () => Promise<boolean>;
     write: (data: string) => void;
     onDataReceived: (callback: (data: string) => void) => void;
-    toJson: () => string;
 }
 
 export interface ISerialConnection extends HardwareClass {
-    connType: ConnectionType.Serial;
     path: string;
     baudRate: number;
 }
 
 export interface IEmulatorConnection extends HardwareClass {
-    connType: ConnectionType.Emulator;
 };

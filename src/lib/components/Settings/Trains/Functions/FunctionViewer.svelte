@@ -3,7 +3,7 @@
 		createDefaultTrainFunction,
 		deleteTrainFunction,
 		getTrainFunctions,
-	} from "../../../../../routes/(app)/layouts/[id]/settings/trains/trainFunctions.remote";
+	} from "../../../../client/Trains/Functions/trainFunctions.remote";
 	import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
 	import * as Command from "$lib/components/ui/command/index.js";
 	import * as Popover from "$lib/components/ui/popover/index.js";
@@ -20,60 +20,62 @@
 		TrainFunctionModesList,
 	} from "$lib/types/Trains/Functions/Functions";
 	import ConformationDialog from "../../Common/ConformationDialog/ConformationDialog.svelte";
+	import type { Snippet } from "svelte";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
 
 	interface Props {
 		trainId: string;
-		selFunction: TrainFunction | undefined;
+		funct: TrainFunction;
+		children: Snippet;
 	}
 
-	let { trainId, selFunction = $bindable() }: Props = $props();
+	let { trainId, funct, children }: Props = $props();
 
-	async function deleteFunction() {
-		if (selFunction) {
-			await deleteTrainFunction({
-				value: selFunction.functValue,
-				trainId: selFunction.trainUuid,
-			});
-			selFunction = undefined;
-		}
-	}
+	let open = $state(false);
+	function onOpenChange() {}
 </script>
 
 <!-- Function Editor -->
-{#if selFunction}
-	<div class="flex flex-col gap-2">
-		<!-- Function Name -->
-		<div class="grid grid-cols-4 items-center gap-4 w-full">
-			<Label for="functionName" class="text-right">Name</Label>
-			<Input
-				id="functionName"
-				bind:value={selFunction.name}
-				class="col-span-3"
-			/>
-		</div>
+<Dialog.Root bind:open {onOpenChange}>
+	<Dialog.Trigger>
+		{@render children()}
+	</Dialog.Trigger>
 
-		<!-- Function Value -->
-		<div class="grid grid-cols-4 items-center gap-4 w-full">
+	<Dialog.Content>
+		<Dialog.Title>Edit Function</Dialog.Title>
+		<div class="flex flex-col gap-2">
+			<!-- Function Name -->
+			<div class="grid grid-cols-4 items-center gap-4 w-full">
+				<Label for="functionName" class="text-right">Name</Label>
+				<Input
+					id="functionName"
+					class="col-span-3"
+				/>
+			</div>
+
+			<!-- Function Value -->
+			<!-- <div class="grid grid-cols-4 items-center gap-4 w-full">
 			<Label for="functionValue" class="text-right">Value</Label>
 			<Input
 				id="functionValue"
 				bind:value={selFunction.functValue}
 				class="col-span-3"
 			/>
-		</div>
+		</div> -->
 
-		<!-- Function Position -->
-		<div class="grid grid-cols-4 items-center gap-4 w-full">
+			<!-- Function Position -->
+			<!-- <div class="grid grid-cols-4 items-center gap-4 w-full">
 			<Label for="functionPosition" class="text-right">Position</Label>
 			<Input
 				id="functionPosition"
 				bind:value={selFunction.position}
 				class="col-span-3"
 			/>
-		</div>
+		</div> -->
 
-		<!-- Function Icon -->
-		<div class="grid grid-cols-4 items-center gap-4 w-full">
+			<!-- Function Icon -->
+			<!-- <div class="grid grid-cols-4 items-center gap-4 w-full">
 			<Label for="functionIcon" class="text-right">Icon</Label>
 			<Select.Root
 				type="single"
@@ -96,10 +98,10 @@
 					{/each}
 				</Select.Content>
 			</Select.Root>
-		</div>
+		</div> -->
 
-		<!-- Function Mode -->
-		<div class="grid grid-cols-4 items-center gap-4 w-full">
+			<!-- Function Mode -->
+			<!-- <div class="grid grid-cols-4 items-center gap-4 w-full">
 			<Label for="functionMode" class="text-right">Mode</Label>
 			<Select.Root
 				type="single"
@@ -122,23 +124,47 @@
 					{/each}
 				</Select.Content>
 			</Select.Root>
+		</div> -->
+
+			<!-- Delete Function Dialog -->
+			<AlertDialog.Root>
+				<AlertDialog.Trigger>
+					<Button class="w-full mb-3" variant="destructive">
+						<Trash2 />Delete Function
+					</Button>
+				</AlertDialog.Trigger>
+				<AlertDialog.Content>
+					<AlertDialog.Header>
+						<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+						<AlertDialog.Description>
+							This action cannot be undone. Are you sure you want to delete this
+							function?
+						</AlertDialog.Description>
+					</AlertDialog.Header>
+
+					<AlertDialog.Footer>
+						<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+						<Dialog.Close>
+							<AlertDialog.Action
+								onclick={async () =>
+									await deleteTrainFunction({
+										trainId,
+										value: funct.functValue,
+									})}>Delete Function</AlertDialog.Action
+							>
+						</Dialog.Close>
+					</AlertDialog.Footer>
+				</AlertDialog.Content>
+			</AlertDialog.Root>
 		</div>
 
-		<!-- Delete Function -->
-		<ConformationDialog title="Delete Function">
-			{#snippet trigger()}
-				<Button class="w-full mb-3" variant="destructive">
-					<Trash2 />Delete Function
-				</Button>
-			{/snippet}
-			{#snippet primaryButton()}
-				<Button variant="destructive" class="w-32" onclick={async () => await deleteFunction()}>
-					Delete Function</Button
-				>
-			{/snippet}
-			{#snippet secondaryButton()}
-				<Button variant="outline" class="w-32">Cancel</Button>
-			{/snippet}
-			<p>Are you sure you want to delete this function?</p>
-		</ConformationDialog>
-	</div>{/if}
+		<Dialog.Footer>
+			<Dialog.Close>
+				<Button type="reset" class="w-28" variant="outline">Cancel</Button>
+			</Dialog.Close>
+			<Button type="submit" form="edit-train-function-form" class="w-28"
+				>Save</Button
+			>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
