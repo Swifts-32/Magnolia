@@ -1,8 +1,6 @@
 import { command, form, query } from "$app/server";
-import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
 import { db } from "$lib/server/db";
 import { LayoutTable } from "$lib/server/db/schema/layouts";
-import { LayoutServerHandler } from "$lib/server/layoutHandler.server.svelte";
 import { error, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
@@ -38,7 +36,6 @@ export const createLayout = form(
     }).returning();
 
     const layout = layouts[0];
-    LayoutServerHandler.addNewLayout(layout.name, layout.uuid as LayoutUUID, layout.position);
 
     await getLayouts().refresh();
     redirect(303, `/layouts/${layout.uuid}`);
