@@ -79,6 +79,21 @@
 
     div.scroll({ top: div.scrollHeight, behavior: "smooth" });
   });
+
+  async function submit() {
+    if (!rawValue.trim()) return;
+
+    writeStringToConnection({ id: connectionId, command: rawValue });
+
+    rawValue = "";
+  }
+
+  function handleKey(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+    }
+  }
 </script>
 
 <svelte:boundary>
@@ -91,27 +106,41 @@
   {/snippet}
 
   <div class="flex flex-col">
-    <!-- RAW WRITE -->
-    <div class="flex gap-2 items-center">
-      <Input bind:value={rawValue} class="h-9" placeholder="Raw write…" />
-      <Button
-        onclick={() =>
-          writeStringToConnection({ id: connectionId, command: rawValue })}
-      >
-        Write
-      </Button>
-    </div>
-
+    <!-- Terminal -->
     <div
-      bind:this={div}
-      class="bg-black text-green-400 font-mono text-sm p-3 rounded-lg h-32 overflow-y-auto whitespace-pre-wrap"
+      class="flex flex-col bg-black text-green-400 font-mono text-sm rounded-lg h-60"
     >
-      {#each await getLccLog(connectionId) as log}
-        <div class="leading-tight">{log}</div>
-      {/each}
+      <!-- SCROLLING LOG AREA -->
+      <div
+        bind:this={div}
+        class="flex-1 overflow-y-auto p-3 whitespace-pre-wrap"
+      >
+        {#each await getLccLog(connectionId) as log}
+          <div class="leading-tight">{log}</div>
+        {/each}
+      </div>
+
+      <!-- INPUT BAR -->
+      <Separator class="h-px"/>
+
+      <div class="p-2 flex items-center gap-2">
+        <span class="text-primary">$</span>
+        <input
+          bind:value={rawValue}
+          onkeydown={handleKey}
+          class="flex-1 bg-black text-green-400 outline-none border-none font-mono"
+          placeholder="Type command and press Enter…"
+        />
+        <Button
+          onclick={submit}
+          class="px-3 py-1 bg-green-700 text-black font-bold rounded hover:bg-green-600"
+        >
+          Send
+        </Button>
+      </div>
     </div>
 
-    <Separator class="my-4" />
+    <Separator class="mb-4" />
 
     <h2 class="text-xl font-semibold">Protocol: LCC</h2>
 
