@@ -108,20 +108,24 @@
   <div class="flex flex-col">
     <!-- Terminal -->
     <div
-      class="flex flex-col bg-black text-green-400 font-mono text-sm rounded-lg h-60"
+      class="flex flex-col bg-black text-green-400 font-mono text-sm rounded-lg h-40"
     >
       <!-- SCROLLING LOG AREA -->
       <div
         bind:this={div}
         class="flex-1 overflow-y-auto p-3 whitespace-pre-wrap"
       >
-        {#each await getLccLog(connectionId) as log}
-          <div class="leading-tight">{log}</div>
-        {/each}
+        {#await getLccLog(connectionId) then logs}
+          {#each logs as log}
+            <div class="leading-tight">{log}</div>
+          {/each}
+        {:catch error}
+          <p>{error}</p>
+        {/await}
       </div>
 
       <!-- INPUT BAR -->
-      <Separator class="h-px"/>
+      <Separator class="h-px" />
 
       <div class="p-2 flex items-center gap-2">
         <span class="text-primary">$</span>
