@@ -3,7 +3,7 @@
   import { Separator } from "../ui/separator";
   import { getTracksStatus } from "$lib/client/Connections/Protocols/DccEx.remote";
   import { onMount } from "svelte";
-  import { writeToConnection } from "$lib/client/Connections/connections.remote";
+  import { writeStringToConnection } from "$lib/client/Connections/connections.remote";
   import { Input } from "../ui/input";
   import * as Card from "$lib/components/ui/card/index.js";
 
@@ -36,7 +36,7 @@
       }
     };
 
-    writeToConnection({
+    writeStringToConnection({
       command: "<=>",
       id: connectionId,
     });
@@ -57,7 +57,7 @@
     <div class="flex gap-2 items-center">
       <Input bind:value class="h-9" />
       <Button
-        onclick={() => writeToConnection({ id: connectionId, command: value })}
+        onclick={() => writeStringToConnection({ id: connectionId, command: value })}
         >Write</Button
       >
     </div>

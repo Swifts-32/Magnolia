@@ -3,6 +3,6 @@ import type { EventEmitter } from "events"
 
 export interface IProtocol {
   protocolType: ConnectionProtocol;
-  processCommand: (command: string) => void;
+  processCommand: (command: Buffer) => void;
   setEventEmitter(emitter: EventEmitter): void;
 }

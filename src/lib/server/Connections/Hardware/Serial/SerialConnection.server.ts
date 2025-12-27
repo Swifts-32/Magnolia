@@ -13,8 +13,8 @@ export class SerialConnection implements HardwareClass {
 	public baudRate: number;
 	public connType: ConnectionType = "Serial";
 
-	private dataReceived: ((data: string) => void) | null = null;
-	public onDataReceived(callback: (data: string) => void) {
+	private dataReceived: ((data: Buffer) => void) | null = null;
+	public onDataReceived(callback: (data: Buffer) => void) {
 		this.dataReceived = callback;
 	}
 
@@ -38,11 +38,11 @@ export class SerialConnection implements HardwareClass {
 			});
 
 			try {
-				const parser = new ReadlineParser();
-				this.serialPort.pipe(parser);
-	
-				parser.on('data', (data) => {
-					if (this.dataReceived) this.dataReceived(data as string);
+				// const parser = new ReadlineParser();
+				// this.serialPort.pipe(parser);
+
+				this.serialPort.on('data', (data: Buffer) => {
+					if (this.dataReceived) this.dataReceived(data);
 				});
 			}
 			catch (e) {
@@ -78,10 +78,8 @@ export class SerialConnection implements HardwareClass {
 	}
 
 
-	write(data: string) {
+	write(data: Buffer) {
 		if (this.serialPort?.isOpen) {
-			console.log("Serial Tx: ", data);
-
 			this.serialPort.write(data, (err) => {
 				if (err) {
 					console.log("Write error: ", err.message);

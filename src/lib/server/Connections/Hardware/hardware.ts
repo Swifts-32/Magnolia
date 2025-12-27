@@ -5,8 +5,8 @@ export interface HardwareClass {
     isConnected: boolean;
     connType: ConnectionType;
     disconnect: () => Promise<boolean>;
-    write: (data: string) => void;
-    onDataReceived: (callback: (data: string) => void) => void;
+    write: (data: Buffer) => void;
+    onDataReceived: (callback: (data: Buffer) => void) => void;
 }
 
 export interface ISerialConnection extends HardwareClass {

@@ -31,12 +31,14 @@ export class DccEx implements IProtocol {
     maxCurrent?: number,
   }[] = [];
 
-  public processCommand(command: string) {
-    console.log(`Processing DCC EX command: ${command}`);
+  public processCommand(command: Buffer) {
+    const text = command.toString("utf8");
+
+    console.log(`Processing DCC EX command: ${text}`);
 
     // Loco broadcasts: <l cab reg speedByte functMap>
-    if (command.startsWith("<l")) {
-      this.locoManager.handleLocoBroadcast(command);
+    if (text.startsWith("<l")) {
+      this.locoManager.handleLocoBroadcast(text);
       
       this.events?.emit("update", {
         connectionId: this.connectionId,
@@ -46,8 +48,8 @@ export class DccEx implements IProtocol {
     }
 
     // Track manager messages 
-    if (command.startsWith("<=")) {
-      this.processTrackManagerCommands(command);
+    if (text.startsWith("<=")) {
+      this.processTrackManagerCommands(text);
 
       this.events?.emit("update", {
         connectionId: this.connectionId,
@@ -57,8 +59,8 @@ export class DccEx implements IProtocol {
     }
 
     // Power broadcasts 
-    if (command.startsWith("<p")) {
-      this.processPowerBroadcast(command);
+    if (text.startsWith("<p")) {
+      this.processPowerBroadcast(text);
 
       this.events?.emit("update", {
         connectionId: this.connectionId,
@@ -68,8 +70,8 @@ export class DccEx implements IProtocol {
     }
 
     // Current readings 
-    if (command.startsWith("<jI")) {
-      this.processCurrentList(command);
+    if (text.startsWith("<jI")) {
+      this.processCurrentList(text);
       this.events?.emit("update", {
         connectionId: this.connectionId,
         type: "currents",
@@ -78,8 +80,8 @@ export class DccEx implements IProtocol {
     }
 
     // Max current readings
-    if (command.startsWith("<jG")) {
-      this.processMaxCurrentList(command);
+    if (text.startsWith("<jG")) {
+      this.processMaxCurrentList(text);
       this.events?.emit("update", {
         connectionId: this.connectionId,
         type: "currents",

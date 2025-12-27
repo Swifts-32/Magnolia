@@ -8,6 +8,7 @@
   } from "../../../../lib/client/Connections/connections.remote";
   import { Button } from "$lib/components/ui/button";
   import DccEx from "$lib/components/Protocols/DccEx.svelte";
+    import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
 
   let { data }: PageProps = $props();
 </script>
@@ -52,6 +53,8 @@
         {#if connection.isConnected}
           {#if connection.protocol === "DccEx"}
             <DccEx connectionId={connection.uuid} />
+          {:else if connection.protocol === "Lcc"}
+            <Lcc connectionId={connection.uuid} />
           {:else}
             <p>No Custom Commands</p>
           {/if}

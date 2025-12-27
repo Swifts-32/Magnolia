@@ -108,12 +108,14 @@ export const unloadConnection = command(z.uuid(), async (connectionId) => {
   console.log(`Unloaded Connection: ${result}`);
 });
 
-export const writeToConnection = command(z.object({
+export const writeStringToConnection = command(z.object({
   id: z.uuid(),
   command: z.string(),
 }), async ({ id, command }) => {
   const connection = await App.getConnection(id);
   if (!connection) error(500, "Connection not found");
 
-  connection.write(command);
+  const buffer = Buffer.from(command, "utf8");
+
+  connection.write(buffer);
 });

@@ -33,7 +33,7 @@ export class Connection {
         break;
 
       case "Lcc":
-        // this.protocol = new Lcc(this.id);
+        this.protocol = new Lcc(this.id);
       default:
         break;
     }
@@ -60,7 +60,7 @@ export class Connection {
   public async connect(): Promise<boolean | string> {
 
     // Process received data
-    this.hardware?.onDataReceived((data: string) => this.protocol?.processCommand(data));
+    this.hardware?.onDataReceived((data: Buffer) => this.protocol?.processCommand(data));
 
     try {
       const connected = await this.hardware?.connect();
@@ -93,7 +93,7 @@ export class Connection {
     }
   }
 
-  public write(data: string) {
+  public write(data: Buffer) {
     this.hardware?.write(data);
   }
 }
