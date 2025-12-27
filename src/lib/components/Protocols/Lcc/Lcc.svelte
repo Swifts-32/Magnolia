@@ -74,6 +74,13 @@
     });
   }
 
+  function requestCdi(nodeId: string) {
+    sendLccCommand({
+      id: connectionId,
+      command: { action: "requestCdi", nodeId },
+    });
+  }
+
   $effect(() => {
     if (!div) return;
 
@@ -190,12 +197,26 @@
               <div class="text-xs text-muted-foreground">
                 Last seen: {new Date(node.lastSeen).toLocaleString()}
               </div>
+
+              {#if node.cdiLoaded}
+                <details class="mt-2">
+                  <summary class="cursor-pointer text-blue-400"
+                    >Show CDI</summary
+                  >
+                  <pre
+                    class="bg-gray-900 text-green-400 p-2 rounded overflow-x-auto whitespace-pre-wrap">
+{node.cdi}
+    </pre>
+                </details>
+              {/if}
             </Card.Content>
 
             <Card.Footer class="flex gap-2">
               <Button size="sm" onclick={() => sendSnip(node.id)}>
                 Refresh SNIP
               </Button>
+
+              <Button onclick={() => requestCdi(node.id)}>Request CDI</Button>
             </Card.Footer>
           </Card.Root>
         {:else}

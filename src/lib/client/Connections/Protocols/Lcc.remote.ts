@@ -40,7 +40,11 @@ const LccCommandSchema = z.discriminatedUnion("action", [
     action: z.literal("requestSnip"),
     nodeId: z.string().regex(/^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/)
   }),
-  z.object({ action: z.literal("discoverNodes") })
+  z.object({ action: z.literal("discoverNodes") }),
+  z.object({
+    action: z.literal("requestCdi"),
+    nodeId: z.string(),
+  }),
 ]);
 
 // -----------------------------
@@ -97,6 +101,9 @@ export const sendLccCommand = command(
         break;
       }
 
+      case "requestCdi":
+        lcc.requestCdi(command.nodeId);
+        break;
 
       default:
         error(500, "Unknown LCC command");

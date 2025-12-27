@@ -2,6 +2,8 @@
 import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import type EventEmitter from "events";
 import type { IProtocol } from "../IProtocol";
+import { App } from "$lib/server/App.server.svelte";
+import { encode } from "punycode";
 
 export interface LccNode {
   id: string;
@@ -12,6 +14,9 @@ export interface LccNode {
   userName?: string;
   description?: string;
   lastSeen: number;
+
+  cdi?: string;
+  cdiLoaded?: boolean;
 }
 
 export class Lcc implements IProtocol {
@@ -19,9 +24,6 @@ export class Lcc implements IProtocol {
   public connectionId: string;
 
   private events: EventEmitter | null = null;
-
-  // Serial write callback (injected by connection manager)
-  private write: ((data: Buffer) => void) | null = null;
 
   // SLIP state
   private inSlip = false;
@@ -43,10 +45,6 @@ export class Lcc implements IProtocol {
 
   public setEventEmitter(emitter: EventEmitter): void {
     this.events = emitter;
-  }
-
-  public setWriteCallback(write: (data: Buffer) => void): void {
-    this.write = write;
   }
 
   // ------------------------------------------------------------
@@ -100,19 +98,39 @@ export class Lcc implements IProtocol {
     this.sendSlip(frame);
   }
 
+  public requestCdi(nodeId: string, address = 0) {
+    const dest = this.nodeIdStringToBuffer(nodeId);
+
+    // Memory Configuration Protocol: Read
+    // MTI 0x0D00 = Read Request
+    const mti = 0x0D00;
+
+    const payload = Buffer.alloc(6);
+    payload.writeUInt8(0xFF, 0); // Space = 0xFF (CDI)
+    payload.writeUInt32BE(address, 1) // Address
+    payload.writeUInt8(64, 5) // Length = 64 bytes per chunk
+
+    const frame = this.buildFrame(mti, this.MY_NODE_ID, dest, payload);
+    this.sendSlip(frame);
+  }
+
   // ------------------------------------------------------------
   // 🔥 SLIP ENCODE/DECODE
   // ------------------------------------------------------------
-  private sendSlip(frame: Buffer): void {
-    if (!this.write) return;
-
+  private async sendSlip(frame: Buffer) {
     const encoded = Buffer.concat([
       Buffer.from([0xc0]),
       this.encodeSlip(frame),
       Buffer.from([0xc0])
     ]);
 
-    this.write(encoded);
+    const connection = await App.getConnection(this.connectionId);
+    if (!connection) return this.log("Connection not found");
+
+    if (!(connection.protocol instanceof Lcc))
+      return this.log("LCC connection is not an instance of Lcc");
+
+    connection.write(encoded);
   }
 
   private encodeSlip(buf: Buffer): Buffer {
@@ -149,15 +167,17 @@ export class Lcc implements IProtocol {
 
     this.log(`[LCC] MTI=0x${mti.toString(16)} From=${srcId}`);
 
-    // Verified Node ID
     if (mti === 0x0170 || mti === 0x0171) {
+      // Verified Node ID
       this.handleVerifiedNode(srcId, src);
       return;
-    }
-
-    // SNIP Reply
-    if (mti === 0x0a08) {
+    } else if (mti === 0x0a08) {
+      // SNIP Reply
       this.handleSnipReply(frame, srcId);
+      return;
+    } else if (mti === 0x0D01) {
+      // Memory Config Protocol: Read Reply (0x0D01)
+      this.handleMemoryReadReply(frame, srcId);
       return;
     }
   }
@@ -227,24 +247,80 @@ export class Lcc implements IProtocol {
     this.emitNodes();
   }
 
+  private handleMemoryReadReply(frame: Buffer, srcId: string) {
+    const node = this.nodes.get(srcId);
+    if (!node) return;
+
+    const payload = frame.subarray(16);
+    const space = payload.readUInt8(0);
+    const address = payload.readUInt32BE(1);
+    const data = payload.subarray(5);
+
+    if (space !== 0xFF) return; // Not CDI
+
+    const text = data.toString("utf8");
+
+    if (!node.cdi) node.cdi = "";
+
+    // Append chunk
+    node.cdi += text;
+
+    // Check for terminating null
+    if (data.includes(0x00)) {
+      node.cdi = node.cdi.replace(/\x00/g, "");
+      node.cdiLoaded = true;
+      this.log(`[LCC] CDI loaded for ${srcId}`);
+      this.emitNodes();
+      return;
+    }
+
+    // Request next chunk
+    this.requestCdi(srcId, address + data.length);
+  }
+
   // ------------------------------------------------------------
   // 🔥 FRAME BUILDER
   // ------------------------------------------------------------
-  private buildFrame(mti: number, src: Buffer, dest?: Buffer, data?: Buffer): Buffer {
+  // private buildFrame(mti: number, src: Buffer, dest?: Buffer, data?: Buffer): Buffer {
+  //   const mtiBuf = Buffer.alloc(2);
+  //   mtiBuf.writeUInt16BE(mti, 0);
+
+  //   const lenBuf = Buffer.alloc(2);
+  //   lenBuf.writeUInt16BE(data?.length ?? 0, 0);
+
+  //   return Buffer.concat([
+  //     mtiBuf,
+  //     src,
+  //     ...(dest ? [dest] : []),
+  //     lenBuf,
+  //     data ?? Buffer.alloc(0)
+  //   ]);
+  // }
+
+  private buildFrame(mti: number, src: Buffer, dest: Buffer | undefined, data: Buffer): Buffer {
+    // MTI
     const mtiBuf = Buffer.alloc(2);
     mtiBuf.writeUInt16BE(mti, 0);
 
-    const lenBuf = Buffer.alloc(2);
-    lenBuf.writeUInt16BE(data?.length ?? 0, 0);
+    // Validate node IDs
+    if (src.length !== 6) throw new Error(`SRC must be 6 bytes, got ${src.length}`);
+    if (dest && dest.length !== 6) throw new Error(`DEST must be 6 bytes, got ${dest.length}`);
 
-    return Buffer.concat([
-      mtiBuf,
-      src,
-      ...(dest ? [dest] : []),
-      lenBuf,
-      data ?? Buffer.alloc(0)
-    ]);
+    // Data length
+    const lenBuf = Buffer.alloc(2);
+    lenBuf.writeUInt16BE(data.length, 0);
+
+    // Build frame in correct order
+    const parts = [mtiBuf, src];
+
+    if (dest) parts.push(dest);
+
+    parts.push(lenBuf, data);
+
+    return Buffer.concat(parts);
   }
+
+
 
   // ------------------------------------------------------------
   // 🔥 ESP LOG HANDLING
