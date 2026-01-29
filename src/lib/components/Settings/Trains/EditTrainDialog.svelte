@@ -39,7 +39,7 @@
     {@render children()}
   </Dialog.Trigger>
 
-  <Dialog.Content>
+  <Dialog.Content class="sm:min-w-5/6 max-h-11/12 overflow-auto">
     <Dialog.Title>Edit Train</Dialog.Title>
 
     <form

@@ -9,9 +9,9 @@
   } from "$lib/client/Connections/Protocols/Lcc.remote";
 
   import { writeStringToConnection } from "$lib/client/Connections/connections.remote";
-  import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { Separator } from "$lib/components/ui/separator";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     connectionId: string;
@@ -30,13 +30,15 @@
 
     es.onmessage = async (event) => {
       const data = JSON.parse(event.data);
-
       if (data.connectionId !== connectionId) return;
 
       if (data.type === "lcc_nodes") {
         getLccNodes(connectionId).refresh();
       } else if (data.type === "lcc_log") {
         getLccLog(connectionId).refresh();
+
+        if (!div) return;
+        div.scroll({ top: div.scrollHeight, behavior: "smooth" });
       }
     };
 
@@ -81,12 +83,6 @@
     });
   }
 
-  $effect(() => {
-    if (!div) return;
-
-    div.scroll({ top: div.scrollHeight, behavior: "smooth" });
-  });
-
   async function submit() {
     if (!rawValue.trim()) return;
 
@@ -122,13 +118,9 @@
         bind:this={div}
         class="flex-1 overflow-y-auto p-3 whitespace-pre-wrap"
       >
-        {#await getLccLog(connectionId) then logs}
-          {#each logs as log}
-            <div class="leading-tight">{log}</div>
-          {/each}
-        {:catch error}
-          <p>{error}</p>
-        {/await}
+        {#each await getLccLog(connectionId) as log}
+          <div class="leading-tight">{log}</div>
+        {/each}
       </div>
 
       <!-- INPUT BAR -->
@@ -205,8 +197,8 @@
                   >
                   <pre
                     class="bg-gray-900 text-green-400 p-2 rounded overflow-x-auto whitespace-pre-wrap">
-{node.cdi}
-    </pre>
+                      {node.cdi}
+                  </pre>
                 </details>
               {/if}
             </Card.Content>

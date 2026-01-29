@@ -1,5 +1,13 @@
 <script lang="ts">
-  import { GripVertical } from "lucide-svelte";
+  import {
+    Bell,
+    GripVertical,
+    Lightbulb,
+    Sun,
+    Text,
+    Trash,
+    Volume2,
+  } from "lucide-svelte";
   import {
     getTrainFunctions,
     setTrainFunctionPosition,
@@ -7,6 +15,9 @@
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
   import FunctionViewer from "./FunctionViewer.svelte";
+  import { ZodNumber } from "zod/v4";
+  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
 
   interface Props {
     trainId: string;
@@ -41,35 +52,29 @@
   }
 </script>
 
+{#snippet tableHeader(width: number | undefined, text: string)}
+  <th class="p-4 border-b text-center {width ? `w-${width}` : 'w-min'}">
+    <p
+      class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
+    >
+      {text}
+    </p>
+  </th>
+{/snippet}
+
 <table class="w-full text-left table-auto min-w-max">
   <thead>
     <tr>
-      <th class="p-4 border-b w-8">
-        <p
-          class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-        ></p>
-      </th>
-      <th class="p-4 border-b">
-        <p
-          class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-        >
-          Value
-        </p>
-      </th>
-      <th class="p-4 border-b">
-        <p
-          class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-        >
-          Name
-        </p>
-      </th>
-      <th class="p-4 border-b">
-        <p
-          class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-        ></p>
-      </th>
+      {@render tableHeader(8, "")}
+      {@render tableHeader(undefined, "Value")}
+      {@render tableHeader(undefined, "Name")}
+      {@render tableHeader(undefined, "Icon")}
+      {@render tableHeader(undefined, "Is Toggle")}
+      {@render tableHeader(undefined, "Visible")}
+      {@render tableHeader(undefined, "")}
     </tr>
   </thead>
+
   <tbody
     use:dragHandleZone={{
       items: trainFunctions,
@@ -101,21 +106,57 @@
             {funct.functValue}
           </p>
         </td>
+
         <td class="p-4 border-b border-blue-gray-50">
           <p
             class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
           >
-            {funct.name}
+            <input type="text" value={funct.name} />
+          </p>
+        </td>
+
+        <td class="p-4 border-b border-blue-gray-50">
+          <p
+            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+          >
+            <ToggleGroup.Root
+              type="single"
+              variant="outline"
+              value={funct.icon}
+            >
+              <ToggleGroup.Item value="Bell"><Bell /></ToggleGroup.Item>
+              <ToggleGroup.Item value="Speaker"><Volume2 /></ToggleGroup.Item>
+              <ToggleGroup.Item value="Light1"><Lightbulb /></ToggleGroup.Item>
+              <ToggleGroup.Item value="Light2"><Sun /></ToggleGroup.Item>
+              <ToggleGroup.Item value="Text"><Text /></ToggleGroup.Item>
+            </ToggleGroup.Root>
           </p>
         </td>
         <td class="p-4 border-b border-blue-gray-50">
-          <FunctionViewer {funct} {trainId}>
+          <p
+            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+          >
+            <Checkbox checked={funct.mode === "Toggle"} />
+          </p>
+        </td>
+        <td class="p-4 border-b border-blue-gray-50">
+          <p
+            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
+          >
+            <Checkbox checked={funct.visible} class="text-red-600" />
+          </p>
+        </td>
+        <td class="p-4 border-b border-blue-gray-50">
+          <button>
+            <Trash />
+          </button>
+          <!-- <FunctionViewer {funct} {trainId}>
             <p
               class="block cursor-pointer font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
             >
-              Edit
+              <Edit>
             </p>
-          </FunctionViewer>
+          </FunctionViewer> -->
         </td>
       </tr>
     {/each}

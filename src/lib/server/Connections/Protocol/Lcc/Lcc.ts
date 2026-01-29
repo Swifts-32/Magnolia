@@ -98,21 +98,21 @@ export class Lcc implements IProtocol {
     this.sendSlip(frame);
   }
 
-  public requestCdi(nodeId: string, address = 0) {
-    const dest = this.nodeIdStringToBuffer(nodeId);
+  // public requestCdi(nodeId: string, address = 0) {
+  //   const dest = this.nodeIdStringToBuffer(nodeId);
 
-    // Memory Configuration Protocol: Read
-    // MTI 0x0D00 = Read Request
-    const mti = 0x0D00;
+  //   // Memory Configuration Protocol: Read
+  //   // MTI 0x0D00 = Read Request
+  //   const mti = 0x0D00;
 
-    const payload = Buffer.alloc(6);
-    payload.writeUInt8(0xFF, 0); // Space = 0xFF (CDI)
-    payload.writeUInt32BE(address, 1) // Address
-    payload.writeUInt8(64, 5) // Length = 64 bytes per chunk
+  //   const payload = Buffer.alloc(6);
+  //   payload.writeUInt8(0xFF, 0); // Space = 0xFF (CDI)
+  //   payload.writeUInt32BE(address, 1) // Address
+  //   payload.writeUInt8(64, 5) // Length = 64 bytes per chunk
 
-    const frame = this.buildFrame(mti, this.MY_NODE_ID, dest, payload);
-    this.sendSlip(frame);
-  }
+  //   const frame = this.buildFrame(mti, this.MY_NODE_ID, dest, payload);
+  //   this.sendSlip(frame);
+  // }
 
   // ------------------------------------------------------------
   // 🔥 SLIP ENCODE/DECODE
@@ -175,11 +175,16 @@ export class Lcc implements IProtocol {
       // SNIP Reply
       this.handleSnipReply(frame, srcId);
       return;
-    } else if (mti === 0x0D01) {
-      // Memory Config Protocol: Read Reply (0x0D01)
-      this.handleMemoryReadReply(frame, srcId);
+    }
+    else if ((mti & 0xFF00) === 0x1C00) {
+      this.handleDatagram(frame, srcId);
       return;
     }
+    //else if (mti === 0x0D01) {
+    // Memory Config Protocol: Read Reply (0x0D01)
+    // this.handleMemoryReadReply(frame, srcId);
+    //  return;
+    // }
   }
 
   private handleVerifiedNode(srcId: string, srcBuf: Buffer): void {
@@ -247,36 +252,36 @@ export class Lcc implements IProtocol {
     this.emitNodes();
   }
 
-  private handleMemoryReadReply(frame: Buffer, srcId: string) {
-    const node = this.nodes.get(srcId);
-    if (!node) return;
+  // private handleMemoryReadReply(frame: Buffer, srcId: string) {
+  //   const node = this.nodes.get(srcId);
+  //   if (!node) return;
 
-    const payload = frame.subarray(16);
-    const space = payload.readUInt8(0);
-    const address = payload.readUInt32BE(1);
-    const data = payload.subarray(5);
+  //   const payload = frame.subarray(16);
+  //   const space = payload.readUInt8(0);
+  //   const address = payload.readUInt32BE(1);
+  //   const data = payload.subarray(5);
 
-    if (space !== 0xFF) return; // Not CDI
+  //   if (space !== 0xFF) return; // Not CDI
 
-    const text = data.toString("utf8");
+  //   const text = data.toString("utf8");
 
-    if (!node.cdi) node.cdi = "";
+  //   if (!node.cdi) node.cdi = "";
 
-    // Append chunk
-    node.cdi += text;
+  //   // Append chunk
+  //   node.cdi += text;
 
-    // Check for terminating null
-    if (data.includes(0x00)) {
-      node.cdi = node.cdi.replace(/\x00/g, "");
-      node.cdiLoaded = true;
-      this.log(`[LCC] CDI loaded for ${srcId}`);
-      this.emitNodes();
-      return;
-    }
+  //   // Check for terminating null
+  //   if (data.includes(0x00)) {
+  //     node.cdi = node.cdi.replace(/\x00/g, "");
+  //     node.cdiLoaded = true;
+  //     this.log(`[LCC] CDI loaded for ${srcId}`);
+  //     this.emitNodes();
+  //     return;
+  //   }
 
-    // Request next chunk
-    this.requestCdi(srcId, address + data.length);
-  }
+  //   // Request next chunk
+  //   this.requestCdi(srcId, address + data.length);
+  // }
 
   // ------------------------------------------------------------
   // 🔥 FRAME BUILDER
@@ -376,4 +381,75 @@ export class Lcc implements IProtocol {
   public getLogSnapshot(): string[] {
     return [...this.logBuffer];
   }
+
+  private handleDatagram(frame: Buffer, srcId: string) {
+    if (frame.length < 16) return;
+
+    const dest = this.nodeIdBufferToString(frame.subarray(8, 14));
+    const dataLen = frame.readUInt16BE(14);
+    const data = frame.subarray(16, 16 + dataLen);
+
+    // Memory Config datagrams always start with Content ID 0x20
+    if (data[0] !== 0x20) return;
+
+    const cmd = data[1];
+
+    // Read Reply (0x50–0x57)
+    if (cmd >= 0x50 && cmd <= 0x57) {
+      this.handleMcReadReply(srcId, data.subarray(1));
+    }
+  }
+
+  private handleMcReadReply(srcId: string, payload: Buffer) {
+    const addr = payload.readUInt32BE(1);
+    const space = payload[5];
+    const data = payload.subarray(6);
+
+    const node = this.nodes.get(srcId);
+    if (!node) return;
+    
+    if (space !== 0xFF) return; // CDI only
+    
+    if (!node.cdi) node.cdi = "";
+    node.cdi += data.toString("utf8");
+    
+    // TODO not beinf called
+    if (data.includes(0x00)) {
+      console.log("5");
+      node.cdi = node.cdi.replace(/\x00/g, "");
+      node.cdiLoaded = true;
+      this.log(`[LCC] CDI loaded for ${srcId}`);
+      this.emitNodes();
+      return;
+    }
+
+    // Request next block
+    this.requestCdiDatagram(srcId, addr + data.length);
+  }
+
+  private requestCdiDatagram(nodeId: string, address: number) {
+    const dest = this.nodeIdStringToBuffer(nodeId);
+
+    const payload = Buffer.alloc(7);
+    payload[0] = 0x40; // READ
+    payload.writeUInt32BE(address, 1);
+    payload[5] = 0xFF; // CDI space
+    payload[6] = 64;   // length
+
+    const contentId = Buffer.from([0x20]);
+    const data = Buffer.concat([contentId, payload]);
+
+    const frame = this.buildFrame(0x1C48, this.MY_NODE_ID, dest, data);
+    this.sendSlip(frame);
+  }
+
+  public requestCdi(nodeId: string) {
+    const node = this.nodes.get(nodeId);
+    if (node) {
+      node.cdi = "";
+      node.cdiLoaded = false;
+    }
+    this.requestCdiDatagram(nodeId, 0);
+  }
+
 }
