@@ -3,12 +3,9 @@
   import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
   import { createTrain } from "../../../client/Trains/trains.remote";
-  import TrainFormContent from "./TrainFormContent.svelte";
   import type { Snippet } from "svelte";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
-  import FunctionSelector from "./Functions/FunctionSelector.svelte";
-  import { Separator } from "$lib/components/ui/separator";
   import { getConnections } from "../../../client/Connections/connections.remote";
 
   interface Props {
@@ -25,10 +22,11 @@
     layoutId: layoutIdForm,
     name,
   } = createTrain.fields;
-  let open = $state(false);
+
+  // let open = $state(false);
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root >
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>
@@ -42,7 +40,7 @@
         try {
           await submit();
           form.reset();
-          open = false;
+          // open = false;
           toast.success("Created train");
         } catch (error) {
           toast.error("Error creating train: " + error);

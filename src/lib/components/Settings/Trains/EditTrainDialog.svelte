@@ -10,8 +10,12 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
-  import { getConnections } from "../../../client/Connections/connections.remote";
+  import {
+    getConnection,
+    getConnections,
+  } from "../../../client/Connections/connections.remote";
   import { createDefaultTrainFunction } from "../../../client/Trains/Functions/trainFunctions.remote";
+  import * as Select from "$lib/components/ui/select/index.js";
 
   interface Props {
     train: Train;
@@ -20,10 +24,15 @@
 
   let { train, children }: Props = $props();
 
-  let open = $state(false);
+  // let open = $state(false);
+
   const editTrainForm = editTrain.for(train.uuid);
   const { address, comment, connectionId, layoutId, name, uuid } =
     editTrainForm.fields;
+
+  const connectionIdValue: string = $derived(
+    editTrainForm.fields.connectionId.as("select").value as string,
+  );
 
   // Reset the form values
   function onOpenChange() {
@@ -34,7 +43,7 @@
   }
 </script>
 
-<Dialog.Root bind:open {onOpenChange}>
+<Dialog.Root {onOpenChange}>
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>
@@ -97,23 +106,29 @@
       <div class="grid grid-cols-4 items-center gap-4">
         <Label for="connectionId" class="text-right">Connections</Label>
         <div class="col-span-3">
-          <select
-            id="connectionId"
-            {...connectionId.as("select")}
-            class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
+          <Select.Root
+            type="single"
+            {...editTrainForm.fields.connectionId.as("text")}
+            bind:value={
+              () => (connectionIdValue ? String(connectionIdValue) : undefined),
+              (value) =>
+                editTrainForm.fields.connectionId.set(value ?? "undefined")
+            }
           >
-            {#each await getConnections(train.layoutUuid) as connection}
-              <option
-                value={connection.uuid}
-                class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                {connection.name}
-              </option>
-            {/each}
-          </select>
+            <Select.Trigger class="col-span-3">
+              {connectionIdValue
+                ? (await getConnection(connectionIdValue)).name
+                : "Select a connection"}
+            </Select.Trigger>
+            <Select.Content>
+              {#each await getConnections(train.layoutUuid) as connection}
+                <Select.Item value={connection.uuid}
+                  >{connection.name}</Select.Item
+                >
+              {/each}
+            </Select.Content>
+          </Select.Root>
+
           {#each connectionId.issues() as issue}
             <p class="text-s text-red-600">{issue.message}</p>
           {/each}
@@ -131,7 +146,7 @@
       </Button>
 
       <!-- TODO Add ability to reorder functions and then update their position -->
-      <div class="w-full h-fit max-h-100 overflow-y-auto">
+      <div class="w-full h-fit max-h-70 overflow-y-auto">
         <FunctionTable trainId={train.uuid} />
       </div>
     </form>
