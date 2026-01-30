@@ -4,7 +4,9 @@
   import type { Snippet } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import {
+    ConnectionProtocol,
     connectionProtocolList,
+    ConnectionType,
     connectionTypeList,
     getConnectionHardwareName,
   } from "$lib/client/Connections/Protocols/protocols";
@@ -14,6 +16,8 @@
   import { createConnection } from "../../../client/Connections/connections.remote";
   import SerialConnection from "./Serial/SerialConnection.svelte";
 
+  import * as Select from "$lib/components/ui/select/index.js";
+
   interface Props {
     layoutId: string;
     children: Snippet;
@@ -22,10 +26,16 @@
   let { layoutId, children }: Props = $props();
 
   const { name, hardware, protocol } = createConnection.fields;
-  let open = $state(false);
+  const hardwareTypeValue: ConnectionType = $derived(
+    hardware.type.as("select").value as ConnectionType,
+  );
+  const protocolValue: ConnectionProtocol = $derived(
+    protocol.as("select").value as ConnectionProtocol,
+  );
+  // let open = $state(false);
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root open={false}>
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>
@@ -42,7 +52,7 @@
 
           toast.success("Created connection");
 
-          open = false;
+          // open = false;
         } catch (error) {
           toast.error("Error creating connection: " + error);
         }
@@ -72,23 +82,23 @@
         <div class="grid grid-cols-4 items-center gap-4">
           <Label for="protocol" class="text-right">Protocol</Label>
           <div class="col-span-3">
-            <select
-              id="protocol"
-              {...protocol.as("select")}
-              class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
+            <Select.Root
+              type="single"
+              {...protocol.as("text")}
+              bind:value={() => protocolValue, (value) => protocol.set(value)}
             >
-              {#each connectionProtocolList as protocolName}
-                <option
-                  value={protocolName}
-                  class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  {protocolName}
-                </option>
-              {/each}
-            </select>
+              <Select.Trigger class="col-span-3">
+                {protocolValue ? protocolValue : "Select your protocol"}
+              </Select.Trigger>
+              <Select.Content>
+                {#each connectionProtocolList as protocolName}
+                  <Select.Item value={protocolName}>
+                    {protocolName}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+
             {#each protocol.issues() as issue}
               <p class="text-s text-red-600">{issue.message}</p>
             {/each}
@@ -101,24 +111,28 @@
         <div class="grid grid-cols-4 items-center gap-4">
           <Label for="hardware" class="text-right">Hardware</Label>
           <div class="col-span-3">
-            <select
-              id="hardware"
-              {...hardware.type.as("select")}
-              class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
+            <Select.Root
+              type="single"
+              {...hardware.type.as("text")}
+              bind:value={
+                () => hardwareTypeValue, (value) => hardware.type.set(value)
+              }
             >
-              {#each connectionTypeList as connType}
-                <option
-                  value={connType}
-                  class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  {getConnectionHardwareName(connType)}
-                </option>
-              {/each}
-            </select>
-            {#each hardware.issues() as issue}
+              <Select.Trigger class="col-span-3">
+                {hardwareTypeValue
+                  ? getConnectionHardwareName(hardwareTypeValue)
+                  : "Select your hardware"}
+              </Select.Trigger>
+              <Select.Content>
+                {#each connectionTypeList.filter((type) => type !== "Undefined") as connType}
+                  <Select.Item value={connType}>
+                    {getConnectionHardwareName(connType)}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+
+            {#each hardware.type.issues() as issue}
               <p class="text-s text-red-600">{issue.message}</p>
             {/each}
           </div>

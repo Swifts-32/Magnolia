@@ -51,7 +51,11 @@
 	<Toaster richColors theme="dark" position="bottom-left" />
 
 	{#snippet pending()}
-		<p>Loading...</p>
+		<div class="fixed inset-0 bg-black/50 flex items-center justify-center">
+			<div
+				class="h-12 w-12 border-4 border-white border-t-transparent rounded-full animate-spin"
+			></div>
+		</div>
 	{/snippet}
 
 	{#snippet failed(error, reset)}

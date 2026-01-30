@@ -31,7 +31,7 @@
     editTrainForm.fields;
 
   const connectionIdValue: string = $derived(
-    editTrainForm.fields.connectionId.as("select").value as string,
+    connectionId.as("select").value as string,
   );
 
   // Reset the form values
@@ -145,7 +145,6 @@
         <Plus />Add Function
       </Button>
 
-      <!-- TODO Add ability to reorder functions and then update their position -->
       <div class="w-full h-fit max-h-70 overflow-y-auto">
         <FunctionTable trainId={train.uuid} />
       </div>

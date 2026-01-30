@@ -18,6 +18,8 @@
   import { ZodNumber } from "zod/v4";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
+    import { onDestroy } from "svelte";
+    import { toast } from "svelte-sonner";
 
   interface Props {
     trainId: string;
@@ -50,6 +52,11 @@
       }
     }
   }
+
+  // Save all functions
+  onDestroy(() => {
+    toast.info("Closed");
+  })
 </script>
 
 {#snippet tableHeader(width: number | undefined, text: string)}
