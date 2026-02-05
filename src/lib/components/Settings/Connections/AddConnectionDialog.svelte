@@ -35,7 +35,7 @@
   // let open = $state(false);
 </script>
 
-<Dialog.Root open={false}>
+<Dialog.Root>
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>

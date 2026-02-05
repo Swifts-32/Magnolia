@@ -24,8 +24,8 @@
   <h1 class="text-4xl my-10">Connections</h1>
 
   <div class="flex flex-wrap gap-3">
-    <!-- {#each await getConnections(data.id) as connection} -->
-      <!-- <EditConnectionDialog {connection}>
+    {#each await getConnections(data.id) as connection}
+      <EditConnectionDialog {connection}>
         <div
           class="border-primary cursor-pointer border-2 px-3 flex rounded-md gap-3 w-96 h-16 items-center select-none"
         >
@@ -39,7 +39,7 @@
             </p>
           </div>
         </div>
-      </EditConnectionDialog> -->
-    <!-- {/each} -->
+      </EditConnectionDialog>
+    {/each}
   </div>
 </div>

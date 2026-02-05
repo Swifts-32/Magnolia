@@ -1,12 +1,17 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
-  import { createTrain } from "../../../client/Trains/trains.remote";
-  import type { Snippet } from "svelte";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
-  import { getConnections } from "../../../client/Connections/connections.remote";
+  import { Button } from "$lib/components/ui/button";
+  import { createTrain } from "../../../client/Trains/trains.remote";
+  import type { Snippet } from "svelte";
+  import type { RemoteFormIssue } from "@sveltejs/kit";
+  import {
+    getConnection,
+    getConnections,
+  } from "../../../client/Connections/connections.remote";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
 
   interface Props {
     layoutId: string;
@@ -23,10 +28,18 @@
     name,
   } = createTrain.fields;
 
-  // let open = $state(false);
+  const connectionIdValue: string = $derived(
+    connectionId.as("select").value as string,
+  );
 </script>
 
-<Dialog.Root >
+{#snippet issues(i: RemoteFormIssue[] | undefined)}
+  {#each i as issue}
+    <p class="text-sm text-red-600">{issue.message}</p>
+  {/each}
+{/snippet}
+
+<Dialog.Root>
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>
@@ -36,71 +49,76 @@
 
     <form
       id="add-train-form"
-      {...createTrain.enhance(async ({ submit, form }) => {
+      {...createTrain.enhance(async ({ submit }) => {
         try {
           await submit();
-          form.reset();
-          // open = false;
           toast.success("Created train");
         } catch (error) {
           toast.error("Error creating train: " + error);
         }
       })}
+      class="flex-col flex gap-2 items-center"
     >
       <input {...layoutIdForm.as("hidden", layoutId)} />
 
-      <div class="flex-col flex gap-2">
-        <!-- Train Name -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="name" class="text-right">Name</Label>
-          <Input id="name" class="col-span-3" {...name.as("text")} />
-        </div>
+      <!-- Train Name -->
+      <div class="flex w-full max-w-sm flex-col gap-1.5">
+        <Label for="name">Name</Label>
+        <Input id="name" {...name.as("text")} />
+        {@render issues(name.issues())}
+      </div>
 
-        <!-- Train Description -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="comment" class="text-right">Description</Label>
-          <Input id="comment" {...comment.as("text")} class="col-span-3" />
-        </div>
+      <!-- Train Description -->
+      <div class="flex w-full max-w-sm flex-col gap-1.5">
+        <Label for="comment">Description</Label>
+        <Input id="comment" {...comment.as("text")} />
+        {@render issues(comment.issues())}
+      </div>
 
-        <!-- Train Address -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="address" class="text-right">Address</Label>
-          <Input id="address" {...address.as("text")} class="col-span-3" />
-        </div>
+      <!-- Train Address -->
+      <div class="flex w-full max-w-sm flex-col gap-1.5">
+        <Label for="address">Address</Label>
+        <Input id="address" {...address.as("text")} />
+        {@render issues(address.issues())}
+      </div>
 
-        <!-- Train Connections -->
-        <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="connectionId" class="text-right">Connections</Label>
-          <div class="col-span-3">
-            <select
-              id="connectionId"
-              {...connectionId.as("select")}
-              class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
-            >
+      <!-- Train Connections -->
+      <div class="flex w-full max-w-sm flex-col gap-1.5">
+        <Label for="connectionId">Connections</Label>
+        <div>
+          <Select.Root
+            type="single"
+            {...connectionId.as("text")}
+            bind:value={
+              () => (connectionIdValue ? String(connectionIdValue) : undefined),
+              (value) => connectionId.set(value ?? "undefined")
+            }
+          >
+            <Select.Trigger class="col-span-3">
+              {connectionIdValue
+                ? (await getConnection(connectionIdValue)).name
+                : "Select a connection"}
+            </Select.Trigger>
+            <Select.Content>
               {#each await getConnections(layoutId) as connection}
-                <option
-                  value={connection.uuid}
-                  class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+                <Select.Item value={connection.uuid}
+                  >{connection.name}</Select.Item
                 >
-                  {connection.name}
-                </option>
               {/each}
-            </select>
-            {#each connectionId.issues() as issue}
-              <p class="text-s text-red-600">{issue.message}</p>
-            {/each}
-          </div>
+            </Select.Content>
+          </Select.Root>
+          {@render issues(connectionId.issues())}
         </div>
       </div>
     </form>
 
     <Dialog.Footer>
       <Dialog.Close>
-        <Button form="add-train-form" class="w-28" variant="outline"
-          >Cancel</Button
+        <Button
+          form="add-train-form"
+          type="reset"
+          class="w-28"
+          variant="outline">Cancel</Button
         >
       </Dialog.Close>
       <Button type="submit" form="add-train-form" class="w-28">Create</Button>

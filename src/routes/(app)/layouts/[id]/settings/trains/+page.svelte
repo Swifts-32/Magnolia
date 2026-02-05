@@ -24,7 +24,7 @@
   <div class="flex flex-wrap gap-3">
     <svelte:boundary>
       {#each await getTrains(data.id) as train}
-        <EditTrainDialog {train}>
+        <EditTrainDialog trainId={train.uuid}>
           <div
             class="border-primary cursor-pointer border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
           >
