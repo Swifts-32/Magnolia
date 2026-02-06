@@ -3,12 +3,14 @@
     Bell,
     GripVertical,
     Lightbulb,
+    Plus,
     Sun,
     Text,
     Trash,
     Volume2,
   } from "lucide-svelte";
   import {
+    createDefaultTrainFunction,
     deleteTrainFunction,
     editTrainFunction,
     getTrainFunctions,
@@ -20,6 +22,7 @@
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
+  import { Button } from "$lib/components/ui/button";
 
   interface Props {
     trainId: string;
@@ -27,6 +30,8 @@
 
   let { trainId }: Props = $props();
 
+
+  // TODO ADD New functions
   export async function save() {
     const deleted = originalFunctions.filter(
       (o) => !trainFunctions.some((n) => n.value === o.value),
@@ -70,6 +75,26 @@
         });
       }
     }
+  }
+
+  async function createFunction() {
+    // Select a function value (numerical) that is not already in use
+    let i = 0;
+    while (trainFunctions.some((fn) => fn.value === `F${i}`)) {
+      i++;
+    }
+
+    trainFunctions.push({
+      icon: "Text",
+      mode: "Toggle",
+      name: `New Function ${i}`,
+      position: trainFunctions.length + 1,
+      state: false,
+      trainId: trainId,
+      value: `F${i}`,
+      visible: true,
+      id: `F${i}`,
+    });
   }
 </script>
 
@@ -185,3 +210,11 @@
     {/each}
   </tbody>
 </table>
+
+<Button
+  class="w-full mt-2"
+  variant="outline"
+  onclick={async () => await createFunction()}
+>
+  <Plus />Add Function
+</Button>

@@ -68,7 +68,7 @@
 						{#each chunk as trainFunction}
 							<FunctionButton
 								{trainId}
-								functValue={trainFunction.functValue}
+								functValue={trainFunction.value}
 								{disabled}
 							/>
 						{/each}

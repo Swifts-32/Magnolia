@@ -22,13 +22,13 @@
 	{#if trainFunction.mode == "Toggle"}
 		<Toggle
 			{disabled}
-			size="icon"
+			size="sm"
 			bind:pressed={
 				() => trainFunction.state,
 				(v) => {
 					toggleTrainFunction({
-						trainId: trainFunction.trainUuid,
-						value: trainFunction.functValue,
+						trainId: trainFunction.trainId,
+						value: trainFunction.value,
 						state: v,
 					});
 				}
@@ -50,8 +50,8 @@
 			variant="default"
 			onmousedown={() => {
 				selectTrainFunction({
-					trainId: trainFunction.trainUuid,
-					value: trainFunction.functValue,
+					trainId: trainFunction.trainId,
+					value: trainFunction.value,
 				});
 				trainFunction.state = true;
 			}}

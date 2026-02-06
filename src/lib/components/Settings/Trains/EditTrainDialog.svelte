@@ -124,15 +124,6 @@
         </div>
       </div>
 
-      <!-- Add Function Button -->
-      <Button
-        class="w-full mt-2"
-        variant="outline"
-        onclick={async () => await createDefaultTrainFunction(train.uuid)}
-      >
-        <Plus />Add Function
-      </Button>
-
       <div class="w-full h-fit max-h-70 overflow-y-auto">
         <FunctionTable trainId={train.uuid} bind:this={functionTable} />
       </div>
