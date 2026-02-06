@@ -42,7 +42,6 @@ export const createTrain = form(z.object({
     connectionUuid: connectionId,
   });
 
-
   await getTrains(layoutId).refresh();
 });
 
@@ -59,7 +58,6 @@ export const editTrain = form(z.object({
       name,
       comment,
       layoutUuid: layoutId,
-      uuid: crypto.randomUUID(),
       address,
       connectionUuid: connectionId,
     }).where(eq(TrainTable.uuid, uuid));

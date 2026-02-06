@@ -1,24 +1,11 @@
-import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-import type { TrainAddress, TrainUuid } from "../Train";
+import { z } from "zod/v4";
 
 export const TrainFunctionModesList = ["Toggle", "Select"] as const;
-export type TrainFunctionModes = typeof TrainFunctionModesList[number];
+export const TrainFunctionModes = z.enum(TrainFunctionModesList);
+export type TrainFunctionModes = z.infer<typeof TrainFunctionModes>;
 
 export const TrainFunctionIconsList = ["Speaker", "Light1", "Light2", "Bell", "Text"] as const;
-export type TrainFunctionIcons = typeof TrainFunctionIconsList[number];
+export const TrainFunctionIcons = z.enum(TrainFunctionIconsList);
+export type TrainFunctionIcons = z.infer<typeof TrainFunctionIcons>;
 
-export interface ITrainFunctionData {
-	value: string;
-	position: number;
-	name: string;
-	icon: TrainFunctionIcons;
-	mode: TrainFunctionModes;
-	visible: boolean;
-	trainUUID: TrainAddress;
-	connUUID: ConnectionUUID;
-	layoutUUID: LayoutUUID;
-}
 
-export function isFunctionData(obj: unknown): obj is ITrainFunctionData {
-	return obj instanceof Object && "value" in obj && "name" in obj && "icon" in obj && "mode" in obj && "visible" in obj && "position" in obj && "trainUUID" in obj && "connUUID" in obj && "layoutUUID" in obj;
-}

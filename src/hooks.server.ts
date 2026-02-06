@@ -34,7 +34,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 export const handleValidationError: HandleValidationError = ({ event, issues }) => {
   return {
-    message: 'Nice try, hacker!'
+    message: `Nice try, hacker! ${event}`
   };
 };
 

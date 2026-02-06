@@ -1,9 +1,10 @@
 import { command, query } from "$app/server";
 import { db } from "$lib/server/db";
 import { TrainFunctionTable, type TrainFunction } from "$lib/server/db/schema/trains";
+import { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
 import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
-import { z } from "zod/v4";
+import { boolean, number, z } from "zod/v4";
 
 // Schema with the function key
 const trainFunctionSchema = z.object({
@@ -100,4 +101,32 @@ export const selectTrainFunction = command(selectTrainFunctionSchema, async (dat
   await getTrainFunctions(data.trainId).refresh();
 
 })
+
+const etrainFunctionSchema = z.object({
+  value: z.string(),
+  trainId: z.uuid(),
+  name: z.string().trim().max(255),
+  icon: TrainFunctionIcons.default("Text"),
+  mode: TrainFunctionModes.default("Toggle"),
+  visible: boolean().default(true),
+  position: number().min(0).default(0),
+  state: boolean().default(false),
+
+});
+
+export const editTrainFunction = command(etrainFunctionSchema, async (
+  { value, trainId, name, icon, mode, visible, position, state }
+) => {
+  await db.update(TrainFunctionTable).set({
+    icon,
+    mode,
+    name,
+    position,
+    state,
+    trainUuid: trainId,
+    visible,
+  }).where(and(eq(TrainFunctionTable.functValue, value), eq(TrainFunctionTable.trainUuid, trainId)));
+
+  await getTrainFunctions(trainId).refresh();
+});
 

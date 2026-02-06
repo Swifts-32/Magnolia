@@ -9,17 +9,16 @@
     Volume2,
   } from "lucide-svelte";
   import {
+    editTrainFunction,
     getTrainFunctions,
     setTrainFunctionPosition,
   } from "../../../../client/Trains/Functions/trainFunctions.remote";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
   import FunctionViewer from "./FunctionViewer.svelte";
-  import { ZodNumber } from "zod/v4";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
-    import { onDestroy } from "svelte";
-    import { toast } from "svelte-sonner";
+  import { onDestroy, onMount } from "svelte";
 
   interface Props {
     trainId: string;
@@ -27,12 +26,27 @@
 
   let { trainId }: Props = $props();
 
-  let trainFunctions2 = $derived.by(async () => {
-    let functs = await getTrainFunctions(trainId);
-    return [...functs].sort((a, b) => a.position - b.position);
-  });
+  // let trainFunctions2 = $derived.by(async () => {
+  //   let functs = await getTrainFunctions(trainId);
+  //   return [...functs].sort((a, b) => a.position - b.position);
+  // });
 
-  let trainFunctions = $derived(await trainFunctions2);
+  let trainFunctions: {
+    id: string;
+    functValue: string;
+    name: string;
+    position: number;
+    trainUuid: string;
+    icon: "Speaker" | "Light1" | "Light2" | "Bell" | "Text";
+    mode: "Toggle" | "Select";
+    visible: boolean;
+    state: boolean;
+  }[] = $state([]);
+
+  onMount(async () => {
+    const functs = await getTrainFunctions(trainId);
+    trainFunctions = functs.toSorted((a, b) => a.position - b.position);
+  });
 
   const flipDurationMs = 100;
 
@@ -53,10 +67,23 @@
     }
   }
 
-  // Save all functions
-  onDestroy(() => {
-    toast.info("Closed");
-  })
+  async function saveFunctions() {
+    trainFunctions.forEach(async (f) => {
+      await editTrainFunction({
+        name: f.name,
+        trainId: f.trainUuid,
+        value: f.functValue,
+        icon: f.icon,
+        mode: f.mode,
+        position: f.position,
+        state: f.state,
+        visible: f.visible,
+      });
+    });
+  }
+
+  // Save all functions TODO cannot distingush between save and cancel on close
+  onDestroy(saveFunctions);
 </script>
 
 {#snippet tableHeader(width: number | undefined, text: string)}
@@ -72,7 +99,7 @@
 <table class="w-full text-left table-auto min-w-max">
   <thead>
     <tr>
-      {@render tableHeader(8, "")}
+      {@render tableHeader(2, "")}
       {@render tableHeader(undefined, "Value")}
       {@render tableHeader(undefined, "Name")}
       {@render tableHeader(undefined, "Icon")}
@@ -106,7 +133,7 @@
             <GripVertical class="w-5 h-5" />
           </p>
         </td>
-        <td class="p-2 border-b border-blue-gray-50">
+        <td class="p-2 border-b border-blue-gray-50 text-center">
           <p
             class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
           >
@@ -114,22 +141,20 @@
           </p>
         </td>
 
-        <td class="p-4 border-b border-blue-gray-50">
+        <td class="p-4 border-b border-blue-gray-50 text-center">
           <p
             class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
           >
-            <input type="text" value={funct.name} />
+            <input type="text" bind:value={funct.name} />
           </p>
         </td>
 
-        <td class="p-4 border-b border-blue-gray-50">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
+        <td class="p-4 border-b border-blue-gray-50 text-center">
+          <div class="flex justify-center">
             <ToggleGroup.Root
               type="single"
               variant="outline"
-              value={funct.icon}
+              bind:value={funct.icon}
             >
               <ToggleGroup.Item value="Bell"><Bell /></ToggleGroup.Item>
               <ToggleGroup.Item value="Speaker"><Volume2 /></ToggleGroup.Item>
@@ -137,26 +162,29 @@
               <ToggleGroup.Item value="Light2"><Sun /></ToggleGroup.Item>
               <ToggleGroup.Item value="Text"><Text /></ToggleGroup.Item>
             </ToggleGroup.Root>
-          </p>
+          </div>
         </td>
         <td class="p-4 border-b border-blue-gray-50">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            <Checkbox checked={funct.mode === "Toggle"} />
-          </p>
+          <div class="flex justify-center">
+            <Checkbox
+              bind:checked={
+                () => funct.mode === "Toggle",
+                (v) => (v ? (funct.mode = "Toggle") : (funct.mode = "Select"))
+              }
+            />
+          </div>
         </td>
-        <td class="p-4 border-b border-blue-gray-50">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            <Checkbox checked={funct.visible} class="text-red-600" />
-          </p>
+        <td class="p-4 border-b border-blue-gray-50 text-center">
+          <div class="flex justify-center">
+            <Checkbox bind:checked={funct.visible} class="text-red-600" />
+          </div>
         </td>
-        <td class="p-4 border-b border-blue-gray-50">
-          <button>
-            <Trash />
-          </button>
+        <td class="p-4 border-b border-blue-gray-50 text-center">
+          <div class="flex justify-center">
+            <button class="cursor-pointer">
+              <Trash class="text-red-800" />
+            </button>
+          </div>
           <!-- <FunctionViewer {funct} {trainId}>
             <p
               class="block cursor-pointer font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
