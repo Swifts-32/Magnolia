@@ -43,8 +43,8 @@ export const TrainTableRelations = relations(TrainTable, ({ one, many }) => ({
 
 // Train Function
 export const TrainFunctionTable = AppSchema.table("function", {
-  functValue: varchar("value").notNull(),
-  trainUuid: uuid("trainId").references(() => TrainTable.uuid, { onDelete: "cascade" }).notNull(),
+  value: varchar("value").notNull(),
+  trainId: uuid("trainId").references(() => TrainTable.uuid, { onDelete: "cascade" }).notNull(),
 
   name: varchar("name", { length: 255 }).notNull().default("New Function"),
   icon: TrainFunctionIcon("icon").default("Text").notNull(),
@@ -55,7 +55,7 @@ export const TrainFunctionTable = AppSchema.table("function", {
   state: boolean("state").default(false).notNull(),
 },
   (table) => [
-    primaryKey({ columns: [table.functValue, table.trainUuid] })
+    primaryKey({ columns: [table.value, table.trainId] })
   ]
 )
 
@@ -63,7 +63,7 @@ export type TrainFunction = InferSelectModel<typeof TrainFunctionTable>;
 
 export const TrainFunctionTableRelations = relations(TrainFunctionTable, ({ one }) => ({
   train: one(TrainTable, {
-    fields: [TrainFunctionTable.trainUuid],
+    fields: [TrainFunctionTable.trainId],
     references: [TrainTable.uuid],
   }),
 }));

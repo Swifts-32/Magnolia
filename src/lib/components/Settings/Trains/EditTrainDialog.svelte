@@ -20,6 +20,7 @@
   import { createDefaultTrainFunction } from "../../../client/Trains/Functions/trainFunctions.remote";
   import * as Select from "$lib/components/ui/select/index.js";
   import InputField from "$lib/components/Form/InputField.svelte";
+  import { any } from "zod/v4";
 
   interface Props {
     trainId: string;
@@ -40,6 +41,7 @@
   const connectionIdValue = $derived(connectionId.as("select").value);
 
   let open = $state(false);
+  let functionTable: FunctionTable | undefined;
 </script>
 
 <Dialog.Root bind:open>
@@ -57,6 +59,7 @@
           await submit();
           // form.reset();
 
+          await functionTable?.save();
           open = false;
           toast.success("Edited train");
         } catch (error) {
@@ -131,7 +134,7 @@
       </Button>
 
       <div class="w-full h-fit max-h-70 overflow-y-auto">
-        <FunctionTable trainId={train.uuid} />
+        <FunctionTable trainId={train.uuid} bind:this={functionTable} />
       </div>
     </form>
 

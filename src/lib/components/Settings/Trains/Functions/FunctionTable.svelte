@@ -9,16 +9,17 @@
     Volume2,
   } from "lucide-svelte";
   import {
+    deleteTrainFunction,
     editTrainFunction,
     getTrainFunctions,
     setTrainFunctionPosition,
+    type TrainFunction,
   } from "../../../../client/Trains/Functions/trainFunctions.remote";
-  import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
-  import FunctionViewer from "./FunctionViewer.svelte";
+  import { onMount } from "svelte";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
-  import { onDestroy, onMount } from "svelte";
 
   interface Props {
     trainId: string;
@@ -26,29 +27,33 @@
 
   let { trainId }: Props = $props();
 
-  // let trainFunctions2 = $derived.by(async () => {
-  //   let functs = await getTrainFunctions(trainId);
-  //   return [...functs].sort((a, b) => a.position - b.position);
-  // });
+  export async function save() {
+    const deleted = originalFunctions.filter(
+      (o) => !trainFunctions.some((n) => n.value === o.value),
+    );
 
-  let trainFunctions: {
-    id: string;
-    functValue: string;
-    name: string;
-    position: number;
-    trainUuid: string;
-    icon: "Speaker" | "Light1" | "Light2" | "Bell" | "Text";
-    mode: "Toggle" | "Select";
-    visible: boolean;
-    state: boolean;
-  }[] = $state([]);
+    deleted.forEach(async (f) => {
+      await deleteTrainFunction({ trainId: f.trainId, value: f.value });
+    });
+
+    trainFunctions.forEach(async (f) => {
+      await editTrainFunction(f);
+    });
+  }
+
+  let trainFunctions: TrainFunction[] = $state([]);
+  let originalFunctions: { value: string; trainId: string }[] = $state([]);
+  const flipDurationMs = 100;
 
   onMount(async () => {
     const functs = await getTrainFunctions(trainId);
     trainFunctions = functs.toSorted((a, b) => a.position - b.position);
-  });
 
-  const flipDurationMs = 100;
+    originalFunctions = functs.map((f) => ({
+      value: f.value,
+      trainId: f.trainId,
+    }));
+  });
 
   function handleDndConsider(e: CustomEvent<DndEvent<any>>) {
     trainFunctions = e.detail.items;
@@ -60,30 +65,12 @@
       if (item.position !== newPos) {
         await setTrainFunctionPosition({
           trainId,
-          value: item.functValue,
+          value: item.value,
           position: newPos,
         });
       }
     }
   }
-
-  async function saveFunctions() {
-    trainFunctions.forEach(async (f) => {
-      await editTrainFunction({
-        name: f.name,
-        trainId: f.trainUuid,
-        value: f.functValue,
-        icon: f.icon,
-        mode: f.mode,
-        position: f.position,
-        state: f.state,
-        visible: f.visible,
-      });
-    });
-  }
-
-  // Save all functions TODO cannot distingush between save and cancel on close
-  onDestroy(saveFunctions);
 </script>
 
 {#snippet tableHeader(width: number | undefined, text: string)}
@@ -137,7 +124,7 @@
           <p
             class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
           >
-            {funct.functValue}
+            {funct.value}
           </p>
         </td>
 
@@ -181,17 +168,18 @@
         </td>
         <td class="p-4 border-b border-blue-gray-50 text-center">
           <div class="flex justify-center">
-            <button class="cursor-pointer">
+            <button
+              type="button"
+              onclick={() => {
+                trainFunctions = trainFunctions.filter(
+                  (f) => f.value !== funct.value,
+                );
+              }}
+              class="cursor-pointer"
+            >
               <Trash class="text-red-800" />
             </button>
           </div>
-          <!-- <FunctionViewer {funct} {trainId}>
-            <p
-              class="block cursor-pointer font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900"
-            >
-              <Edit>
-            </p>
-          </FunctionViewer> -->
         </td>
       </tr>
     {/each}
