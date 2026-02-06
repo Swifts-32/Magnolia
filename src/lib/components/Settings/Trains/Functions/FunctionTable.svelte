@@ -10,6 +10,7 @@
     Volume2,
   } from "lucide-svelte";
   import {
+    addTrainFunction,
     createDefaultTrainFunction,
     deleteTrainFunction,
     editTrainFunction,
@@ -30,9 +31,8 @@
 
   let { trainId }: Props = $props();
 
-
-  // TODO ADD New functions
   export async function save() {
+    // Deleted Functions
     const deleted = originalFunctions.filter(
       (o) => !trainFunctions.some((n) => n.value === o.value),
     );
@@ -41,6 +41,16 @@
       await deleteTrainFunction({ trainId: f.trainId, value: f.value });
     });
 
+    // Added Functions
+    const added = trainFunctions.filter(
+      (n) => !originalFunctions.some((o) => o.value === n.value),
+    );
+
+    for (const f of added) {
+      await addTrainFunction(f);
+    }
+
+    // Update train functions
     trainFunctions.forEach(async (f) => {
       await editTrainFunction(f);
     });

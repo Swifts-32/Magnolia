@@ -118,6 +118,23 @@ const etrainFunctionSchema = z.object({
 
 export type TrainFunction = z.infer<typeof etrainFunctionSchema>
 
+export const addTrainFunction = command(etrainFunctionSchema, async (
+  { value, trainId, name, icon, mode, visible, position, state }
+) => {
+  await db.insert(TrainFunctionTable).values({
+    value,
+    icon,
+    mode,
+    name,
+    position,
+    state,
+    trainId,
+    visible,
+  });
+
+  await getTrainFunctions(trainId).refresh();
+});
+
 export const editTrainFunction = command(etrainFunctionSchema, async (
   { value, trainId, name, icon, mode, visible, position, state }
 ) => {
