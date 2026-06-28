@@ -4,7 +4,6 @@
 	import Fab from "$lib/components/FAB/Fab.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import AddLayoutDialog from "$lib/components/Layout/AddLayoutDialog.svelte";
-	import * as ContextMenu from "$lib/components/ui/context-menu/index.js";
 </script>
 
 <!-- Add Layout Button -->
@@ -14,33 +13,29 @@
 	</Fab>
 </AddLayoutDialog>
 
+{#snippet layoutButton(layout: { id: string; name: string })}
+	<a
+		class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
+		href={`/layouts/${layout.id}`}
+	>
+		<p class="text-3xl">{layout.name}</p>
+	</a>
+{/snippet}
+
 <div class="mx-2 flex flex-wrap">
-	j
 	<svelte:boundary>
 		{#each await getLayouts() as layout}
-			<ContextMenu.Root>
-				<ContextMenu.Trigger>
-					<a
-						class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
-						href={`/layouts/${layout.id}`}
-					>
-						<p class="text-3xl">{layout.name}</p>
-					</a>
-				</ContextMenu.Trigger>
-				<ContextMenu.Content class="w-52">
-					<ContextMenu.Item inset>
-						Delete
-						<ContextMenu.Shortcut>Crtl + Del</ContextMenu.Shortcut>
-					</ContextMenu.Item>
-				</ContextMenu.Content>
-			</ContextMenu.Root>
+			{@render layoutButton(layout)}
 		{/each}
 
 		{#snippet pending()}
-			<div class="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
-  <div class="h-12 w-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-</div>
-
+			<div
+				class="absolute inset-0 bg-black/50 flex items-center justify-center z-50"
+			>
+				<div
+					class="h-12 w-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
+				></div>
+			</div>
 		{/snippet}
 
 		{#snippet failed(error, reset)}
