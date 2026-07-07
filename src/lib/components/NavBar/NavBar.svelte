@@ -28,18 +28,16 @@
 
 	<div class="flex">
 		{#each navBarData.links as link}
-			{#if link.displayInNav}
-				<a
-					class="flex flex-col justify-center items-center h-16 w-32 text-lg cursor-pointer {link.url ==
-					navBarData.curLink
-						? 'text-green-200 border-b-4'
-						: 'text-white '}"
-					href={link.url}
-					onclick={() => handleClick(link.url)}
-				>
-					<p>{link.linkText}</p>
-				</a>
-			{/if}
+			<a
+				class="flex flex-col justify-center items-center h-16 w-32 text-lg cursor-pointer {link.url ==
+				navBarData.curLink
+					? 'text-green-200 border-b-4'
+					: 'text-white '}"
+				href={link.url}
+				onclick={() => handleClick(link.url)}
+			>
+				<p>{link.linkText}</p>
+			</a>
 		{/each}
 	</div>
 </nav>

@@ -14,14 +14,9 @@
 </script>
 
 <!-- Add Connection Button -->
-<AddConnectionDialog layoutId={data.id}>
-  <Fab label="Add Connection">
-    <Plus class="size-8" />
-  </Fab>
-</AddConnectionDialog>
 
-<div class="m-4">
-  <h1 class="text-4xl my-10">Connections</h1>
+<div>
+  <h1 class="text-4xl mb-8">Connections</h1>
 
   <div class="flex flex-wrap gap-3">
     {#each await getConnections(data.id) as connection}
@@ -43,3 +38,9 @@
     {/each}
   </div>
 </div>
+
+<AddConnectionDialog layoutId={data.id}>
+  <Fab label="Add Connection">
+    <Plus class="size-8" />
+  </Fab>
+</AddConnectionDialog>

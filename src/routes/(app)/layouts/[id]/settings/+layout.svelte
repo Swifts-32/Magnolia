@@ -1,55 +1,49 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
+  import type { navbarItemData } from "$lib/components/NavBar/linkUtils.svelte";
 
   let { children }: { children: Snippet } = $props();
 
-  const pages: {
-    name: string;
-    link: string;
-  }[] = [
+  const navItems: navbarItemData[] = [
     {
-      name: "Layout",
-      link: `/layouts/${page.params.id}/settings/layout`,
+      linkText: "Layout",
+      url: `/layouts/${page.params.id}/settings/layout`,
     },
     {
-      name: "Connections",
-      link: `/layouts/${page.params.id}/settings/connections`,
+      linkText: "Connections",
+      url: `/layouts/${page.params.id}/settings/connections`,
     },
     {
-      name: "Trains",
-      link: `/layouts/${page.params.id}/settings/trains`,
+      linkText: "Trains",
+      url: `/layouts/${page.params.id}/settings/trains`,
     },
     {
-      name: "Sensors",
-      link: `/layouts/${page.params.id}/settings/sensors`,
+      linkText: "Sensors",
+      url: `/layouts/${page.params.id}/settings/sensors`,
     },
   ];
 </script>
 
-<div class="flex h-screen">
+<div class="flex h-screen border-t border-gray-700">
   <!-- Sidebar -->
   <aside
-    class="w-64 bg-card border-r border-card-foreground shadow-sm flex flex-col"
+    class="w-fit bg-card border-r border-gray-700 shadow-sm flex flex-col"
   >
-    <div class="p-6 border-b border-card-foreground">
-      <h1 class="text-2xl font-bold text-card-foreground">Settings</h1>
-    </div>
-
     <nav class="flex-1 p-4 space-y-2">
-      {#each pages as page1}
-        {#if page1.link == page.url.pathname}
+      {#each navItems as navItem}
+        {#if navItem.url == page.url.pathname}
           <div
             class="block px-4 py-2 rounded-md text-primary-disabled text-lg font-medium"
           >
-            {page1.name}
+            {navItem.linkText}
           </div>
         {:else}
           <a
-            href={page1.link} 
+            href={navItem.url}
             class="block px-4 py-2 rounded-md text-card-foreground text-lg font-medium hover:text-primary transition-colors"
           >
-            {page1.name}
+            {navItem.linkText}
           </a>
         {/if}
       {/each}
@@ -57,7 +51,7 @@
   </aside>
 
   <!-- Main content -->
-  <main class="flex-1 p-6 overflow-y-auto">
+  <main class="flex-1 py-8 px-6 overflow-y-auto">
     {@render children()}
   </main>
 </div>

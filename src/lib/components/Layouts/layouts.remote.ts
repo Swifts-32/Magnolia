@@ -1,7 +1,7 @@
 import { command, form, query } from "$app/server";
 import { db } from "$lib/server/db";
 import { LayoutTable } from "$lib/server/db/schema/layouts";
-import { error, redirect } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
@@ -30,15 +30,12 @@ export const createLayout = form(
     name: z.string().trim().min(1, "Name is required"),
   }),
   async ({ name }) => {
-    const layouts = await db.insert(LayoutTable).values({
+    await db.insert(LayoutTable).values({
       name,
       position: 0,
-    }).returning();
-
-    const layout = layouts[0];
+    });
 
     await getLayouts().refresh();
-    redirect(303, `/layouts/${layout.uuid}`);
   });
 
 export const deleteLayout = command(z.uuid(), async (layoutId) => {

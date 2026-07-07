@@ -1,7 +1,5 @@
 export type navbarItemData = {
 	url: string;
-	displayInNav: boolean;
-	displayInFooter: boolean;
 	linkText: string;
 };
 

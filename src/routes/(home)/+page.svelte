@@ -1,31 +1,94 @@
 <script lang="ts">
-	import { getLayouts } from "../(app)/layouts/layouts.remote";
 	import { Plus } from "lucide-svelte";
 	import Fab from "$lib/components/FAB/Fab.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
-	import AddLayoutDialog from "$lib/components/Layout/AddLayoutDialog.svelte";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import { toast } from "svelte-sonner";
+	import {
+		createLayout,
+		getLayouts,
+	} from "$lib/components/Layouts/layouts.remote";
+
+	let open = $state(false);
 </script>
 
-<!-- Add Layout Button -->
-<AddLayoutDialog>
-	<Fab label="Add Layout">
-		<Plus class="size-8" />
-	</Fab>
-</AddLayoutDialog>
+<!-- Add Layout Dialog -->
+<Dialog.Root
+	bind:open
+	onOpenChange={(v) => {
+		if (!v) {
+			createLayout.element?.reset();
+		}
+	}}
+>
+	<!-- Add Layout FAB -->
+	<Dialog.Trigger>
+		<Fab label="Add Layout">
+			<Plus class="size-8" />
+		</Fab>
+	</Dialog.Trigger>
 
-{#snippet layoutButton(layout: { id: string; name: string })}
-	<a
-		class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
-		href={`/layouts/${layout.id}`}
-	>
-		<p class="text-3xl">{layout.name}</p>
-	</a>
-{/snippet}
+	<Dialog.Content class="sm:max-w-5/6 w-fit min-w-lg max-h-9/10">
+		<Dialog.Header>
+			<Dialog.Title>Create Layout</Dialog.Title>
+		</Dialog.Header>
+
+		<form
+			{...createLayout}
+			oninput={() => createLayout.validate()}
+			{...createLayout.enhance(async (form) => {
+				try {
+					if (await form.submit()) {
+						form.element.reset();
+
+						toast.success("Created Layout");
+						open = false;
+					} else {
+						toast.error("Invalid data");
+					}
+				} catch (error) {
+					toast.error("Something went wrong. Please try again.");
+				}
+			})}
+		>
+			<!-- Layout Name -->
+			<label class="grid grid-cols-4 mt-2 mb-3 items-center gap-4">
+				<p>Layout Name</p>
+				<div class="col-span-3">
+					<input
+						class="border rounded-md p-2 w-full {createLayout.fields.issues()
+							? 'border-red-600 focus:border-red-600'
+							: 'border-gray-300'}"
+						id="name"
+						{...createLayout.fields.name.as("text")}
+					/>
+					{#each createLayout.fields.name.issues() as issue}
+						<p class="text-xs text-red-600">{issue.message}</p>
+					{/each}
+				</div>
+			</label>
+
+			<Dialog.Footer>
+				<Dialog.Close>
+					<Button type="reset" variant="outline" class="w-32"
+						>Cancel</Button
+					>
+				</Dialog.Close>
+				<Button type="submit" class="w-32">Create</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 
 <div class="mx-2 flex flex-wrap">
 	<svelte:boundary>
 		{#each await getLayouts() as layout}
-			{@render layoutButton(layout)}
+			<a
+				class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
+				href={`/layouts/${layout.id}`}
+			>
+				<p class="text-3xl">{layout.name}</p>
+			</a>
 		{/each}
 
 		{#snippet pending()}

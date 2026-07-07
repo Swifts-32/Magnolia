@@ -4,20 +4,14 @@
   import type { Snippet } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import {
-    ConnectionProtocol,
     connectionProtocolList,
-    ConnectionType,
     connectionTypeList,
-    getConnectionHardwareName,
   } from "$lib/client/Connections/Protocols/protocols";
   import Input from "$lib/components/ui/input/input.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import Separator from "$lib/components/ui/separator/separator.svelte";
   import { createConnection } from "../../../client/Connections/connections.remote";
   import SerialConnection from "./Serial/SerialConnection.svelte";
-
-  import * as Select from "$lib/components/ui/select/index.js";
-
   interface Props {
     layoutId: string;
     children: Snippet;
@@ -26,16 +20,17 @@
   let { layoutId, children }: Props = $props();
 
   const { name, hardware, protocol } = createConnection.fields;
-  const hardwareTypeValue: ConnectionType = $derived(
-    hardware.type.as("select").value as ConnectionType,
-  );
-  const protocolValue: ConnectionProtocol = $derived(
-    protocol.as("select").value as ConnectionProtocol,
-  );
-  // let open = $state(false);
+  let open = $state(false);
 </script>
 
-<Dialog.Root>
+<Dialog.Root
+  bind:open
+  onOpenChange={(v) => {
+    if (!v) {
+      createConnection.element?.reset();
+    }
+  }}
+>
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>
@@ -43,16 +38,15 @@
     <Dialog.Header>
       <Dialog.Title>Create Connection</Dialog.Title>
     </Dialog.Header>
-
     <form
-      {...createConnection.enhance(async ({ form, data, submit }) => {
+      {...createConnection.enhance(async (form) => {
         try {
-          await submit();
-          form.reset();
+          if (await form.submit()) {
+            form.element.reset();
 
-          toast.success("Created connection");
-
-          // open = false;
+            toast.success("Created connection");
+            open = false;
+          }
         } catch (error) {
           toast.error("Error creating connection: " + error);
         }
@@ -67,13 +61,9 @@
         <div class="grid grid-cols-4 items-center gap-4">
           <Label for="name" class="text-right">Name</Label>
           <div class="col-span-3">
-            <Input
-              id="name"
-              placeholder="Enter connection name"
-              {...name.as("text")}
-            />
+            <Input id="name" {...name.as("text")} />
             {#each name.issues() as issue}
-              <p class="text-s text-red-600">{issue.message}</p>
+              <p class="text-xs text-red-600">{issue.message}</p>
             {/each}
           </div>
         </div>
@@ -82,22 +72,17 @@
         <div class="grid grid-cols-4 items-center gap-4">
           <Label for="protocol" class="text-right">Protocol</Label>
           <div class="col-span-3">
-            <Select.Root
-              type="single"
-              {...protocol.as("text")}
-              bind:value={() => protocolValue, (value) => protocol.set(value)}
+            <select
+              {...protocol.as("select", "DccEx")}
+              class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
             >
-              <Select.Trigger class="col-span-3">
-                {protocolValue ? protocolValue : "Select your protocol"}
-              </Select.Trigger>
-              <Select.Content>
-                {#each connectionProtocolList as protocolName}
-                  <Select.Item value={protocolName}>
-                    {protocolName}
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
+              {#each connectionProtocolList as protocolName}
+                <option
+                  class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
+                  >{protocolName}</option
+                >
+              {/each}
+            </select>
 
             {#each protocol.issues() as issue}
               <p class="text-s text-red-600">{issue.message}</p>
@@ -105,32 +90,21 @@
           </div>
         </div>
 
-        <Separator />
-
         <!-- Connection Type e.g. Serial, Bluetooth, etc. -->
         <div class="grid grid-cols-4 items-center gap-4">
           <Label for="hardware" class="text-right">Hardware</Label>
           <div class="col-span-3">
-            <Select.Root
-              type="single"
-              {...hardware.type.as("text")}
-              bind:value={
-                () => hardwareTypeValue, (value) => hardware.type.set(value)
-              }
+            <select
+              {...hardware.type.as("select", "Emulator")}
+              class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
             >
-              <Select.Trigger class="col-span-3">
-                {hardwareTypeValue
-                  ? getConnectionHardwareName(hardwareTypeValue)
-                  : "Select your hardware"}
-              </Select.Trigger>
-              <Select.Content>
-                {#each connectionTypeList.filter((type) => type !== "Undefined") as connType}
-                  <Select.Item value={connType}>
-                    {getConnectionHardwareName(connType)}
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
+              {#each connectionTypeList.filter((type) => type !== "Undefined") as connType}
+                <option
+                  class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
+                  >{connType}</option
+                >
+              {/each}
+            </select>
 
             {#each hardware.type.issues() as issue}
               <p class="text-s text-red-600">{issue.message}</p>
@@ -138,14 +112,11 @@
           </div>
         </div>
 
+        <!--  Nothing for Emulator or Wifi yet. -->
         {#if hardware.type.value() === "Serial"}
+          <Separator />
           <SerialConnection path={hardware.path} baudRate={hardware.baudRate} />
-        {:else if hardware.type.value() === "Wifi"}
-          <p>Wifi editor goes here</p>
-        {:else if hardware.type.value() === "Emulator"}
-          <p>Emulator</p>
         {/if}
-        <Separator />
       </div>
     </form>
 
