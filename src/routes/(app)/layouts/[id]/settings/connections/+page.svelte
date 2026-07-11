@@ -13,8 +13,6 @@
   let { data }: PageProps = $props();
 </script>
 
-<!-- Add Connection Button -->
-
 <div>
   <h1 class="text-4xl mb-8">Connections</h1>
 
@@ -39,6 +37,7 @@
   </div>
 </div>
 
+<!-- Add Connection Button -->
 <AddConnectionDialog layoutId={data.id}>
   <Fab label="Add Connection">
     <Plus class="size-8" />

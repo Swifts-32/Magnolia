@@ -1,7 +1,4 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import type { Connection } from "$lib/server/db/schema/connection";
   import {
     deleteConnection,
     editConnection,
@@ -9,17 +6,14 @@
   import { toast } from "svelte-sonner";
   import { Trash2 } from "lucide-svelte";
   import type { Snippet } from "svelte";
+  import type { Connection } from "$lib/server/db/schema/connection";
+  import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
-  import {
-    connectionProtocolList,
-    ConnectionType,
-    connectionTypeList,
-    getConnectionHardwareName,
-  } from "$lib/client/Connections/Protocols/protocols";
-  import { Separator } from "$lib/components/ui/separator";
-  import SerialConnection from "./Serial/SerialConnection.svelte";
+  import Button from "$lib/components/ui/button/button.svelte";
+  import ConnectionFormProtocol from "./FormComponents/ConnectionFormProtocol.svelte";
+  import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
+  import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
+  import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
 
   interface Props {
     connection: Connection;
@@ -28,21 +22,22 @@
 
   let { connection, children }: Props = $props();
 
-  const editConnForm = editConnection.for(connection.uuid);
-  const { name, uuid, hardware, layoutId, protocol } = editConnForm.fields;
+  const editConnForm = $derived(editConnection.for(connection.uuid));
+  const { name, hardware, protocol, layoutId, uuid } = $derived(
+    editConnForm.fields,
+  );
+
   let open = $state(false);
 
-  let serialPath: string | undefined = $state();
-  let baudRate: number | undefined = $state();
-
-  // Reset the form values
+  // Set the form values
   function onOpenChange() {
-    name.set(connection.name);
-    hardware.set(connection.hardware);
-    protocol.set(connection.protocol);
-
-    serialPath = hardware.path.value();
-    baudRate = hardware.baudRate.value();
+    editConnForm.fields.set({
+      name: connection.name,
+      layoutId: connection.layoutUuid,
+      uuid: connection.uuid,
+      protocol: connection.protocol,
+      hardware: connection.hardware,
+    });
   }
 </script>
 
@@ -55,14 +50,14 @@
     <Dialog.Title>Edit Connection</Dialog.Title>
 
     <form
-      {...editConnForm.enhance(async ({ form, data, submit }) => {
+      {...editConnForm.enhance(async (form) => {
         try {
-          await submit();
-          form.reset();
+          if (await form.submit()) {
+            form.element.reset();
 
-          toast.success("Edited connection");
-
-          open = false;
+            toast.success("Edited connection");
+            open = false;
+          }
         } catch (error) {
           toast.error("Error editing connection: " + error);
         }
@@ -74,80 +69,13 @@
       <input {...layoutId.as("hidden", connection.layoutUuid)} />
       <input {...uuid.as("hidden", connection.uuid)} />
 
-      <!-- Connection Name -->
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="name" class="text-right">Name</Label>
-        <div class="col-span-3">
-          <Input id="name" {...name.as("text")} />
-          {#each name.issues() as issue}
-            <p class="text-s text-red-600">{issue.message}</p>
-          {/each}
-        </div>
-      </div>
+      <ConnectionFormName {name} />
 
-      <!-- Connection Protocol e.g. DCC Ex, LCC, etc. -->
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="protocol" class="text-right">Protocol</Label>
-        <div class="col-span-3">
-          <select
-            id="protocol"
-            {...protocol.as("select")}
-            class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {#each connectionProtocolList as protocolName}
-              <option
-                value={protocolName}
-                class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                {protocolName}
-              </option>
-            {/each}
-          </select>
-          {#each protocol.issues() as issue}
-            <p class="text-s text-red-600">{issue.message}</p>
-          {/each}
-        </div>
-      </div>
+      <ConnectionFormProtocol {protocol} />
 
-      <Separator />
+      <ConnectionFormType {hardware} />
 
-      <!-- Connection Type e.g. Serial, Bluetooth, etc. -->
-      <div class="grid grid-cols-4 items-center gap-4">
-        <Label for="hardware" class="text-right">Hardware</Label>
-        <div class="col-span-3">
-          <select
-            id="hardware"
-            {...hardware.type.as("select")}
-            class="flex h-10 w-full items-center justify-between rounded-md border border-input
-                       bg-background px-3 py-2 text-sm ring-offset-background
-                       focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                       disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {#each connectionTypeList as connType}
-              <option
-                value={connType}
-                class="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                {getConnectionHardwareName(connType)}
-              </option>
-            {/each}
-          </select>
-          {#each hardware.issues() as issue}
-            <p class="text-s text-red-600">{issue.message}</p>
-          {/each}
-        </div>
-      </div>
-
-      {#if hardware.type.value() === "Serial"}
-        <SerialConnection path={hardware.path} baudRate={hardware.baudRate} />
-      {:else if hardware.type.value() === "Wifi"}
-        <p>Wifi editor goes here</p>
-      {:else if hardware.type.value() === "Emulator"}
-        <p>Emulator</p>
-      {/if}
+      <ConnectionFormHardware {hardware} />
     </form>
 
     <!-- Delete Connection Dialog -->

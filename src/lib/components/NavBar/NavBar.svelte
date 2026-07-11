@@ -15,24 +15,24 @@
 </script>
 
 <nav class="w-full flex justify-between items-center">
-	<div class="flex-col justify-center items-center mx-10">
+	<div class="flex justify-center items-center mx-10">
 		<button
 			onclick={() => {
 				handleClick("/");
 				goto("/");
 			}}
 		>
-			<House class="cursor-pointer" size="40px" />
+			<House class="cursor-pointer hover:text-foreground/60 transition-all" size="40px"/>
 		</button>
 	</div>
 
 	<div class="flex">
 		{#each navBarData.links as link}
 			<a
-				class="flex flex-col justify-center items-center h-16 w-32 text-lg cursor-pointer {link.url ==
+				class="flex flex-col transition-all justify-center items-center h-16 w-32 text-lg cursor-pointer {link.url ==
 				navBarData.curLink
 					? 'text-green-200 border-b-4'
-					: 'text-white '}"
+					: 'text-white hover:bg-muted/20 hover:border-b-4 hover:border-foreground/50	'}"
 				href={link.url}
 				onclick={() => handleClick(link.url)}
 			>

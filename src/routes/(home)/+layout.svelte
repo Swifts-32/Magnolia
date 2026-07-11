@@ -12,10 +12,10 @@
 			linkText: "Home",
 			url: "/",
 		},
-		{
-			linkText: "Login",
-			url: "/login",
-		},
+		// {
+		// 	linkText: "Login",
+		// 	url: "/login",
+		// },
 	];
 
 	const navbarData = new NavBarData(links, curLink);
