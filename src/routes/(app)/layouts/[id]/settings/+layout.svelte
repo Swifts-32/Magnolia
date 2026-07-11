@@ -18,10 +18,10 @@
       linkText: "Trains",
       url: `/layouts/${page.params.id}/settings/trains`,
     },
-    {
-      linkText: "Sensors",
-      url: `/layouts/${page.params.id}/settings/sensors`,
-    },
+    // {
+    //   linkText: "Sensors",
+    //   url: `/layouts/${page.params.id}/settings/sensors`,
+    // },
   ];
 </script>
 
