@@ -8,7 +8,7 @@
   } from "../../../../lib/client/Connections/connections.remote";
   import { Button } from "$lib/components/ui/button";
   import DccEx from "$lib/components/Protocols/DccEx.svelte";
-    import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
+  import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
 
   let { data }: PageProps = $props();
 </script>
@@ -16,9 +16,6 @@
 <svelte:head>
   <title>{data.name} - Home</title>
 </svelte:head>
-
-<p>Session Id: {data.sessionId}</p>
-<p>Connections</p>
 
 <div class="flex flex-wrap gap-4 m-4">
   {#each await getConnections(data.id) as connection}

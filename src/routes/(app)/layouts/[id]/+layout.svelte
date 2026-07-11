@@ -22,12 +22,12 @@
 			displayInNav: true,
 			displayInFooter: false,
 		},
-		{
-			linkText: "Panel",
-			url: `/layouts/${page.params.id}/panel`,
-			displayInNav: true,
-			displayInFooter: false,
-		},
+		// {
+		// 	linkText: "Panel",
+		// 	url: `/layouts/${page.params.id}/panel`,
+		// 	displayInNav: true,
+		// 	displayInFooter: false,
+		// },
 		{
 			linkText: "Settings",
 			url: `/layouts/${page.params.id}/settings`,
@@ -37,9 +37,6 @@
 	];
 
 	const navBarData = new NavBarData(links, curLink);
-
-	// This is causing page load error
-	// createLayoutClientState(data.layoutId, data.layoutName);
 </script>
 
 <svelte:boundary>

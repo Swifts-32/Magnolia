@@ -13,7 +13,6 @@
     baudRate: RemoteFormField<number>;
   }
 
-  // path ,
   let { baudRate, path }: Props = $props();
 
   let serialPorts = $state(await getSerialPorts());
