@@ -29,12 +29,10 @@
 			linkText: "Trains",
 			url: `/layouts/${page.params.id}/trains`,
 		},
-		// {
-		// 	linkText: "Panel",
-		// 	url: `/layouts/${page.params.id}/panel`,
-		// 	displayInNav: true,
-		// 	displayInFooter: false,
-		// },
+		{
+			linkText: "Panel",
+			url: `/layouts/${page.params.id}/panel`,
+		},
 		{
 			linkText: "Settings",
 			url: `/layouts/${page.params.id}/settings`,

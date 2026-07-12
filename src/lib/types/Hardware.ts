@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-export const connectionTypeList = ["Serial", "Emulator", "Wifi", "Undefined"] as const;
+export const connectionTypeList = ["Serial", "Emulator", "Undefined"] as const;
 export const ConnectionType = z.enum(connectionTypeList);
 export type ConnectionType = z.infer<typeof ConnectionType>;
 
@@ -10,8 +10,6 @@ export function getConnectionHardwareName(hardwareType: ConnectionType): string 
             return "Serial";
         case "Emulator":
             return "Emulator";
-        case "Wifi":
-            return "Wifi";
         case "Undefined":
             return "Please select a connection"
         default:

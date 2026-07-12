@@ -3,9 +3,9 @@
   import { Separator } from "../ui/separator";
   import { getTracksStatus } from "$lib/client/Protocols/DccEx.remote";
   import { onMount } from "svelte";
-  import { writeStringToConnection } from "$lib/client/connections.remote";
   import { Input } from "../ui/input";
   import * as Card from "$lib/components/ui/card/index.js";
+  import { writeStringToConnection } from "$lib/client/Connections.remote";
 
   interface Props {
     connectionId: string;
@@ -57,13 +57,14 @@
     <div class="flex gap-2 items-center">
       <Input bind:value class="h-9" />
       <Button
-        onclick={() => writeStringToConnection({ id: connectionId, command: value })}
+        onclick={() =>
+          writeStringToConnection({ id: connectionId, command: value })}
         >Write</Button
       >
     </div>
 
     <Separator class="my-4" />
-    <h2>Protocol DCC EX</h2>
+
     <p>Tracks Status</p>
 
     <div class="flex flex-wrap gap-2">
