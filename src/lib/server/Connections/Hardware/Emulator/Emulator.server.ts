@@ -1,5 +1,5 @@
 import { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
-import { type HardwareClass, type IEmulatorConnection } from "../hardware";
+import { type IHardware, type IEmulatorConnection } from "../IHardware";
 
 
 export class EmulatorConnection implements IEmulatorConnection {

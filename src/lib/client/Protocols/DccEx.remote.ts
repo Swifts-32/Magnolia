@@ -1,8 +1,8 @@
 import { query } from "$app/server";
-import { App } from "$lib/server/App.server.svelte";
+import { App } from "$lib/server/App.server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
-import { DccEx } from "../../../server/Connections/Protocol/DccEx/DccEx";
+import { DccEx } from "../../server/Connections/Protocol/DccEx/DccEx";
 
 export const getTracksStatus = query(z.uuid(), async (connectionId) => {
   const connection = await App.getConnection(connectionId);

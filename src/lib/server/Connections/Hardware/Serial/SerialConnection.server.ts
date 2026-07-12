@@ -1,5 +1,5 @@
 import { SerialPort, ReadlineParser } from 'serialport';
-import type { HardwareClass, ISerialConnection } from "../hardware";
+import type { IHardware, ISerialConnection } from "../IHardware";
 import { ConnectionType } from '$lib/client/Connections/Protocols/protocols';
 import { createRequire } from 'module';
 

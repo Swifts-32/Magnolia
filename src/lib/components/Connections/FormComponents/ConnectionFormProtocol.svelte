@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { connectionProtocolList } from "$lib/client/Connections/Protocols/protocols";
+  
+  import { connectionProtocolList } from "$lib/types/Protocols";
   import Label from "$lib/components/ui/label/label.svelte";
   import { createConnection } from "../../../../client/Connections/connections.remote";
 

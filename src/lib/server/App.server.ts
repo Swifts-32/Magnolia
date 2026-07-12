@@ -1,16 +1,19 @@
-import { Connection, getConnectionsFromDb } from "./Connections/Connection.server";
+import { eq } from "drizzle-orm";
+import { Connection } from "./Connections/Connection.server";
+import { db } from "./db";
+import { ConnectionTable } from "./db/schema/connection";
 
 class app {
   private connections: Map<string, Connection> = new Map();
 
   public async loadConnection(id: string) {
-    const connections = await getConnectionsFromDb(id);
+    const connections = await db.select().from(ConnectionTable).where(eq(ConnectionTable.uuid, id));;
     const connection = connections[0];
 
     const appConnection = new Connection(connection.uuid, connection.name, connection.hardware, connection.protocol, connection.layoutUuid);
     this.connections.set(appConnection.id, appConnection);
   }
-  
+
   public async unloadConnection(id: string): Promise<boolean> {
     const connection = this.connections.get(id);
     if (!connection) return true;

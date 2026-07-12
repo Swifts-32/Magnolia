@@ -1,4 +1,4 @@
-import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
+import type { ConnectionProtocol } from "$lib/types/Protocols";
 import type { IProtocol } from "../IProtocol";
 import { DccExLocoManager } from "./DccExLoco";
 import type EventEmitter from "events";

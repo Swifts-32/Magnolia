@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ChevronDown, ChevronUp } from "lucide-svelte";
-  import { TrainDirection } from "$lib/client/Trains/Train.svelte";
+  
+  import { TrainDirection } from "$lib/types/Trains";
   import { cn } from "$lib/utils";
 
   interface Props {

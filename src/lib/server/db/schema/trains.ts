@@ -1,12 +1,12 @@
 import { boolean, integer, pgEnum, primaryKey, uuid, varchar } from "drizzle-orm/pg-core";
 import { LayoutTable as LayoutTable } from "./layouts";
 import { AppSchema } from "./app";
-import { TrainFunctionIconsList, TrainFunctionModesList } from "../../../types/Trains/Functions/Functions";
+import { TrainFunctionIconsList, TrainFunctionModesList } from "../../../types/TrainFunctions";
 import { relations, type InferSelectModel } from "drizzle-orm";
 import { UserTable } from "./users";
 import { ConnectionTable } from "./connection";
 import { z } from "zod/v4";
-import { TrainDirectionsList } from "../../../types/Trains/Train";
+import { TrainDirectionsList } from "../../../types/Trains";
 
 export const TrainDirection = pgEnum("trainDirection", TrainDirectionsList);
 export const TrainFunctionIcon = pgEnum("trainFunctionIcon", TrainFunctionIconsList);

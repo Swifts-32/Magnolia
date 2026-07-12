@@ -1,7 +1,7 @@
 import { command, form, query } from "$app/server";
-import { ConnectionProtocol, ConnectionType } from "$lib/client/Connections/Protocols/protocols";
-import { App } from "$lib/server/App.server.svelte";
-import { getConnectionsFromDb } from "$lib/server/Connections/Connection.server";
+import { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
+import { ConnectionProtocol } from "$lib/types/Protocols";
+import { App } from "$lib/server/App.server";
 import { db } from "$lib/server/db";
 import { ConnectionTable } from "$lib/server/db/schema/connection";
 import { error } from "@sveltejs/kit";

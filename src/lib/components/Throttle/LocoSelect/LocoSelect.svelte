@@ -7,7 +7,7 @@
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { getTrains } from "../../../client/Trains/trains.remote";
+  import { getLayoutTrains } from "../../../client/Trains/trains.remote";
   import { getConnection } from "../../../client/Connections/connections.remote";
   import AddTrainDialog from "$lib/components/Settings/Trains/AddTrainDialog.svelte";
 
@@ -72,7 +72,7 @@
       <Command.List>
         <Command.Empty>No trains found.</Command.Empty>
         <Command.Group>
-          {#each await getTrains(layoutId) as train}
+          {#each await getLayoutTrains(layoutId) as train}
             <Command.Item
               disabled={disabled || train.userControllingId !== null}
               value={train.uuid}

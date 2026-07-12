@@ -1,6 +1,6 @@
 import type { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 
-export interface HardwareClass {
+export interface IHardware {
     connType: ConnectionType;
 
     isConnected: boolean;
@@ -11,9 +11,9 @@ export interface HardwareClass {
     write: (data: Buffer) => void;
 }
 
-export interface ISerialConnection extends HardwareClass {
+export interface ISerialConnection extends IHardware {
     path: string;
     baudRate: number;
 }
 
-export interface IEmulatorConnection extends HardwareClass { }
+export interface IEmulatorConnection extends IHardware { }

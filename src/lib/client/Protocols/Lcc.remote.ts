@@ -1,5 +1,5 @@
 import { command, query } from "$app/server";
-import { App } from "$lib/server/App.server.svelte";
+import { App } from "$lib/server/App.server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
 import { Lcc } from "$lib/server/Connections/Protocol/Lcc/Lcc";

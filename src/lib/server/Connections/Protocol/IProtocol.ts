@@ -1,4 +1,4 @@
-import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
+import type { ConnectionProtocol } from "$lib/types/Protocols";
 import type { EventEmitter } from "events"
 
 export interface IProtocol {

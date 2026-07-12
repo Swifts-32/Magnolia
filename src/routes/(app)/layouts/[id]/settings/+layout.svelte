@@ -10,10 +10,6 @@
       linkText: "Layout",
       url: `/layouts/${page.params.id}/settings/layout`,
     },
-    {
-      linkText: "Trains",
-      url: `/layouts/${page.params.id}/settings/trains`,
-    },
     // {
     //   linkText: "Sensors",
     //   url: `/layouts/${page.params.id}/settings/sensors`,

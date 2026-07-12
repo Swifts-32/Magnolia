@@ -18,12 +18,16 @@
 			url: `/layouts/${page.params.id}`,
 		},
 		{
+			linkText: "Throttle",
+			url: `/layouts/${page.params.id}/throttle`,
+		},
+		{
 			linkText: "Connections",
 			url: `/layouts/${page.params.id}/connections`,
 		},
 		{
-			linkText: "Throttle",
-			url: `/layouts/${page.params.id}/throttle`,
+			linkText: "Trains",
+			url: `/layouts/${page.params.id}/trains`,
 		},
 		// {
 		// 	linkText: "Panel",

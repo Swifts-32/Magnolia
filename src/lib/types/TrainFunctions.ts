@@ -8,4 +8,9 @@ export const TrainFunctionIconsList = ["Speaker", "Light1", "Light2", "Bell", "T
 export const TrainFunctionIcons = z.enum(TrainFunctionIconsList);
 export type TrainFunctionIcons = z.infer<typeof TrainFunctionIcons>;
 
+export const TrainFunctionKey = z.object({
+    value: z.string(),
+    trainId: z.uuid(),
+});
+export type TrainFunctionKey = z.infer<typeof TrainFunctionKey>;
 

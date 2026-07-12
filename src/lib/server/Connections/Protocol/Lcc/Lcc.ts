@@ -1,8 +1,8 @@
 // src/lib/server/Protocols/Lcc/Lcc.ts
-import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
+import type { ConnectionProtocol } from "$lib/types/Protocols";
 import type EventEmitter from "events";
 import type { IProtocol } from "../IProtocol";
-import { App } from "$lib/server/App.server.svelte";
+import { App } from "$lib/server/App.server";
 import { encode } from "punycode";
 
 export interface LccNode {

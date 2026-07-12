@@ -4,10 +4,10 @@ import { Lcc } from "./Protocol/Lcc/Lcc";
 import { DccEx } from "./Protocol/DccEx/DccEx";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
-import { getlayoutConnections, type ConnectionHardwareType } from "../../client/Connections/connections.remote";
-import type { HardwareClass } from "./Hardware/hardware";
+import { getlayoutConnections, type ConnectionHardwareType } from "../../client/Connections.remote";
+import type { IHardware } from "./Hardware/IHardware";
 import type { IProtocol } from "./Protocol/IProtocol";
-import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
+import type { ConnectionProtocol } from "$lib/types/Protocols";
 import { protocolEvents } from "$lib/server/events";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 
@@ -16,7 +16,7 @@ export class Connection {
   public layoutId: string;
   public name: string;
   public protocol: IProtocol | undefined;
-  public hardware: HardwareClass | undefined;
+  public hardware: IHardware | undefined;
 
   get isConnected(): boolean {
     if (!this.hardware) return false;
@@ -100,10 +100,7 @@ export class Connection {
   }
 
   public write(data: Buffer) {
-    this.hardware?.write(data);
+    if (!this.hardware) return console.error("Failed to write as hardware undefined");
+    this.hardware.write(data);
   }
-}
-
-export async function getConnectionsFromDb(connectionId: string) {
-  return await db.select().from(ConnectionTable).where(eq(ConnectionTable.uuid, connectionId));
 }

@@ -6,7 +6,7 @@
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
   import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import Button from "../ui/button/button.svelte";
-  import type { TrainUuid } from "$lib/types/Trains/Train";
+  import type { TrainUuid } from "$lib/types/Trains";
   import {
     getTrain,
     setTrainMotion,

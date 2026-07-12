@@ -1,12 +1,12 @@
 import { command, form, query } from "$app/server";
-import { App } from "$lib/server/App.server.svelte";
+import { App } from "$lib/server/App.server";
 import { DccEx } from "$lib/server/Connections/Protocol/DccEx/DccEx";
 import { db } from "$lib/server/db";
 import { TrainTable, type Train } from "$lib/server/db/schema/trains";
-import { TrainDirection } from "$lib/types/Trains/Train";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
+import { TrainMotion } from "$lib/types/Trains";
 
 async function getTrainFromDb(trainId: string) {
   const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.uuid, trainId));
@@ -16,7 +16,7 @@ async function getTrainFromDb(trainId: string) {
   return trains[0];
 }
 
-export const getTrains = query(z.uuid(), async (layoutId) => {
+export const getLayoutTrains = query(z.uuid(), async (layoutId) => {
   const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.layoutUuid, layoutId));
 
   return trains;
@@ -42,7 +42,7 @@ export const createTrain = form(z.object({
     connectionUuid: connectionId,
   });
 
-  await getTrains(layoutId).refresh();
+  await getLayoutTrains(layoutId).refresh();
 });
 
 export const editTrain = form(z.object({
@@ -63,7 +63,7 @@ export const editTrain = form(z.object({
     }).where(eq(TrainTable.uuid, uuid));
 
 
-    await getTrains(layoutId).refresh();
+    await getLayoutTrains(layoutId).refresh();
   });
 
 // Delete train using the trainId
@@ -74,17 +74,11 @@ export const deleteTrain = command(z.uuid(), async (trainId) => {
 
   if (res.length === 0) error(404, "Train not found");
 
-  await getTrains(train.layoutUuid).refresh();
+  await getLayoutTrains(train.layoutUuid).refresh();
 });
 
-// Set the trains speed and direction
-const trainMotionSchema = z.object({
-  trainId: z.uuid(),
-  speed: z.number(),
-  direction: TrainDirection,
-});
 
-export const setTrainMotion = command(trainMotionSchema, async (data) => {
+export const setTrainMotion = command(TrainMotion, async (data) => {
 
   // TODO Validate user is allowed to control
   await db.update(TrainTable).set({
@@ -99,7 +93,7 @@ export const setTrainMotion = command(trainMotionSchema, async (data) => {
 
   if ((connection.protocol instanceof DccEx)) {
     const dirBit = train.direction === "Forward" ? 1 : 0;
-    connection.write(`<t ${train.address} ${train.speed} ${dirBit}>`);
+    connection.write(Buffer.from(`<t ${train.address} ${train.speed} ${dirBit}>`));
   }
   else {
     error(500, `Set train motion failed: Protocol no yet implemented: ${connection.protocol?.protocolType}`);
@@ -122,7 +116,7 @@ export const trainEmergencyStop = command(z.uuid(), async (trainId) => {
   if (!connection) error(500, "Emergency stop failed: Connection not found");
 
   if ((connection.protocol instanceof DccEx)) {
-    connection.write(`<!>`);
+    connection.write(Buffer.from(`<!>`));
   }
   else {
     error(500, `Emergency stop failed: Protocol no yet implemented: ${connection.protocol?.protocolType}`);

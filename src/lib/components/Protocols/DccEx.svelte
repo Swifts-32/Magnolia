@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Button } from "../ui/button";
   import { Separator } from "../ui/separator";
-  import { getTracksStatus } from "$lib/client/Connections/Protocols/DccEx.remote";
+  import { getTracksStatus } from "$lib/client/Protocols/DccEx.remote";
   import { onMount } from "svelte";
-  import { writeStringToConnection } from "$lib/client/Connections/connections.remote";
+  import { writeStringToConnection } from "$lib/client/connections.remote";
   import { Input } from "../ui/input";
   import * as Card from "$lib/components/ui/card/index.js";
 

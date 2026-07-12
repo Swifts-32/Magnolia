@@ -121,6 +121,14 @@
   </th>
 {/snippet}
 
+<Button
+  class="w-full my-2"
+  variant="outline"
+  onclick={async () => await createFunction()}
+>
+  <Plus />Add Function
+</Button>
+
 <table class="w-full text-left table-auto min-w-max">
   <thead>
     <tr>
@@ -223,11 +231,3 @@
     {/each}
   </tbody>
 </table>
-
-<Button
-  class="w-full my-2"
-  variant="outline"
-  onclick={async () => await createFunction()}
->
-  <Plus />Add Function
-</Button>

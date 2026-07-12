@@ -1,16 +1,11 @@
 import { command, query } from "$app/server";
 import { db } from "$lib/server/db";
 import { TrainFunctionTable } from "$lib/server/db/schema/trains";
-import { TrainFunctionIcons, TrainFunctionModes } from "$lib/types/Trains/Functions/Functions";
 import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { boolean, number, z } from "zod/v4";
+import { TrainFunctionIcons, TrainFunctionKey, TrainFunctionModes } from "$lib/types/TrainFunctions";
 
-// Schema with the function key
-const trainFunctionSchema = z.object({
-  value: z.string(),
-  trainId: z.uuid(),
-});
 
 // Get the train's functions using the train id
 async function getTrainFunctionsFromDb(trainId: string) {
@@ -29,7 +24,7 @@ export const getTrainFunctions = query(z.uuid(), async (trainId) => {
   }));
 });
 
-export const setTrainFunctionPosition = command(trainFunctionSchema.extend({
+export const setTrainFunctionPosition = command(TrainFunctionKey.extend({
   position: z.number(),
 }), async ({ trainId, value, position }) => {
 
@@ -40,7 +35,7 @@ export const setTrainFunctionPosition = command(trainFunctionSchema.extend({
   getTrainFunctions(trainId).refresh();
 });
 
-export const getTrainFunction = query(trainFunctionSchema, async (data) => {
+export const getTrainFunction = query(TrainFunctionKey, async (data) => {
   const trains: TrainFunction[] = await db.select().from(TrainFunctionTable)
     .where(and(eq(TrainFunctionTable.value, data.value), eq(TrainFunctionTable.trainId, data.trainId)));
 
@@ -48,7 +43,7 @@ export const getTrainFunction = query(trainFunctionSchema, async (data) => {
 });
 
 
-export const deleteTrainFunction = command(trainFunctionSchema, async (data) => {
+export const deleteTrainFunction = command(TrainFunctionKey, async (data) => {
   const res = await db.delete(TrainFunctionTable)
     .where(and(eq(TrainFunctionTable.value, data.value), eq(TrainFunctionTable.trainId, data.trainId)))
     .returning();
