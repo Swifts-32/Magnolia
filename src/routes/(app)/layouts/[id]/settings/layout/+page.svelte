@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Trash2 } from "lucide-svelte";
-  import { deleteLayout } from "../../../../../../lib/components/Layouts/layouts.remote";
+  import { deleteLayout } from "../../../../../../lib/client/layouts.remote";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";

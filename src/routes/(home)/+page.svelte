@@ -7,7 +7,7 @@
 	import {
 		createLayout,
 		getLayouts,
-	} from "$lib/components/Layouts/layouts.remote";
+	} from "$lib/client/layouts.remote";
 
 	let open = $state(false);
 </script>
