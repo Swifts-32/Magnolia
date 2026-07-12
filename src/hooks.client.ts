@@ -1,22 +1,5 @@
-import type { ClientInit } from "@sveltejs/kit";
-// import { layoutClientHandler } from "./services/Layouts/LayoutClientHandler.svelte";
-
-export const init: ClientInit = async () => {
-  // layoutClientHandler.loadLayouts();
-
-  // window.addEventListener("beforeunload", (event) => {
-  //   console.log("Unloading");
-
-  //   fetch('/api/client/delete', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ clientId: layoutClientHandler.clientId })
-  //   });
-  // });
-}
-
-// src/hooks.client.ts
 if (typeof crypto !== "undefined" && !crypto.randomUUID) {
+  console.warn("Crypto is not native. Replacing function")
   crypto.randomUUID = () =>
     (
       'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -27,5 +10,5 @@ if (typeof crypto !== "undefined" && !crypto.randomUUID) {
     ) as `${string}-${string}-${string}-${string}-${string}`
 }
 else {
-  console.log("Crypto exists");
+  console.info("Crypto exists");
 }
