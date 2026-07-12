@@ -1,7 +1,4 @@
-import { db } from "$lib/server/db";
-import { SessionTable } from "$lib/server/db/schema/sessions";
 import { type Handle, type HandleValidationError } from "@sveltejs/kit";
-import { sql } from "drizzle-orm";
 
 
 if (typeof crypto !== "undefined" && !crypto.randomUUID) {
@@ -34,7 +31,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 export const handleValidationError: HandleValidationError = ({ event, issues }) => {
   return {
-    message: `Nice try, hacker! ${event}`
+    message: `Validation error: ${event} ${issues}`
   };
 };
 
