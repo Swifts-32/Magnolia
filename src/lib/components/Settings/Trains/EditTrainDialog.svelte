@@ -8,19 +8,16 @@
     editTrain,
     getTrain,
   } from "../../../client/Trains/trains.remote";
-  import { Plus, Trash2 } from "lucide-svelte";
+  import { Trash2 } from "lucide-svelte";
   import type { Snippet } from "svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
   import {
     getConnection,
-    getConnections,
+    getlayoutConnections,
   } from "../../../client/Connections/connections.remote";
-  import { createDefaultTrainFunction } from "../../../client/Trains/Functions/trainFunctions.remote";
   import * as Select from "$lib/components/ui/select/index.js";
   import InputField from "$lib/components/Form/InputField.svelte";
-  import { any } from "zod/v4";
 
   interface Props {
     trainId: string;
@@ -54,14 +51,16 @@
 
     <form
       id="edit-train-form"
-      {...editTrain.enhance(async ({ submit }) => {
+      {...editTrain.enhance(async (form) => {
         try {
-          await submit();
-          // form.reset();
+          if (await form.submit()) {
+            form.element.reset();
 
-          await functionTable?.save();
-          open = false;
-          toast.success("Edited train");
+            await functionTable?.save();
+
+            toast.success("Edited train");
+            open = false;
+          }
         } catch (error) {
           toast.error("Error editing train: " + error);
         }
@@ -110,7 +109,7 @@
                 "Select a connection"}
             </Select.Trigger>
             <Select.Content>
-              {#each await getConnections(train.layoutUuid) as connection}
+              {#each await getlayoutConnections(train.layoutUuid) as connection}
                 <Select.Item value={connection.uuid}
                   >{connection.name}</Select.Item
                 >

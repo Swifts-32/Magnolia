@@ -4,11 +4,12 @@ import { Lcc } from "./Protocol/Lcc/Lcc";
 import { DccEx } from "./Protocol/DccEx/DccEx";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
-import { getConnections, type ConnectionHardwareType } from "../../client/Connections/connections.remote";
+import { getlayoutConnections, type ConnectionHardwareType } from "../../client/Connections/connections.remote";
 import type { HardwareClass } from "./Hardware/hardware";
 import type { IProtocol } from "./Protocol/IProtocol";
 import type { ConnectionProtocol } from "$lib/client/Connections/Protocols/protocols";
 import { protocolEvents } from "$lib/server/events";
+import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 
 export class Connection {
   public id: string;
@@ -52,28 +53,33 @@ export class Connection {
         this.hardware = new SerialConnection(hardware.path, hardware.baudRate);
         break;
 
+      case "Emulator":
+        this.hardware = new EmulatorConnection();
+
       default:
         break;
     }
   }
 
-  public async connect(): Promise<boolean | string> {
+  public async connect() {
+    if (!this.hardware)
+      return {
+        success: false,
+        error: "Hardware undefined"
+      };
 
     // Process received data
-    this.hardware?.onDataReceived((data: Buffer) => this.protocol?.processCommand(data));
+    this.hardware.onDataReceived((data: Buffer) => this.protocol?.processCommand(data));
+    const connected = await this.hardware.connect();
 
-    try {
-      const connected = await this.hardware?.connect();
-      await db.update(ConnectionTable).set({
-        isConnected: connected,
-      }).where(eq(ConnectionTable.uuid, this.id));
+    await db.update(ConnectionTable).set({
+      isConnected: connected,
+    }).where(eq(ConnectionTable.uuid, this.id));
 
-      await getConnections(this.layoutId).refresh();
-      return connected ?? false;
-    }
-    catch (e) {
-      return e as string;
-    }
+    await getlayoutConnections(this.layoutId).refresh();
+    return {
+      success: connected
+    };
   }
 
   public async disconnect(): Promise<boolean | string> {
@@ -85,7 +91,7 @@ export class Connection {
         isConnected: !disconnected,
       }).where(eq(ConnectionTable.uuid, this.id));
 
-      await getConnections(this.layoutId).refresh();
+      await getlayoutConnections(this.layoutId).refresh();
       return disconnected;
     }
     catch (e) {

@@ -1,12 +1,12 @@
 import { SerialPort, ReadlineParser } from 'serialport';
-import type { HardwareClass } from "../hardware";
+import type { HardwareClass, ISerialConnection } from "../hardware";
 import { ConnectionType } from '$lib/client/Connections/Protocols/protocols';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const { autoDetect } = require('@serialport/bindings-cpp');
 
-export class SerialConnection implements HardwareClass {
+export class SerialConnection implements ISerialConnection {
 	private serialPort: SerialPort | null = null;
 
 	public path: string;

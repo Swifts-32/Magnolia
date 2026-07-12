@@ -11,21 +11,30 @@ import { uuid, z } from "zod/v4";
 // Get a connection using the connection Id
 export const getConnection = query(z.uuid().nullable(), async (connectionId) => {
   if (connectionId === null) error(404, "No Connection provided");
-  const connnections = await getConnectionsFromDb(connectionId);
 
-  return connnections[0]
+  const connections = await db.select()
+    .from(ConnectionTable)
+    .where(eq(ConnectionTable.uuid, connectionId));
+
+  return connections[0]
 });
 
-// Get connections for a specific layoutl
-export const getConnections = query(z.uuid(), async (layoutId) => {
-  const connections = await db.select().from(ConnectionTable).where(eq(ConnectionTable.layoutUuid, layoutId));
+/* Get connections for a specific layoutl */
+export const getlayoutConnections = query(z.uuid(), async (layoutId) => {
+  const connections = await db.select()
+    .from(ConnectionTable)
+    .orderBy(ConnectionTable.name)
+    .where(eq(ConnectionTable.layoutUuid, layoutId));
+
   const normalized = connections.map(c => ({ ...c, hardware: c.hardware ?? undefined, }));
   return normalized;
 });
 
 
 export const deleteConnection = command(z.uuid(), async (connectionId) => {
-  const connections = await getConnectionsFromDb(connectionId);
+  const connections = await db.select()
+    .from(ConnectionTable)
+    .where(eq(ConnectionTable.uuid, connectionId));
 
   const res = await db.delete(ConnectionTable)
     .where(eq(ConnectionTable.uuid, connectionId))
@@ -33,7 +42,7 @@ export const deleteConnection = command(z.uuid(), async (connectionId) => {
 
   if (res.length === 0) error(404, "Connection not found");
 
-  await getConnections(connections[0].layoutUuid).refresh();
+  await getlayoutConnections(connections[0].layoutUuid).refresh();
 });
 
 
@@ -62,9 +71,9 @@ export const editConnection = form(
       hardware: hardware,
     }).where(eq(ConnectionTable.uuid, uuid));
 
-    await unloadConnection(uuid);
+    await disconnectConnection(uuid);
     await connectConnection(uuid);
-    getConnections(layoutId).refresh();
+    getlayoutConnections(layoutId).refresh();
   });
 
 export const createConnection = form(
@@ -90,22 +99,30 @@ export const createConnection = form(
       error(500, "Failed to insert");
     }
 
-    await getConnections(layoutId).refresh();
+    getlayoutConnections(layoutId).refresh();
   });
 
 export const connectConnection = command(z.uuid(), async (connectionId) => {
   const appConnection = await App.getConnection(connectionId);
   if (!appConnection) {
-    error(500, "Connection not found");
+    return {
+      sucess: false,
+      error: "Connection not found"
+    }
   }
 
   const result = await appConnection.connect();
-  console.log(`Connected Connection: ${result}`);
+  getConnection(connectionId).refresh();
+  return result;
 });
 
-export const unloadConnection = command(z.uuid(), async (connectionId) => {
+export const disconnectConnection = command(z.uuid(), async (connectionId) => {
   const result = await App.unloadConnection(connectionId);
-  console.log(`Unloaded Connection: ${result}`);
+  getConnection(connectionId).refresh();
+
+  return {
+    sucess: result
+  }
 });
 
 export const writeStringToConnection = command(z.object({

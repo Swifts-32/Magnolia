@@ -1,12 +1,14 @@
 import type { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 
 export interface HardwareClass {
-    connect: () => Promise<boolean>;
-    isConnected: boolean;
     connType: ConnectionType;
+
+    isConnected: boolean;
+    connect: () => Promise<boolean>;
     disconnect: () => Promise<boolean>;
-    write: (data: Buffer) => void;
+
     onDataReceived: (callback: (data: Buffer) => void) => void;
+    write: (data: Buffer) => void;
 }
 
 export interface ISerialConnection extends HardwareClass {
@@ -14,5 +16,4 @@ export interface ISerialConnection extends HardwareClass {
     baudRate: number;
 }
 
-export interface IEmulatorConnection extends HardwareClass {
-};
+export interface IEmulatorConnection extends HardwareClass { }

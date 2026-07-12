@@ -11,10 +11,6 @@
       url: `/layouts/${page.params.id}/settings/layout`,
     },
     {
-      linkText: "Connections",
-      url: `/layouts/${page.params.id}/settings/connections`,
-    },
-    {
       linkText: "Trains",
       url: `/layouts/${page.params.id}/settings/trains`,
     },

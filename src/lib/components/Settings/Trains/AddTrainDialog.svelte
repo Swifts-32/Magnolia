@@ -8,7 +8,7 @@
   import type { RemoteFormIssue } from "@sveltejs/kit";
   import {
     getConnection,
-    getConnections,
+    getlayoutConnections,
   } from "../../../client/Connections/connections.remote";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
@@ -31,6 +31,8 @@
   const connectionIdValue: string = $derived(
     connectionId.as("select").value as string,
   );
+
+  let open = $state(false);
 </script>
 
 {#snippet issues(i: RemoteFormIssue[] | undefined)}
@@ -39,7 +41,12 @@
   {/each}
 {/snippet}
 
-<Dialog.Root>
+<Dialog.Root
+  bind:open
+  onOpenChange={() => {
+    createTrain.element?.reset();
+  }}
+>
   <Dialog.Trigger>
     {@render children()}
   </Dialog.Trigger>
@@ -49,10 +56,14 @@
 
     <form
       id="add-train-form"
-      {...createTrain.enhance(async ({ submit }) => {
+      {...createTrain.enhance(async (form) => {
         try {
-          await submit();
-          toast.success("Created train");
+          if (await form.submit()) {
+            form.element.reset();
+
+            toast.success("Created train");
+            open = false;
+          }
         } catch (error) {
           toast.error("Error creating train: " + error);
         }
@@ -100,7 +111,7 @@
                 : "Select a connection"}
             </Select.Trigger>
             <Select.Content>
-              {#each await getConnections(layoutId) as connection}
+              {#each await getlayoutConnections(layoutId) as connection}
                 <Select.Item value={connection.uuid}
                   >{connection.name}</Select.Item
                 >

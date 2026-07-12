@@ -11,22 +11,16 @@
   let { data }: LayoutProps = $props();
 </script>
 
-<!-- Add Train Button -->
-<AddTrainDialog layoutId={data.id}>
-  <Fab label="Add Train">
-    <Plus class="size-8" />
-  </Fab>
-</AddTrainDialog>
 
-<div class="m-4">
-  <h1 class="text-4xl my-10">Trains</h1>
+<div>
+  <h1 class="text-4xl mb-10">Trains</h1>
 
   <div class="flex flex-wrap gap-3">
     <svelte:boundary>
       {#each await getTrains(data.id) as train}
         <EditTrainDialog trainId={train.uuid}>
           <div
-            class="border-primary cursor-pointer border-2 p-3 flex rounded-md w-[500px] gap-3 items-center h-20 select-none"
+            class="border-primary cursor-pointer border-2 p-3 flex rounded-md w-125 gap-3 items-center h-20 select-none"
           >
             <TrainFront size={40} strokeWidth={1} />
 
@@ -57,3 +51,10 @@
     </svelte:boundary>
   </div>
 </div>
+
+<!-- Add Train Button -->
+<AddTrainDialog layoutId={data.id}>
+  <Fab label="Add Train">
+    <Plus class="size-8" />
+  </Fab>
+</AddTrainDialog>
