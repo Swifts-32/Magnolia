@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createConnection } from "../../../../client/Connections/connections.remote";
+  import type { createConnection } from "$lib/client/Connections.remote";
   import { Separator } from "$lib/components/ui/separator";
   import SerialConnection from "./Hardware/Serial/SerialConnection.svelte";
 

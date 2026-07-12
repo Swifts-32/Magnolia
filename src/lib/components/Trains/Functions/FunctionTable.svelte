@@ -9,21 +9,20 @@
     Trash,
     Volume2,
   } from "lucide-svelte";
-  import {
-    addTrainFunction,
-    createDefaultTrainFunction,
-    deleteTrainFunction,
-    editTrainFunction,
-    getTrainFunctions,
-    setTrainFunctionPosition,
-    type TrainFunction,
-  } from "../../../../client/Trains/Functions/trainFunctions.remote";
   import { flip } from "svelte/animate";
   import { onMount } from "svelte";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
   import { Button } from "$lib/components/ui/button";
+  import {
+    addTrainFunction,
+    deleteTrainFunction,
+    editTrainFunction,
+    getTrainFunctions,
+    setTrainFunctionPosition,
+  } from "$lib/client/TrainFunctions.remote";
+  import type { TrainFunction } from "$lib/server/db/schema/trains";
 
   interface Props {
     trainId: string;
@@ -106,7 +105,6 @@
       trainId: trainId,
       value: `F${i}`,
       visible: true,
-      id: `F${i}`,
     });
   }
 </script>
@@ -150,7 +148,7 @@
     onconsider={handleDndConsider}
     onfinalize={handleDndFinalize}
   >
-    {#each trainFunctions as funct (funct.id)}
+    {#each trainFunctions as funct (funct.value)}
       <tr
         animate:flip={{ duration: 200 }}
         class="hover:bg-secondary hover:text-secondary-foreground"
@@ -158,7 +156,7 @@
         <td
           class="p-4 border-b border-blue-gray-50 cursor-grab"
           use:dragHandle
-          aria-label="drag-handle for {funct.id}"
+          aria-label="drag-handle for {funct.value}"
         >
           <p
             class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"

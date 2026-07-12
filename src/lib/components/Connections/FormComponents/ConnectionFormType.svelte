@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { connectionTypeList } from "$lib/client/Connections/Protocols/protocols";
+    import type { createConnection } from "$lib/client/Connections.remote";
   import Label from "$lib/components/ui/label/label.svelte";
-  import { createConnection } from "../../../../client/Connections/connections.remote";
+    import { connectionTypeList } from "$lib/types/Hardware";
 
   interface Props {
     hardware: typeof createConnection.fields.hardware;

@@ -1,16 +1,16 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import {
-    connectConnection,
-    disconnectConnection,
-    getConnection,
-  } from "$lib/client/Connections/connections.remote";
   import { Button } from "$lib/components/ui/button";
   import { toast } from "svelte-sonner";
   import DccEx from "$lib/components/Protocols/DccEx.svelte";
   import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
-  import EditConnectionDialog from "$lib/components/Settings/Connections/EditConnectionDialog.svelte";
   import { Pen } from "lucide-svelte";
+  import {
+    connectConnection,
+    disconnectConnection,
+    getConnection,
+  } from "$lib/client/Connections.remote";
+  import EditConnectionDialog from "$lib/components/Connections/EditConnectionDialog.svelte";
 
   const connection = $derived(await getConnection(page.params.connectionId));
 </script>

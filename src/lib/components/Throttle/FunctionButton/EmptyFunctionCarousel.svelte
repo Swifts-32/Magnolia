@@ -1,6 +1,6 @@
 <script lang="ts">
+    import FunctionIcons from "$lib/components/Trains/Functions/FunctionIcons.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
-	import FunctionIcons from "$lib/components/Settings/Trains/Functions/FunctionIcons.svelte";
 </script>
 
 <div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-fit h-full">

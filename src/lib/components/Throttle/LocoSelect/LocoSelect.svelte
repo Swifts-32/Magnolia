@@ -7,9 +7,9 @@
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
-  import { getLayoutTrains } from "../../../client/Trains/trains.remote";
-  import { getConnection } from "../../../client/Connections/connections.remote";
-  import AddTrainDialog from "$lib/components/Settings/Trains/AddTrainDialog.svelte";
+    import { getLayoutTrains } from "$lib/client/Trains.remote";
+    import { getConnection } from "$lib/client/Connections.remote";
+    import AddTrainDialog from "$lib/components/Trains/AddTrainDialog.svelte";
 
   interface Props {
     selTrainId: string | undefined;

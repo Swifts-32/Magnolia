@@ -1,10 +1,10 @@
 import { boolean, jsonb, pgEnum, uuid, varchar } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
 import { LayoutTable } from "./layouts";
-import { connectionTypeList } from "../../../client/Protocols/protocols";
 import { connectionProtocolList } from "$lib/types/Protocols";
 import type { InferSelectModel } from "drizzle-orm";
-import type { ConnectionHardwareType } from "../../../client/Connections.remote";
+import { connectionTypeList } from "$lib/types/Hardware";
+import type { ConnectionHardwareType } from "$lib/client/Connections.remote";
 
 export const ConnectionProtocolEnum = pgEnum("connectionProtocol", connectionProtocolList);
 export const ConnectionTypeEnum = pgEnum("connectionType", connectionTypeList);

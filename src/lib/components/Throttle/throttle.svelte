@@ -7,12 +7,8 @@
   import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import Button from "../ui/button/button.svelte";
   import type { TrainUuid } from "$lib/types/Trains";
-  import {
-    getTrain,
-    setTrainMotion,
-    trainEmergencyStop,
-  } from "../../client/Trains/trains.remote";
   import EmptyFunctionCarousel from "./FunctionButton/EmptyFunctionCarousel.svelte";
+    import { getTrain, setTrainMotion, trainEmergencyStop } from "$lib/client/Trains.remote";
 
   interface Props {
     layoutId: string;

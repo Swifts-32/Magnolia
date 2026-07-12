@@ -1,7 +1,7 @@
-import { SerialPort, ReadlineParser } from 'serialport';
-import type { IHardware, ISerialConnection } from "../IHardware";
-import { ConnectionType } from '$lib/client/Connections/Protocols/protocols';
+import { SerialPort } from 'serialport';
+import type { ISerialConnection } from "../IHardware";
 import { createRequire } from 'module';
+import type { ConnectionType } from '$lib/types/Hardware';
 
 const require = createRequire(import.meta.url);
 const { autoDetect } = require('@serialport/bindings-cpp');

@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
-  import { getlayoutConnections } from "$lib/client/Connections/connections.remote";
-    import AddConnectionDialog from "$lib/components/Settings/Connections/AddConnectionDialog.svelte";
-    import Fab from "$lib/components/FAB/Fab.svelte";
-    import { Plus } from "lucide-svelte";
+  import Fab from "$lib/components/FAB/Fab.svelte";
+  import { Plus } from "lucide-svelte";
+    import { getlayoutConnections } from "$lib/client/Connections.remote";
+    import AddConnectionDialog from "$lib/components/Connections/AddConnectionDialog.svelte";
 
   let { children }: { children: Snippet } = $props();
 </script>

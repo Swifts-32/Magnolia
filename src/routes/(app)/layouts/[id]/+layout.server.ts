@@ -1,4 +1,4 @@
-import { getLayout } from "$lib/components/Layouts/layouts.remote";
+import { getLayout } from "$lib/client/layouts.remote";
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = async ({ params }) => {

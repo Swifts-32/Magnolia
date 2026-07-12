@@ -1,9 +1,4 @@
 <script lang="ts">
-	import {
-		createDefaultTrainFunction,
-		deleteTrainFunction,
-		getTrainFunctions,
-	} from "../../../../client/Trains/Functions/trainFunctions.remote";
 	import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
 	import * as Command from "$lib/components/ui/command/index.js";
 	import * as Popover from "$lib/components/ui/popover/index.js";
@@ -15,14 +10,11 @@
 	import Input from "$lib/components/ui/input/input.svelte";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import { Trash2 } from "lucide-svelte";
-	import {
-		TrainFunctionIconsList,
-		TrainFunctionModesList,
-	} from "$lib/types/Trains/Functions/Functions";
-	import ConformationDialog from "../../Common/ConformationDialog/ConformationDialog.svelte";
+
 	import type { Snippet } from "svelte";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+    import { deleteTrainFunction } from "$lib/client/TrainFunctions.remote";
 
 	interface Props {
 		trainId: string;
@@ -48,10 +40,7 @@
 			<!-- Function Name -->
 			<div class="grid grid-cols-4 items-center gap-4 w-full">
 				<Label for="functionName" class="text-right">Name</Label>
-				<Input
-					id="functionName"
-					class="col-span-3"
-				/>
+				<Input id="functionName" class="col-span-3" />
 			</div>
 
 			<!-- Function Value -->
@@ -135,10 +124,12 @@
 				</AlertDialog.Trigger>
 				<AlertDialog.Content>
 					<AlertDialog.Header>
-						<AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+						<AlertDialog.Title
+							>Are you absolutely sure?</AlertDialog.Title
+						>
 						<AlertDialog.Description>
-							This action cannot be undone. Are you sure you want to delete this
-							function?
+							This action cannot be undone. Are you sure you want
+							to delete this function?
 						</AlertDialog.Description>
 					</AlertDialog.Header>
 
@@ -149,7 +140,7 @@
 								onclick={async () =>
 									await deleteTrainFunction({
 										trainId,
-										value: funct.functValue,
+										value: funct.value,
 									})}>Delete Function</AlertDialog.Action
 							>
 						</Dialog.Close>
@@ -160,7 +151,9 @@
 
 		<Dialog.Footer>
 			<Dialog.Close>
-				<Button type="reset" class="w-28" variant="outline">Cancel</Button>
+				<Button type="reset" class="w-28" variant="outline"
+					>Cancel</Button
+				>
 			</Dialog.Close>
 			<Button type="submit" form="edit-train-function-form" class="w-28"
 				>Save</Button

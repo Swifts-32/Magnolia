@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Button from "$lib/components/ui/button/button.svelte";
   import Throttle from "$lib/components/Throttle/throttle.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import { Plus } from "lucide-svelte";

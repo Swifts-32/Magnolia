@@ -1,8 +1,7 @@
 <script lang="ts">
-  
   import { connectionProtocolList } from "$lib/types/Protocols";
   import Label from "$lib/components/ui/label/label.svelte";
-  import { createConnection } from "../../../../client/Connections/connections.remote";
+  import type { createConnection } from "$lib/client/Connections.remote";
 
   interface Props {
     protocol: typeof createConnection.fields.protocol;

@@ -1,8 +1,4 @@
 <script lang="ts">
-  import {
-    deleteConnection,
-    editConnection,
-  } from "../../../client/Connections/connections.remote";
   import { toast } from "svelte-sonner";
   import { Trash2 } from "lucide-svelte";
   import type { Snippet } from "svelte";
@@ -14,6 +10,7 @@
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
   import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
+    import { deleteConnection, editConnection } from "$lib/client/Connections.remote";
 
   interface Props {
     connection: Connection;

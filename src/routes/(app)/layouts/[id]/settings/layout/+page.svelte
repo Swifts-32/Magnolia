@@ -1,12 +1,12 @@
 <script lang="ts">
   import { Trash2 } from "lucide-svelte";
-  import { deleteLayout } from "../../../../../../lib/client/layouts.remote";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
+  import { deleteLayout } from "$lib/client/layouts.remote";
 
   let { data }: PageProps = $props();
 </script>
@@ -23,7 +23,7 @@
   <!-- Delete Layout Dialog -->
   <AlertDialog.Root>
     <AlertDialog.Trigger>
-      <Button class="w-lg"  variant="destructive">
+      <Button class="w-lg" variant="destructive">
         <Trash2 />Delete Layout
       </Button>
     </AlertDialog.Trigger>

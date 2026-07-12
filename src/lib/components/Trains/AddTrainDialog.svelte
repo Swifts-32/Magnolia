@@ -3,15 +3,12 @@
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
-  import { createTrain } from "../../../client/Trains/trains.remote";
   import type { Snippet } from "svelte";
   import type { RemoteFormIssue } from "@sveltejs/kit";
-  import {
-    getConnection,
-    getlayoutConnections,
-  } from "../../../client/Connections/connections.remote";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
+    import { createTrain } from "$lib/client/Trains.remote";
+    import { getConnection, getlayoutConnections } from "$lib/client/Connections.remote";
 
   interface Props {
     layoutId: string;

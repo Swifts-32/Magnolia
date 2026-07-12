@@ -1,10 +1,8 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { getConnection } from "$lib/client/Connections/connections.remote";
-  import { Pen } from "lucide-svelte";
-  import { getTrain } from "$lib/client/Trains/trains.remote";
-  import EditTrainDialog from "$lib/components/Settings/Trains/EditTrainDialog.svelte";
-  import EditTrainForm from "$lib/components/Settings/Trains/EditTrainForm.svelte";
+  import { getConnection } from "$lib/client/Connections.remote";
+  import { getTrain } from "$lib/client/Trains.remote";
+  import EditTrainForm from "$lib/components/Trains/EditTrainForm.svelte";
 
   const train = $derived(await getTrain(page.params.trainId));
 </script>
@@ -21,6 +19,6 @@
   {:catch}
     <p class="text-sm text-red-400">No Connection</p>
   {/await}
-  
+
   <EditTrainForm trainId={page.params.trainId} />
 </div>

@@ -3,7 +3,7 @@ import { LayoutTable as LayoutTable } from "./layouts";
 import { AppSchema } from "./app";
 import { relations, type InferSelectModel } from "drizzle-orm";
 import { ConnectionTable } from "./connection";
-import { SensorStateList } from "../../../client/Sensors/sensors";
+import { SensorStateList } from "$lib/types/Sensors";
 
 export const sensorState = pgEnum("sensorState", SensorStateList);
 

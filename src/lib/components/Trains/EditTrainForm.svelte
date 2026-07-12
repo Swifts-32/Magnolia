@@ -3,23 +3,15 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
-  import {
-    deleteTrain,
-    editTrain,
-    getTrain,
-  } from "../../../client/Trains/trains.remote";
   import { Trash2 } from "lucide-svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-
   import InputField from "$lib/components/Form/InputField.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
-  import {
-    getConnection,
-    getlayoutConnections,
-  } from "$lib/client/Connections/connections.remote";
     import { page } from "$app/state";
     import { goto } from "$app/navigation";
+    import { deleteTrain, editTrain, getTrain } from "$lib/client/Trains.remote";
+    import { getConnection, getlayoutConnections } from "$lib/client/Connections.remote";
 
   interface Props {
     trainId: string;

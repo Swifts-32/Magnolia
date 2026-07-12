@@ -3,8 +3,8 @@ import { db } from "$lib/server/db";
 import { TrainFunctionTable } from "$lib/server/db/schema/trains";
 import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
-import { boolean, number, z } from "zod/v4";
-import { TrainFunctionIcons, TrainFunctionKey, TrainFunctionModes } from "$lib/types/TrainFunctions";
+import { z } from "zod/v4";
+import { TrainFunction, type TrainFunction, TrainFunctionKey } from "$lib/types/TrainFunctions";
 
 
 // Get the train's functions using the train id
@@ -98,22 +98,7 @@ export const selectTrainFunction = command(selectTrainFunctionSchema, async (dat
 
 })
 
-const etrainFunctionSchema = z.object({
-  value: z.string(),
-  trainId: z.uuid(),
-  name: z.string().trim().max(255),
-  icon: TrainFunctionIcons.default("Text"),
-  mode: TrainFunctionModes.default("Toggle"),
-  visible: boolean().default(true),
-  position: number().min(0).default(0),
-  state: boolean().default(false),
-  id: z.string().optional(),
-});
-
-
-export type TrainFunction = z.infer<typeof etrainFunctionSchema>
-
-export const addTrainFunction = command(etrainFunctionSchema, async (
+export const addTrainFunction = command(TrainFunction, async (
   { value, trainId, name, icon, mode, visible, position, state }
 ) => {
   await db.insert(TrainFunctionTable).values({
@@ -130,7 +115,7 @@ export const addTrainFunction = command(etrainFunctionSchema, async (
   await getTrainFunctions(trainId).refresh();
 });
 
-export const editTrainFunction = command(etrainFunctionSchema, async (
+export const editTrainFunction = command(TrainFunction, async (
   { value, trainId, name, icon, mode, visible, position, state }
 ) => {
   await db.update(TrainFunctionTable).set({

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TrainFunctionIcons } from "$lib/types/Trains/Functions/Functions";
+  import type { TrainFunctionIcons } from "$lib/types/TrainFunctions";
   import { Bell, Lightbulb, Sun, Text, Volume2 } from "lucide-svelte";
 
   interface Props {

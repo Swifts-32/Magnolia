@@ -1,4 +1,4 @@
-import type { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
+import type { ConnectionType } from "$lib/types/Hardware";
 
 export interface IHardware {
     connType: ConnectionType;

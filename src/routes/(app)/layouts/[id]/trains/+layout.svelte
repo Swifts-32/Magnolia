@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
-  import { getConnection } from "$lib/client/Connections/connections.remote";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import { Plus, TrainFront } from "lucide-svelte";
-  import { getLayoutTrains } from "$lib/client/Trains/trains.remote";
-  import AddTrainDialog from "$lib/components/Settings/Trains/AddTrainDialog.svelte";
   import { goto } from "$app/navigation";
+    import { getLayoutTrains } from "$lib/client/Trains.remote";
+    import { getConnection } from "$lib/client/Connections.remote";
+    import AddTrainDialog from "$lib/components/Trains/AddTrainDialog.svelte";
 
   let { children }: { children: Snippet } = $props();
 </script>

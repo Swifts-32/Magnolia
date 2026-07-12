@@ -1,5 +1,4 @@
 import { command, form, query } from "$app/server";
-import { ConnectionType } from "$lib/client/Connections/Protocols/protocols";
 import { ConnectionProtocol } from "$lib/types/Protocols";
 import { App } from "$lib/server/App.server";
 import { db } from "$lib/server/db";
@@ -7,6 +6,7 @@ import { ConnectionTable } from "$lib/server/db/schema/connection";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { uuid, z } from "zod/v4";
+import { ConnectionType } from "$lib/types/Hardware";
 
 // Get a connection using the connection Id
 export const getConnection = query(z.uuid().nullable(), async (connectionId) => {

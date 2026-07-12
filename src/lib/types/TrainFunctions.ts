@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { boolean, number, z } from "zod/v4";
 
 export const TrainFunctionModesList = ["Toggle", "Select"] as const;
 export const TrainFunctionModes = z.enum(TrainFunctionModesList);
@@ -13,4 +13,17 @@ export const TrainFunctionKey = z.object({
     trainId: z.uuid(),
 });
 export type TrainFunctionKey = z.infer<typeof TrainFunctionKey>;
+
+export const TrainFunction = z.object({
+  value: z.string(),
+  trainId: z.uuid(),
+  name: z.string().trim().max(255),
+  icon: TrainFunctionIcons.default("Text"),
+  mode: TrainFunctionModes.default("Toggle"),
+  visible: boolean().default(true),
+  position: number().min(0).default(0),
+  state: boolean().default(false),
+  id: z.string().optional(),
+});
+export type TrainFunction = z.infer<typeof TrainFunction>;
 

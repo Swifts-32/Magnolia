@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getTrainFunctions } from "../../../../client/Trains/Functions/trainFunctions.remote";
   import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
   import * as Command from "$lib/components/ui/command/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
@@ -7,6 +6,7 @@
   import { Check } from "lucide-svelte";
   import FunctionIcons from "./FunctionIcons.svelte";
   import type { TrainFunction } from "$lib/server/db/schema/trains";
+  import { getTrainFunctions } from "$lib/client/TrainFunctions.remote";
 
   interface Props {
     trainId: string;
@@ -53,23 +53,23 @@
       <Command.Empty>No functions found.</Command.Empty>
       <Command.List>
         <Command.Group>
-          {#each Array.from((await getTrainFunctions(trainId)).values()).sort( (a, b) => a.functValue.localeCompare(b.functValue), ) as funct}
+          {#each Array.from((await getTrainFunctions(trainId)).values()).sort( (a, b) => a.value.localeCompare(b.value), ) as funct}
             <Command.Item
-              class="{selFunction?.functValue === funct.functValue
+              class="{selFunction?.value === funct.value
                 ? 'cursor-default'
                 : 'cursor-pointer'}
 								 py-1 px-2"
-              value={funct.functValue}
+              value={funct.value}
               keywords={[funct.name]}
               onclick={() => {
-                if (selFunction?.functValue !== funct.functValue) {
+                if (selFunction?.value !== funct.value) {
                   // If not already selected, select it
                   selFunction = funct;
                   isSelOpen = false;
                 }
               }}
             >
-              {#if selFunction?.functValue === funct.functValue}
+              {#if selFunction?.value === funct.value}
                 <Check size={10} />
               {:else}
                 <div class="w-4"></div>
@@ -80,7 +80,7 @@
                   {funct.name}
                 </p>
                 <p class="text-xs">
-                  Value: {funct.functValue}
+                  Value: {funct.value}
                 </p>
               </div>
             </Command.Item>

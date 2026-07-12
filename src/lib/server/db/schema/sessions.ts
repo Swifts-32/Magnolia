@@ -1,6 +1,5 @@
 import { timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
-import { UserTable } from "./users";
 import type { InferSelectModel } from "drizzle-orm";
 
 export const SessionTable = AppSchema.table("session", {
