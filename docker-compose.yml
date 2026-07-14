@@ -1,8 +1,25 @@
 version: "3.9"
 
+networks:
+  magnolia_net:
+    driver: bridge
+
 services:
+  traefik:
+    image: traefik:v2.10
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - magnolia_net
+
   db:
-    container_name: postgres_db
     image: postgres:15-alpine
     restart: always
     environment:
@@ -14,55 +31,35 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - magnolia_net
 
   migrations:
-    image: swifts32/magnoliawebapp:latest
-    container_name: magnolia-migrations
+    image: swifts32/magnolia-migrations:latest
     depends_on:
       db:
         condition: service_healthy
-    environment: 
-      NODE_ENV: production 
+    environment:
       DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres
-    command: > 
-      sh -c " 
-        echo 'Waiting for DB...' && 
-        until pg_isready -h db -U postgres; do sleep 1; done && 
-        echo 'Running Drizzle migrations...' && 
-        drizzle-kit migrate --config=drizzle-prod.config.ts --force &&
-        echo 'Migrations complete.' &&
-        exit 0
-      "
+    networks:
+      - magnolia_net
 
   app:
     image: swifts32/magnoliawebapp:latest
-    container_name: magnolia-app
     restart: always
-    ports:
-      - "8080:8080"
-
-    # Full USB access (you don't need to know device names)
-    privileged: true
-    # If you prefer a more restrictive option, replace privileged with:
-    # devices:
-    #   - "/dev/bus/usb:/dev/bus/usb"
-
     environment:
-      NODE_ENV: production
       DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres
-
     depends_on:
       migrations:
         condition: service_completed_successfully
-
-    volumes:
-      - app_data:/app/data
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.magnolia.rule=Host(`train.local`)"
+      - "traefik.http.services.magnolia.loadbalancer.server.port=8080"
+    networks:
+      - magnolia_net
 
 volumes:
-  app_data:
   postgres_data:

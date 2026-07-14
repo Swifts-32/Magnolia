@@ -1,0 +1,547 @@
+{
+  "id": "fd387c77-ad12-4c69-9f6e-13bf43dcd8b8",
+  "prevId": "d50af93f-8370-4ad6-b2bc-ebc8adedb293",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "app.settings": {
+      "name": "settings",
+      "schema": "app",
+      "columns": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.connections": {
+      "name": "connections",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "layoutId": {
+          "name": "layoutId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "isConnected": {
+          "name": "isConnected",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "protocol": {
+          "name": "protocol",
+          "type": "connectionProtocol",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'DccEx'"
+        },
+        "hardware": {
+          "name": "hardware",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "connections_layoutId_layouts_id_fk": {
+          "name": "connections_layoutId_layouts_id_fk",
+          "tableFrom": "connections",
+          "tableTo": "layouts",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "layoutId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.layouts": {
+      "name": "layouts",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.sensors": {
+      "name": "sensors",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "layoutId": {
+          "name": "layoutId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connectionId": {
+          "name": "connectionId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "sensorState",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "inverted": {
+          "name": "inverted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "activationDelay": {
+          "name": "activationDelay",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sensors_layoutId_layouts_id_fk": {
+          "name": "sensors_layoutId_layouts_id_fk",
+          "tableFrom": "sensors",
+          "tableTo": "layouts",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "layoutId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "sensors_connectionId_connections_id_fk": {
+          "name": "sensors_connectionId_connections_id_fk",
+          "tableFrom": "sensors",
+          "tableTo": "connections",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "connectionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.session": {
+      "name": "session",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.function": {
+      "name": "function",
+      "schema": "app",
+      "columns": {
+        "value": {
+          "name": "value",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trainId": {
+          "name": "trainId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'New Function'"
+        },
+        "icon": {
+          "name": "icon",
+          "type": "trainFunctionIcon",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Text'"
+        },
+        "mode": {
+          "name": "mode",
+          "type": "trainFunctionMode",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Toggle'"
+        },
+        "visible": {
+          "name": "visible",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "state": {
+          "name": "state",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "function_trainId_trains_id_fk": {
+          "name": "function_trainId_trains_id_fk",
+          "tableFrom": "function",
+          "tableTo": "trains",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "trainId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "function_value_trainId_pk": {
+          "name": "function_value_trainId_pk",
+          "columns": [
+            "value",
+            "trainId"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.trains": {
+      "name": "trains",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "layoutId": {
+          "name": "layoutId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connectionId": {
+          "name": "connectionId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "direction": {
+          "name": "direction",
+          "type": "trainDirection",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Unknown'"
+        },
+        "speed": {
+          "name": "speed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "userControllingId": {
+          "name": "userControllingId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "trains_layoutId_layouts_id_fk": {
+          "name": "trains_layoutId_layouts_id_fk",
+          "tableFrom": "trains",
+          "tableTo": "layouts",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "layoutId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "trains_connectionId_connections_id_fk": {
+          "name": "trains_connectionId_connections_id_fk",
+          "tableFrom": "trains",
+          "tableTo": "connections",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "connectionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "trains_userControllingId_users_id_fk": {
+          "name": "trains_userControllingId_users_id_fk",
+          "tableFrom": "trains",
+          "tableTo": "users",
+          "schemaTo": "app",
+          "columnsFrom": [
+            "userControllingId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app.users": {
+      "name": "users",
+      "schema": "app",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.connectionProtocol": {
+      "name": "connectionProtocol",
+      "schema": "public",
+      "values": [
+        "DccEx",
+        "Lcc"
+      ]
+    },
+    "public.connectionType": {
+      "name": "connectionType",
+      "schema": "public",
+      "values": [
+        "Serial",
+        "Emulator",
+        "Undefined"
+      ]
+    },
+    "public.sensorState": {
+      "name": "sensorState",
+      "schema": "public",
+      "values": [
+        "Active",
+        "Inactive",
+        "Unknown"
+      ]
+    },
+    "public.trainDirection": {
+      "name": "trainDirection",
+      "schema": "public",
+      "values": [
+        "Forward",
+        "Reverse",
+        "Unknown"
+      ]
+    },
+    "public.trainFunctionIcon": {
+      "name": "trainFunctionIcon",
+      "schema": "public",
+      "values": [
+        "Speaker",
+        "Light1",
+        "Light2",
+        "Bell",
+        "Text"
+      ]
+    },
+    "public.trainFunctionMode": {
+      "name": "trainFunctionMode",
+      "schema": "public",
+      "values": [
+        "Toggle",
+        "Select"
+      ]
+    }
+  },
+  "schemas": {
+    "app": "app"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

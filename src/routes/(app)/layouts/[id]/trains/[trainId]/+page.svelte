@@ -20,5 +20,7 @@
     <p class="text-sm text-red-400">No Connection</p>
   {/await}
 
-  <EditTrainForm trainId={page.params.trainId} />
+  {#key train}
+    <EditTrainForm {train} />
+  {/key}
 </div>

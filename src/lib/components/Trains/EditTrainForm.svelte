@@ -8,26 +8,33 @@
   import InputField from "$lib/components/Form/InputField.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
-    import { page } from "$app/state";
-    import { goto } from "$app/navigation";
-    import { deleteTrain, editTrain, getTrain } from "$lib/client/Trains.remote";
-    import { getConnection, getlayoutConnections } from "$lib/client/Connections.remote";
+  import { page } from "$app/state";
+  import { goto } from "$app/navigation";
+  import { deleteTrain, editTrain } from "$lib/client/Trains.remote";
+  import {
+    getConnection,
+    getlayoutConnections,
+  } from "$lib/client/Connections.remote";
+  import { onMount } from "svelte";
+    import type { Train } from "$lib/server/db/schema/trains";
 
   interface Props {
-    trainId: string;
+    train: Train;
   }
 
-  let { trainId }: Props = $props();
+  let { train }: Props = $props();
 
-  const train = $derived(await getTrain(trainId));
   const editTrainForm = $derived(editTrain.for(train.uuid));
 
   const { address, comment, connectionId, name, layoutId, uuid } = $derived(
     editTrainForm.fields,
   );
 
-
-  const connectionIdValue = $derived(connectionId.as("select").value);
+  onMount(() => {
+    if (train.connectionUuid) {      
+      connectionId.set(train.connectionUuid)
+    }
+  })
 
   let functionTable: FunctionTable | undefined;
 </script>
@@ -54,8 +61,8 @@
         <Dialog.Close>
           <AlertDialog.Action
             onclick={async () => {
-                await deleteTrain(train.uuid);
-                goto(`/layouts/${page.params.id}/trains`)
+              await deleteTrain(train.uuid);
+              goto(`/layouts/${page.params.id}/trains`);
             }}>Delete train</AlertDialog.Action
           >
         </Dialog.Close>
@@ -70,7 +77,6 @@
     {...editTrain.enhance(async (form) => {
       try {
         if (await form.submit()) {
-          form.element.reset();
 
           await functionTable?.save();
 
@@ -107,15 +113,14 @@
     <!-- Train Connections -->
     <div class="grid grid-cols-4 items-center gap-4">
       <Label for="connectionId" class="text-right">Connections</Label>
+
       <div class="col-span-3">
-        <Select.Root
+        <Select.Root  
           type="single"
-          {...connectionId.as("text")}
+          allowDeselect={true}
+          {...connectionId.as("text")}       
           bind:value={
-            () =>
-              typeof connectionIdValue === "number"
-                ? undefined
-                : connectionIdValue,
+            () => connectionId.value(),
             (value) => value && connectionId.set(value)
           }
         >

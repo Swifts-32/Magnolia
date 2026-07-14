@@ -22,6 +22,13 @@
       "when": 1766678609687,
       "tag": "0002_ambitious_omega_red",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784021512148,
+      "tag": "0003_gifted_mongoose",
+      "breakpoints": true
     }
   ]
 }

@@ -17,7 +17,10 @@ async function getTrainFromDb(trainId: string) {
 }
 
 export const getLayoutTrains = query(z.uuid(), async (layoutId) => {
-  const trains: Train[] = await db.select().from(TrainTable).where(eq(TrainTable.layoutUuid, layoutId));
+  const trains: Train[] = await db.select()
+    .from(TrainTable)
+    .orderBy(TrainTable.name)
+    .where(eq(TrainTable.layoutUuid, layoutId));
 
   return trains;
 });

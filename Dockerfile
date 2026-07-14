@@ -1,3 +1,5 @@
+# docker buildx build --platform linux/amd64,linux/arm64 -t swifts32/magnoliawebapp:latest  --push .
+
 FROM node:20 AS builder
 
 WORKDIR /app
@@ -16,34 +18,41 @@ RUN npm run build
 
 # --------------------------------
 
-FROM node:20 AS express_server
+FROM node:20 AS app
 
 WORKDIR /app
 
+# Copy only what the runtime needs
+COPY package*.json ./
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/server.js ./server.js
+
 # Create data directory
-RUN mkdir -p /app/data/layouts
+# RUN mkdir -p /app/data/layouts
 
 # RUN apk add --no-cache udev usbutils python3 make g++ postgresql-client
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    udev \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && apt-get install -y \
+#     postgresql-client \
+#     udev \
+#     && rm -rf /var/lib/apt/lists/*
 
 # Copy build artifacts and package files
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/server.js ./
+# COPY --from=builder /app/build ./build
+# COPY --from=builder /app/package.json ./
+# COPY --from=builder /app/server.js ./
 
 # Drizzle stuff - Remember to generate migrations npx drizzle-kit generate
-COPY --from=builder /app/drizzle-prod.config.ts ./
-COPY --from=builder /app/src/lib/server/db/migrations ./migrations
-COPY --from=builder /app/src/lib/server/db/schema ./schema
+# COPY --from=builder /app/drizzle-prod.config.ts ./
+# COPY --from=builder /app/src/lib/server/db/migrations ./migrations
+# COPY --from=builder /app/src/lib/server/db/schema ./schema
 
 # Install production dependencies only
-RUN npm install --omit=dev
-RUN npm install drizzle-kit
+# RUN npm install --omit=dev
+# RUN npm install -g drizzle-kit
 
-ENV PATH="/usr/local/bin:${PATH}"
+RUN npm ci --omit=dev
+
+# ENV PATH="/usr/local/bin:${PATH}"
 ENV NODE_ENV=production
 
 # Create a volume for persistent data
