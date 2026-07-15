@@ -6,12 +6,19 @@ import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 
 export const getLayouts = query(async () => {
-  const layouts = await db.select({
-    id: LayoutTable.uuid,
-    name: LayoutTable.name,
-  }).from(LayoutTable);
+  try {
+    const layouts = await db.select({
+      id: LayoutTable.uuid,
+      name: LayoutTable.name,
+    }).from(LayoutTable);
 
-  return layouts;
+    return layouts;
+  }
+  catch(e) {
+    console.log(e)
+    error(500, "Failed to fetch layouts");
+  }
+
 });
 
 export const getLayout = query(z.uuid(), async (id) => {

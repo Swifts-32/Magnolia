@@ -6,7 +6,7 @@ networks:
 
 services:
   traefik:
-    image: traefik:v2.10
+    image: traefik:latest
     restart: always
     command:
       - "--providers.docker=true"

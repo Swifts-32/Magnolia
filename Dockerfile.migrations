@@ -1,24 +1,22 @@
-# docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.migrations -t swifts32/magnolia-migrations:latest --push .
+# docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.migrations -t swifts32/magnolia-migrations:latest --no-cache --push .
 
 FROM node:20-alpine AS migrations
 
 WORKDIR /app
 
-# Copy only what migrations need
 COPY package*.json ./
-
-# Install dependencies (drizzle-orm MUST be in dependencies, not devDependencies)
 RUN npm ci
 
 # Copy schema + migrations + config
-COPY schema ./schema
-COPY migrations ./migrations
+COPY ./src/lib/server/db/schema ./schema
+COPY ./src/lib/server/db/migrations ./migrations
 COPY drizzle-prod.config.ts ./drizzle-prod.config.ts
 
 # Install drizzle-kit globally
-RUN npm install -g drizzle-kit
+# RUN npm install -g drizzle-kit
+# RUN npm install tsx
 
 ENV NODE_ENV=production
 
 # Default command: run migrations
-CMD ["drizzle-kit", "migrate", "--config=drizzle-prod.config.ts"]
+CMD ["npx","drizzle-kit", "migrate", "--config=drizzle-prod.config.ts"]

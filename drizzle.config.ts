@@ -9,7 +9,7 @@ export default defineConfig({
   schemaFilter: ['public', 'app'],
 
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL || 'postgres://postgres:password@127.0.0.1:5433/postgres',
   },
   verbose: true,
   strict: true,
