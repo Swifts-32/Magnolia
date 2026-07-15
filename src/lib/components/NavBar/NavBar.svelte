@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { NavBarData } from "./linkUtils.svelte";
 	import { goto } from "$app/navigation";
-	import { House } from "lucide-svelte";
+	import { House } from "@lucide/svelte";
 
 	interface Props {
 		navBarData: NavBarData;
@@ -22,7 +22,10 @@
 				goto("/");
 			}}
 		>
-			<House class="cursor-pointer hover:text-foreground/60 transition-all" size="40px"/>
+			<House
+				class="cursor-pointer hover:text-foreground/60 transition-all"
+				size="40px"
+			/>
 		</button>
 	</div>
 

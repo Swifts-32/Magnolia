@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Plus } from "lucide-svelte";
 	import Fab from "$lib/components/FAB/Fab.svelte";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
@@ -8,6 +7,7 @@
 		createLayout,
 		getLayouts,
 	} from "$lib/client/layouts.remote";
+    import { Plus } from "@lucide/svelte";
 
 	let open = $state(false);
 </script>
