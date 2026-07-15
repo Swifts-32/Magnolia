@@ -51,6 +51,10 @@ services:
     restart: always
     environment:
       DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres
+      ORIGIN: http://train.local
+
+      PROTOCOL_HEADER: x-forwarded-proto
+      HOST_HEADER: x-forwarded-host
     depends_on:
       migrations:
         condition: service_completed_successfully

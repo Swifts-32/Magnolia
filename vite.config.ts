@@ -27,5 +27,15 @@ export default defineConfig({
 		}),
 		devtoolsJson(),
 		tailwindcss()
-	]
+	],
+	build: {
+		cssMinify: 'esbuild',
+		minify: "esbuild"
+	},
+	esbuild: {
+		platform: "node",
+		supported: {
+			"dynamic-import": true
+		}
+	}
 });

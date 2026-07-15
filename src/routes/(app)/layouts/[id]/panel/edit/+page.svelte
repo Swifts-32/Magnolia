@@ -17,7 +17,7 @@
         Scissors,
         Trash2,
         Undo2,
-    } from "lucide-svelte";
+    } from "@lucide/svelte";
 
     function handleRotateLeft() {
         const cell = gStore.getSelectedCell();
