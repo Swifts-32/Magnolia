@@ -13,3 +13,15 @@ const pool = new Pool({
 export const db = drizzle({
   client: pool
 });
+
+async function testConnection() {
+  try {
+    // Send a cheap query to check if the database answers
+    await pool.query('SELECT 1');
+    console.log('Database connection established successfully.');
+  } catch (error) {
+    console.error('Database connection failed:', error);
+  }
+}
+
+testConnection();
