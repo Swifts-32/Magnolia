@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Trash2 } from "lucide-svelte";
+  import { Trash2 } from "@lucide/svelte";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";

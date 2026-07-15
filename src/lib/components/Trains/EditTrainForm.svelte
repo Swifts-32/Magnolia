@@ -3,7 +3,7 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
-  import { Trash2 } from "lucide-svelte";
+  import { Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import InputField from "$lib/components/Form/InputField.svelte";
   import Label from "$lib/components/ui/label/label.svelte";

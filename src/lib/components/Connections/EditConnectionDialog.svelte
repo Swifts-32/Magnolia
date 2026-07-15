@@ -1,6 +1,6 @@
 <script lang="ts">
   import { toast } from "svelte-sonner";
-  import { Trash2 } from "lucide-svelte";
+  import { Trash2 } from "@lucide/svelte";
   import type { Snippet } from "svelte";
   import type { Connection } from "$lib/server/db/schema/connection";
   import * as Dialog from "$lib/components/ui/dialog/index.js";

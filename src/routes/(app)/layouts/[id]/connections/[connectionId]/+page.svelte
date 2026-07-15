@@ -4,7 +4,7 @@
   import { toast } from "svelte-sonner";
   import DccEx from "$lib/components/Protocols/DccEx.svelte";
   import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
-  import { Pen } from "lucide-svelte";
+  import { Pen } from "@lucide/svelte";
   import {
     connectConnection,
     disconnectConnection,

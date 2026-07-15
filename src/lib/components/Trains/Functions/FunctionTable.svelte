@@ -8,7 +8,7 @@
     Text,
     Trash,
     Volume2,
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { flip } from "svelte/animate";
   import { onMount } from "svelte";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";

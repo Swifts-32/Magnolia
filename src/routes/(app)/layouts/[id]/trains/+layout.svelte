@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
   import Fab from "$lib/components/FAB/Fab.svelte";
-  import { Plus, TrainFront } from "lucide-svelte";
+  import { Plus, TrainFront } from "@lucide/svelte";
   import { goto } from "$app/navigation";
     import { getLayoutTrains } from "$lib/client/Trains.remote";
     import { getConnection } from "$lib/client/Connections.remote";

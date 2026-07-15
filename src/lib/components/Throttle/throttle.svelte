@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Card } from "$lib/components/ui/card";
   import { Slider } from "$lib/components/ui/slider";
-  import { CircleAlert, Trash } from "lucide-svelte";
+  import { CircleAlert, Trash } from "@lucide/svelte";
   import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
   import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";

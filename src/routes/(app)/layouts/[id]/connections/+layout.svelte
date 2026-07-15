@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
   import Fab from "$lib/components/FAB/Fab.svelte";
-  import { Plus } from "lucide-svelte";
+  import { Plus } from "@lucide/svelte";
     import { getlayoutConnections } from "$lib/client/Connections.remote";
     import AddConnectionDialog from "$lib/components/Connections/AddConnectionDialog.svelte";
 

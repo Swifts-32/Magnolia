@@ -4,7 +4,7 @@ import { TrainFunctionTable } from "$lib/server/db/schema/trains";
 import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod/v4";
-import { TrainFunction, type TrainFunction, TrainFunctionKey } from "$lib/types/TrainFunctions";
+import { TrainFunction, TrainFunctionKey } from "$lib/types/TrainFunctions";
 
 
 // Get the train's functions using the train id

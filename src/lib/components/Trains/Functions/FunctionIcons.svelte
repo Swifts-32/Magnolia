@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { TrainFunctionIcons } from "$lib/types/TrainFunctions";
-  import { Bell, Lightbulb, Sun, Text, Volume2 } from "lucide-svelte";
+  import { Bell, Lightbulb, Sun, Text, Volume2 } from "@lucide/svelte";
 
   interface Props {
     size: number;
