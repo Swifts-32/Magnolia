@@ -5,7 +5,24 @@ import { handler } from './build/handler.js';
 const app = express();
 const PORT = 8080;
 
-console.log('Database URL configured:', process.env.DATABASE_URL ? 'YES' : 'NO');
+async function testDatabase() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    console.error("No connection string found");
+  };
+
+  const pool = new Pool({ connectionString });
+  try {
+    await pool.query('SELECT 1');
+    console.log('Database connection established successfully!');
+  } catch (error) {
+    console.error('Database connection failed:', error.message);
+  } finally {
+    await pool.end();
+  }
+}
+
+testDatabase();
 
 app.use(handler);
 

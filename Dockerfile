@@ -11,22 +11,19 @@ RUN --mount=type=cache,target=/root/.npm \
   npm ci
 
 # --------------------------------
-
 # Build stage
 FROM base AS builder
 # Copy dependencies from previous stage
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 
-# Cache the SvelteKit and Vite build directories across docker builds
-RUN --mount=type=cache,target=/app/.svelte-kit \
-    --mount=type=cache,target=/app/node_modules/.vite \
-    npx svelte-kit sync && npm run build
-# # SvelteKit/Vite build process
-# RUN npm run build
+# Generates typescript and svelte-kit config files dynamically
+RUN npx svelte-kit sync
+
+# Run the build standardly without mounting .svelte-kit as a cache
+RUN npm run build
 
 # --------------------------------
-
 # Production dependencies stage
 FROM base AS prod-dependencies
 COPY package*.json ./
@@ -38,11 +35,16 @@ RUN --mount=type=cache,target=/root/.npm \
 FROM node:20-slim AS app
 WORKDIR /app
 
+# Install udev so node-serialport can find udevadm
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    udev \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV=production
 
 # Copy package metadata
 COPY package*.json ./
-# Copy production-only dependencies (much smaller than development node_modules)
+# Copy production-only dependencies
 COPY --from=prod-dependencies /app/node_modules ./node_modules
 # Copy compiled SvelteKit build output and entrypoint
 COPY --from=builder /app/build ./build

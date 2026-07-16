@@ -27,7 +27,7 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: postgres
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -48,16 +48,18 @@ services:
 
   app:
     image: swifts32/magnoliawebapp:latest
-    restart: always
+    privaledged: true
+    privileged: true
     environment:
       DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres
       ORIGIN: http://train.local
-
       PROTOCOL_HEADER: x-forwarded-proto
       HOST_HEADER: x-forwarded-host
     depends_on:
       migrations:
         condition: service_completed_successfully
+    volumes:
+      - /dev:/dev
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.magnolia.rule=Host(`train.local`)"
