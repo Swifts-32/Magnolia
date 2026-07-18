@@ -1,4 +1,4 @@
-import { SerialPort } from 'serialport';
+import { ReadlineParser, SerialPort } from 'serialport';
 import type { ISerialConnection } from "../IHardware";
 import { createRequire } from 'module';
 import type { ConnectionType } from '$lib/types/Hardware';
@@ -38,11 +38,12 @@ export class SerialConnection implements ISerialConnection {
 			});
 
 			try {
-				// const parser = new ReadlineParser();
-				// this.serialPort.pipe(parser);
+				const parser = this.serialPort.pipe(new ReadlineParser({ delimiter: '\n' }));
 
-				this.serialPort.on('data', (data: Buffer) => {
-					if (this.dataReceived) this.dataReceived(data);
+				parser.on('data', (line: string) => {
+					if (this.dataReceived) {
+						this.dataReceived(Buffer.from(line.trim()));
+					}
 				});
 			}
 			catch (e) {

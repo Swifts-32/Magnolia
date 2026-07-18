@@ -1,3 +1,6 @@
+import { requested } from "$app/server";
+import { getTracksStatus } from "$lib/client/Protocols/DccEx.remote";
+import { protocolEvents } from "$lib/server/events";
 import type { ConnectionProtocol } from "$lib/types/Protocols";
 import type { IProtocol } from "../IProtocol";
 import { DccExLocoManager } from "./DccExLoco";
@@ -18,6 +21,11 @@ export class DccEx implements IProtocol {
     this.events = emitter;
   }
 
+  private _onParsedOutput: ((data: string) => void) | null = null;
+  public onParsedOutput(callback: (data: string) => void) {
+    this._onParsedOutput = callback;
+  }
+
   constructor(connectionId: string) {
     this.connectionId = connectionId;
   }
@@ -32,14 +40,15 @@ export class DccEx implements IProtocol {
   }[] = [];
 
   public processCommand(command: Buffer) {
-    const text = command.toString("utf8");
+    const text = command.toString("utf8").trim();
 
     console.log(`Processing DCC EX command: ${text}`);
+    this._onParsedOutput?.(text);
 
     // Loco broadcasts: <l cab reg speedByte functMap>
     if (text.startsWith("<l")) {
       this.locoManager.handleLocoBroadcast(text);
-      
+
       this.events?.emit("update", {
         connectionId: this.connectionId,
         type: "locos",
@@ -50,11 +59,7 @@ export class DccEx implements IProtocol {
     // Track manager messages 
     if (text.startsWith("<=")) {
       this.processTrackManagerCommands(text);
-
-      this.events?.emit("update", {
-        connectionId: this.connectionId,
-        type: "tracks",
-      });
+      protocolEvents.emit('dccEx_tracks', this.connectionId);
       return;
     }
 

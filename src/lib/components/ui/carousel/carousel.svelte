@@ -18,6 +18,7 @@
 		...restProps
 	}: WithElementRef<CarouselProps> = $props();
 
+	// svelte-ignore state_referenced_locally
 	let carouselState = $state<EmblaContext>({
 		api: undefined,
 		scrollPrev,
@@ -44,7 +45,7 @@
 		carouselState.api?.scrollNext();
 	}
 
-	function scrollTo(index: number, jump?: boolean) {
+	function scrollTo(index: number, jump: boolean = false) {
 		carouselState.api?.scrollTo(index, jump);
 	}
 

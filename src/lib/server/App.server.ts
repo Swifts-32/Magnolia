@@ -14,14 +14,15 @@ class app {
     this.connections.set(appConnection.id, appConnection);
   }
 
-  public async unloadConnection(id: string): Promise<boolean> {
+  public async unloadConnection(id: string) {
     const connection = this.connections.get(id);
-    if (!connection) return true;
+    if (!connection) throw new Error("Connection not found");
 
     const result = await connection.disconnect();
-    console.log(`Disconnected Connection: ${result}`);
+    if (!result) throw new Error("Failed to disconnect connection");
 
-    return this.connections.delete(id);
+    this.connections.delete(id);
+    return connection;
   }
 
   public async getConnection(id: string): Promise<Connection | undefined> {

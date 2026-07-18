@@ -48,7 +48,6 @@ services:
 
   app:
     image: swifts32/magnoliawebapp:latest
-    privaledged: true
     privileged: true
     environment:
       DATABASE_URL: postgres://postgres:mypassword@db:5432/postgres

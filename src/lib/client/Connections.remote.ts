@@ -1,4 +1,4 @@
-import { command, form, query } from "$app/server";
+import { command, form, query, requested } from "$app/server";
 import { ConnectionProtocol } from "$lib/types/Protocols";
 import { App } from "$lib/server/App.server";
 import { db } from "$lib/server/db";
@@ -104,25 +104,20 @@ export const createConnection = form(
 
 export const connectConnection = command(z.uuid(), async (connectionId) => {
   const appConnection = await App.getConnection(connectionId);
-  if (!appConnection) {
-    return {
-      sucess: false,
-      error: "Connection not found"
-    }
-  }
+  if (!appConnection) error(500, "Connection not found")
 
   const result = await appConnection.connect();
+  if (!result.success) error(500, "Connection failed to connect")
+
   getConnection(connectionId).refresh();
-  return result;
+  getlayoutConnections(appConnection.layoutId).refresh();
 });
 
 export const disconnectConnection = command(z.uuid(), async (connectionId) => {
-  const result = await App.unloadConnection(connectionId);
-  getConnection(connectionId).refresh();
+  const connection = await App.unloadConnection(connectionId);
 
-  return {
-    sucess: result
-  }
+  getConnection(connectionId).refresh();
+  getlayoutConnections(connection.layoutId).refresh();
 });
 
 export const writeStringToConnection = command(z.object({
@@ -135,4 +130,22 @@ export const writeStringToConnection = command(z.object({
   const buffer = Buffer.from(command, "utf8");
 
   connection.write(buffer);
+});
+
+export const streamConnectionLogs = query.live(z.uuid(), async function* (connectionId) {
+  const connection = await App.getConnection(connectionId);
+  if (!connection) error(500, "Connection not found");
+
+  let sequenceNumber = 0;
+
+  while (true) {
+    const nextEvent = await connection.hardwareQueue.next();
+
+    sequenceNumber++;
+  
+    yield {
+        id: sequenceNumber, 
+        text: nextEvent // Your raw DCC-EX text string
+    };
+  }
 });

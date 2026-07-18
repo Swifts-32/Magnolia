@@ -15,7 +15,7 @@
 
   let { baudRate, path }: Props = $props();
 
-  let serialPorts = $state(await getSerialPorts());
+  const serialPorts = $derived(await getSerialPorts());
   let serialPathSearch: string = $state("");
 
   let serialPathOpen = $state(false);
@@ -52,10 +52,24 @@
 <!-- Serial Path -->
 <div class="grid grid-cols-4 items-center gap-4 w-full">
   <Label for="serialPath" class="text-right">Serial Path</Label>
-  {#each serialPorts as port}
-    <p>{port.path}</p>
-  {/each}
-  <Input id="serialPath" {...path.as("text")} class="col-span-3" />
+  <div class="col-span-3">
+    <select
+      id="serialPath"
+      {...path.as("select")}
+      class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+    >
+      {#each serialPorts as port}
+        <option
+          class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
+          >{port.path}</option
+        >
+      {/each}
+    </select>
+
+    {#each path.issues() as issue}
+      <p class="text-s text-red-600">{issue.message}</p>
+    {/each}
+  </div>
 
   <!-- <Popover.Root bind:open={serialPathOpen}>
     <Popover.Trigger bind:ref={triggerRef} class="col-span-3">

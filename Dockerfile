@@ -1,58 +1,58 @@
 # docker buildx build --platform linux/amd64,linux/arm64 -t swifts32/magnoliawebapp:latest  --push .
-
-FROM node:20-slim AS base
+# ----------------------------------------------------------------
+# HOST PLATFORM BUILD ENGINE
+# ----------------------------------------------------------------
+FROM --platform=$BUILDPLATFORM node:20-slim AS build-base
 WORKDIR /app
 
-# Dependency stage (shared by both build and runtime)
-FROM base AS dependencies
+# Install dev dependencies (Host platform)
+FROM build-base AS dependencies
 COPY package*.json ./
-
 RUN --mount=type=cache,target=/root/.npm \
   npm ci
 
-# --------------------------------
-# Build stage
-FROM base AS builder
-# Copy dependencies from previous stage
+# 2velteKit Build
+FROM build-base AS builder
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-
-# Generates typescript and svelte-kit config files dynamically
 RUN npx svelte-kit sync
-
-# Run the build standardly without mounting .svelte-kit as a cache
 RUN npm run build
 
-# --------------------------------
-# Production dependencies stage
-FROM base AS prod-dependencies
+# ----------------------------------------------------------------
+# TARGET PLATFORM ENGINE (Compiles target-specific binaries like serialport)
+# ----------------------------------------------------------------
+FROM node:20-slim AS target-base
+WORKDIR /app
+
+# 3. Production dependencies (Target platform - e.g., ARM64)
+FROM target-base AS prod-dependencies
 COPY package*.json ./
-# Clean install only production packages, caching the npm cache
 RUN --mount=type=cache,target=/root/.npm \
   npm ci --omit=dev
 
-# Final lean runtime stage
-FROM node:20-slim AS app
-WORKDIR /app
+# ----------------------------------------------------------------
+# FINAL RUNTIME IMAGE (Target platform - e.g., ARM64)
+# ----------------------------------------------------------------
+FROM target-base AS app
 
-# Install udev so node-serialport can find udevadm
+# Install udev so node-serialport can find udevadm on the target machine
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    udev \
-    && rm -rf /var/lib/apt/lists/*
+  udev \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
-# Copy package metadata
+# Copy metadata
 COPY package*.json ./
-# Copy production-only dependencies
+
+# Copy native target-compiled dependencies
 COPY --from=prod-dependencies /app/node_modules ./node_modules
-# Copy compiled SvelteKit build output and entrypoint
+
+# Copy platform-agnostic JS/CSS output built on the fast host machine
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/server.js ./server.js
-
 
 VOLUME /app/data
 EXPOSE 8080
 
-# Start the express server
 CMD ["node", "server.js"]

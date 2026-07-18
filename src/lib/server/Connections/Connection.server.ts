@@ -10,13 +10,16 @@ import type { IProtocol } from "./Protocol/IProtocol";
 import type { ConnectionProtocol } from "$lib/types/Protocols";
 import { protocolEvents } from "$lib/server/events";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
+import { AsyncEventQueue } from "../eventQueue";
 
 export class Connection {
   public id: string;
   public layoutId: string;
   public name: string;
+
   public protocol: IProtocol | undefined;
   public hardware: IHardware | undefined;
+  public hardwareQueue = new AsyncEventQueue<string>();
 
   get isConnected(): boolean {
     if (!this.hardware) return false;
@@ -34,13 +37,16 @@ export class Connection {
         break;
 
       case "Lcc":
-        this.protocol = new Lcc(this.id);
+      // this.protocol = new Lcc(this.id);
       default:
         break;
     }
 
     if (this.protocol) {
       this.protocol.setEventEmitter(protocolEvents);
+      this.protocol.onParsedOutput((parsedData) => {
+        this.hardwareQueue.push(parsedData);
+      });
     }
 
     // Reset connection status
@@ -69,14 +75,15 @@ export class Connection {
       };
 
     // Process received data
-    this.hardware.onDataReceived((data: Buffer) => this.protocol?.processCommand(data));
+    this.hardware.onDataReceived((data: Buffer) => {
+      this.protocol?.processCommand(data)
+    });
     const connected = await this.hardware.connect();
 
     await db.update(ConnectionTable).set({
       isConnected: connected,
     }).where(eq(ConnectionTable.uuid, this.id));
 
-    await getlayoutConnections(this.layoutId).refresh();
     return {
       success: connected
     };
@@ -91,7 +98,6 @@ export class Connection {
         isConnected: !disconnected,
       }).where(eq(ConnectionTable.uuid, this.id));
 
-      await getlayoutConnections(this.layoutId).refresh();
       return disconnected;
     }
     catch (e) {
