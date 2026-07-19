@@ -12,7 +12,7 @@
 
   let { id, label, value = $bindable(), field }: Props = $props();
 </script>
-// TODO ensure it uses real value
+<!-- TODO ensure it uses real value -->
 <div class="grid grid-cols-4 items-center gap-4">
   <Label for={id} class="text-right">{label}</Label>
   <div class="col-span-3">

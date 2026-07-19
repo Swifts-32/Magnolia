@@ -39,9 +39,9 @@
       (o) => !trainFunctions.some((n) => n.value === o.value),
     );
 
-    deleted.forEach(async (f) => {
+    for (const f of deleted) {
       await deleteTrainFunction({ trainId: f.trainId, value: f.value });
-    });
+    }
 
     // Added Functions
     const added = trainFunctions.filter(
@@ -58,7 +58,7 @@
     });
   }
 
-  let trainFunctions: TrainFunction[] = $state([]);
+  let trainFunctions: (TrainFunction & { id: string })[] = $state([]);
   let originalFunctions: { value: string; trainId: string }[] = $state([]);
   const flipDurationMs = 100;
 
@@ -96,16 +96,22 @@
       i++;
     }
 
-    trainFunctions.push({
-      icon: "Text",
-      mode: "Toggle",
-      name: `New Function ${i}`,
-      position: trainFunctions.length + 1,
-      state: false,
-      trainId: trainId,
-      value: `F${i}`,
-      visible: true,
-    });
+    const newValue = `F${i}`;
+
+    trainFunctions = [
+      ...trainFunctions,
+      {
+        id: `${trainId}_${newValue}`,
+        icon: "Text",
+        mode: "Toggle",
+        name: `New Function ${i}`,
+        position: trainFunctions.length + 1,
+        state: false,
+        trainId: trainId,
+        value: newValue,
+        visible: true,
+      },
+    ];
   }
 </script>
 
@@ -119,15 +125,11 @@
   </th>
 {/snippet}
 
-<Button
-  class="w-full my-2"
-  variant="outline"
-  onclick={async () => await createFunction()}
->
+<Button class="w-full my-2" variant="outline" onclick={createFunction}>
   <Plus />Add Function
 </Button>
 
-<table class="w-full text-left table-auto min-w-max">
+<table class="w-full text-left table-auto">
   <thead>
     <tr>
       {@render tableHeader(2, "")}

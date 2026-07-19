@@ -8,10 +8,9 @@
   import AddTrainDialog from "$lib/components/Trains/AddTrainDialog.svelte";
 
   let { children, params } = $props();
-  const trains = $derived(getLayoutTrains(params.id));
 </script>
 
-<!-- {#snippet trainConnectionName(connectionId: string)}
+{#snippet trainConnectionName(connectionId: string)}
   {#await getConnection(connectionId)}
     <p>Loading Connection Info</p>
   {:then connection}
@@ -21,13 +20,15 @@
   {:catch}
     <p class="text-sm text-red-400">No Connection</p>
   {/await}
-{/snippet} -->
+{/snippet}
 
-<div class="flex h-screen border-t border-gray-700">
+<div class="flex h-screen border-t border-gray-700 w-full">
   <!-- Sidebar -->
-  <aside class="w-fit bg-card border-r border-gray-700 shadow-sm flex flex-col">
+  <aside
+    class="w-fit min-w-30 bg-card border-r border-gray-700 shadow-sm flex flex-col"
+  >
     <nav class="flex-1 flex flex-col m-1 space-y-2">
-      {#each await trains as train}
+      {#each await getLayoutTrains(params.id) as train}
         {@const url = `/layouts/${params.id}/trains/${train.uuid}`}
 
         <button
@@ -45,7 +46,7 @@
             <p class="text-sm text-gray-400">Address: {train.address}</p>
 
             {#if train.connectionUuid}
-              <!-- {@render trainConnectionName(train.connectionUuid)} -->
+              {@render trainConnectionName(train.connectionUuid)}
             {/if}
           </div>
         </button>
@@ -54,14 +55,14 @@
   </aside>
 
   <!-- Main content -->
-  <main class="flex-1 py-8 px-6 overflow-y-auto">
-    <!-- {@render children()} -->
+  <main class="flex-1 py-8 px-6">
+    {@render children()}
   </main>
-
-  <!-- Add Train Button -->
-  <!-- <AddTrainDialog layoutId={params.id}>
-    <Fab label="Add Train">
-      <Plus class="size-8" />
-    </Fab>
-  </AddTrainDialog> -->
 </div>
+
+<!-- Add Train Button -->
+<AddTrainDialog layoutId={params.id}>
+  <Fab label="Add Train">
+    <Plus class="size-8" />
+  </Fab>
+</AddTrainDialog>

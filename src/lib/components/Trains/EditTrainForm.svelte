@@ -71,7 +71,7 @@
   </AlertDialog.Root>
 {/snippet}
 
-<div class="w-full flex flex-col items-center">
+<div class="flex flex-col items-center">
   <form
     id="edit-train-form"
     {...editTrain.enhance(async (form) => {
@@ -85,7 +85,7 @@
         toast.error("Error editing train: " + error);
       }
     })}
-    class="flex-col flex gap-2 w-200 grow"
+    class="flex-col flex gap-2 w-full"
   >
     <input {...layoutId.as("hidden", train.layoutUuid)} />
     <input {...uuid.as("hidden", train.uuid)} />
@@ -124,7 +124,7 @@
           }
         >
           <Select.Trigger class="col-span-3">
-            {@const triggerValue = $derived.by(async () => {
+            {const triggerValue = $derived.by(async () => {
               const connValue = connectionId.value();
               if (!connValue) return "Select a Connection";
 

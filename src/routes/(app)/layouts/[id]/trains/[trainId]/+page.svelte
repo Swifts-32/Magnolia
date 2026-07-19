@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import { getConnection } from "$lib/client/Connections.remote";
   import { getTrain } from "$lib/client/Trains.remote";
-  // import EditTrainForm from "$lib/components/Trains/EditTrainForm.svelte";
+  import EditTrainForm from "$lib/components/Trains/EditTrainForm.svelte";
 
   let { params } = $props();
 </script>
@@ -24,7 +24,7 @@
     {/await}
 
     {#key train}
-      <!-- <EditTrainForm {train} /> -->
+      <EditTrainForm {train} />
     {/key}
   </div>
 {/await}

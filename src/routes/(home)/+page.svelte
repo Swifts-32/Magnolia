@@ -76,30 +76,34 @@
 	</Dialog.Content>
 </Dialog.Root>
 
-<div class="mx-2 flex flex-wrap">
-	<svelte:boundary>
-		{#each layouts as layout}
-			<a
-				class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
-				href={`/layouts/${layout.id}`}
-			>
-				<p class="text-3xl">{layout.name}</p>
-			</a>
-		{/each}
+<main class="mx-2">
+	<h1 class="text-4xl font-medium text-center p-10">Select Your Layout</h1>
 
-		{#snippet pending()}
-			<div
-				class="absolute inset-0 bg-black/50 flex items-center justify-center z-50"
-			>
+	<div class="flex flex-wrap">
+		<svelte:boundary>
+			{#each layouts as layout}
+				<a
+					class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
+					href={`/layouts/${layout.id}`}
+				>
+					<p class="text-3xl">{layout.name}</p>
+				</a>
+			{/each}
+
+			{#snippet pending()}
 				<div
-					class="h-12 w-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
-				></div>
-			</div>
-		{/snippet}
+					class="absolute inset-0 bg-black/50 flex items-center justify-center z-50"
+				>
+					<div
+						class="h-12 w-12 border-4 border-white/30 border-t-white rounded-full animate-spin"
+					></div>
+				</div>
+			{/snippet}
 
-		{#snippet failed(error, reset)}
-			<p>{error}</p>
-			<Button onclick={reset}>Try Again</Button>
-		{/snippet}
-	</svelte:boundary>
-</div>
+			{#snippet failed(error, reset)}
+				<p>{error}</p>
+				<Button onclick={reset}>Try Again</Button>
+			{/snippet}
+		</svelte:boundary>
+	</div>
+</main>
