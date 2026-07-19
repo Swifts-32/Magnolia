@@ -8,6 +8,9 @@
 	import { Toaster } from "svelte-sonner";
 	import type { LayoutProps } from "./$types";
 	import Button from "$lib/components/ui/button/button.svelte";
+	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+    import AppSidebar from "$lib/components/Sidebar/AppSidebar.svelte";
+    import { getLayout } from "$lib/client/layouts.remote";
 
 	let { children }: LayoutProps = $props();
 
@@ -43,12 +46,25 @@
 </script>
 
 <svelte:boundary>
-	<div class="flex flex-col h-dvh">
-		<NavBar {navBarData} />
-		{@render children()}
-	</div>
+	<Sidebar.Provider>
+		<AppSidebar layoutName={(await getLayout(page.params.id)).name} />
 
-	<Toaster richColors theme="dark" position="bottom-left" />
+		<div class="flex flex-1 flex-col overflow-hidden">
+			<header
+				class="flex h-12 items-center gap-4 border-b border-sidebar-border bg-background px-4"
+			>
+				<Sidebar.Trigger class="-ms-1" />
+				<!-- <div class="h-4 w-px bg-sidebar-border"></div> -->
+				<!-- <span class="text-sm font-medium text-muted-foreground"
+					></span
+				> -->
+			</header>
+
+			<main class="flex-1 overflow-y-auto p-6">
+				{@render children?.()}
+			</main>
+		</div>
+	</Sidebar.Provider>
 
 	{#snippet pending()}
 		<div class="fixed inset-0 bg-black/50 flex items-center justify-center">
@@ -62,4 +78,5 @@
 		<p>Error: {error}</p>
 		<Button onclick={reset}>Try again</Button>
 	{/snippet}
+	<Toaster richColors theme="dark" position="bottom-left" />
 </svelte:boundary>
