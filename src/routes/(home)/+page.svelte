@@ -3,13 +3,11 @@
 	import Button from "$lib/components/ui/button/button.svelte";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import { toast } from "svelte-sonner";
-	import {
-		createLayout,
-		getLayouts,
-	} from "$lib/client/layouts.remote";
-    import { Plus } from "@lucide/svelte";
+	import { createLayout, getLayouts } from "$lib/client/layouts.remote";
+	import { Plus } from "@lucide/svelte";
 
 	let open = $state(false);
+	const layouts = await getLayouts();
 </script>
 
 <!-- Add Layout Dialog -->
@@ -70,9 +68,7 @@
 
 			<Dialog.Footer>
 				<Dialog.Close>
-					<Button type="reset" variant="outline" class="w-32"
-						>Cancel</Button
-					>
+					<Button type="reset" variant="outline" class="w-32">Cancel</Button>
 				</Dialog.Close>
 				<Button type="submit" class="w-32">Create</Button>
 			</Dialog.Footer>
@@ -82,7 +78,7 @@
 
 <div class="mx-2 flex flex-wrap">
 	<svelte:boundary>
-		{#each await getLayouts() as layout}
+		{#each layouts as layout}
 			<a
 				class="border-primary flex items-center justify-center border-2 p-2 rounded-md size-52 m-5 select-none"
 				href={`/layouts/${layout.id}`}

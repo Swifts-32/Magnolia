@@ -10,15 +10,16 @@ export const getLayouts = query(async () => {
     const layouts = await db.select({
       id: LayoutTable.uuid,
       name: LayoutTable.name,
-    }).from(LayoutTable);
+    })
+      .from(LayoutTable)
+      .orderBy(LayoutTable.position);
 
     return layouts;
   }
-  catch(e) {
+  catch (e) {
     console.log(e)
     error(500, "Failed to fetch layouts");
   }
-
 });
 
 export const getLayout = query(z.uuid(), async (id) => {

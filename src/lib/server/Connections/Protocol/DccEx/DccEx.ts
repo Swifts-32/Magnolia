@@ -59,7 +59,7 @@ export class DccEx implements IProtocol {
     // Track manager messages 
     if (text.startsWith("<=")) {
       this.processTrackManagerCommands(text);
-      protocolEvents.emit('dccEx_tracks', this.connectionId);
+      protocolEvents.emit('dccEx_trackManager', this.connectionId);
       return;
     }
 

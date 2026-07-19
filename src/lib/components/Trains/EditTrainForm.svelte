@@ -16,7 +16,7 @@
     getlayoutConnections,
   } from "$lib/client/Connections.remote";
   import { onMount } from "svelte";
-    import type { Train } from "$lib/server/db/schema/trains";
+  import type { Train } from "$lib/server/db/schema/trains";
 
   interface Props {
     train: Train;
@@ -31,10 +31,10 @@
   );
 
   onMount(() => {
-    if (train.connectionUuid) {      
-      connectionId.set(train.connectionUuid)
+    if (train.connectionUuid) {
+      connectionId.set(train.connectionUuid);
     }
-  })
+  });
 
   let functionTable: FunctionTable | undefined;
 </script>
@@ -77,7 +77,6 @@
     {...editTrain.enhance(async (form) => {
       try {
         if (await form.submit()) {
-
           await functionTable?.save();
 
           toast.success("Edited train");
@@ -115,23 +114,23 @@
       <Label for="connectionId" class="text-right">Connections</Label>
 
       <div class="col-span-3">
-        <Select.Root  
+        <Select.Root
           type="single"
           allowDeselect={true}
-          {...connectionId.as("text")}       
+          {...connectionId.as("text")}
           bind:value={
             () => connectionId.value(),
             (value) => value && connectionId.set(value)
           }
         >
           <Select.Trigger class="col-span-3">
-          {const triggerValue = $derived.by(async () => {
-            const connValue = connectionId.value()
-            if (!connValue) return "Select a Connection"
+            {@const triggerValue = $derived.by(async () => {
+              const connValue = connectionId.value();
+              if (!connValue) return "Select a Connection";
 
-            return (await getConnection(connValue)).name
-          })}
-          {await triggerValue}
+              return (await getConnection(connValue)).name;
+            })}
+            {await triggerValue}
           </Select.Trigger>
           <Select.Content>
             {#each await getlayoutConnections(train.layoutUuid) as connection}
