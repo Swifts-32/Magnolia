@@ -9,8 +9,8 @@
 	import type { LayoutProps } from "./$types";
 	import Button from "$lib/components/ui/button/button.svelte";
 	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-    import AppSidebar from "$lib/components/Sidebar/AppSidebar.svelte";
-    import { getLayout } from "$lib/client/layouts.remote";
+	import AppSidebar from "$lib/components/Sidebar/AppSidebar.svelte";
+	import { getLayout } from "$lib/client/layouts.remote";
 
 	let { children }: LayoutProps = $props();
 
@@ -41,29 +41,27 @@
 			url: `/layouts/${page.params.id}/settings`,
 		},
 	];
-
-	const navBarData = new NavBarData(links, curLink);
 </script>
 
 <svelte:boundary>
-	<Sidebar.Provider>
+	<Sidebar.Provider open={false}>
 		<AppSidebar layoutName={(await getLayout(page.params.id)).name} />
 
-		<div class="flex flex-1 flex-col overflow-hidden">
-			<header
+		<!-- <div class="flex flex-1 flex-col overflow-hidden"> -->
+		<!-- <header
 				class="flex h-12 items-center gap-4 border-b border-sidebar-border bg-background px-4"
-			>
-				<Sidebar.Trigger class="-ms-1" />
-				<!-- <div class="h-4 w-px bg-sidebar-border"></div> -->
-				<!-- <span class="text-sm font-medium text-muted-foreground"
-					></span
+			> -->
+		<!-- <Sidebar.Trigger class="-ms-1" /> -->
+		<!-- <div class="h-4 w-px bg-sidebar-border">d</div>
+				<span class="text-sm font-medium text-muted-foreground"
+					>d</span
 				> -->
-			</header>
+		<!-- </header> -->
 
-			<main class="flex-1 overflow-y-auto p-6">
-				{@render children?.()}
-			</main>
-		</div>
+		<main class="flex-1 overflow-y-auto m-2">
+			{@render children?.()}
+		</main>
+		<!-- </div> -->
 	</Sidebar.Provider>
 
 	{#snippet pending()}

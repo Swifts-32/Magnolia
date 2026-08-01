@@ -1,18 +1,18 @@
 <script lang="ts">
   import { page } from "$app/state";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-
   import HouseIcon from "@lucide/svelte/icons/house";
   import GaugeIcon from "@lucide/svelte/icons/gauge";
   import LinkIcon from "@lucide/svelte/icons/link";
   import TrainFrontIcon from "@lucide/svelte/icons/train-front";
   import LayoutGridIcon from "@lucide/svelte/icons/layout-grid";
   import SettingsIcon from "@lucide/svelte/icons/settings";
-    import { ChevronLeft } from "@lucide/svelte";
+    import { ChevronDown, ChevronLeft, House, Settings } from "@lucide/svelte";
+  import * as Collapsible from "$lib/components/ui/collapsible/index.js";
 
   // Define icon map for the provided navBar items
   const iconMap: Record<string, any> = {
-    Home: HouseIcon,
+    // Home: HouseIcon,
     Throttle: GaugeIcon,
     Connections: LinkIcon,
     Trains: TrainFrontIcon,
@@ -29,10 +29,6 @@
 
   // Build the dynamic navigation array matching your link layout
   const links = $derived([
-    // {
-    //   linkText: "Home",
-    //   url: `/layouts/${page.params.id}`,
-    // },
     {
       linkText: "Throttle",
       url: `/layouts/${page.params.id}/throttle`,
@@ -57,14 +53,33 @@
 </script>
 
 <Sidebar.Root collapsible="icon">
-  <Sidebar.Header class="flex items-center px-4 pt-4">
-    <a href="/">
-      <span class="flex  gap-1 font-semibold truncate ">
-        <ChevronLeft/>
-        <p class="group-data-[collapsible=icon]:hidden">Home</p>
-      </span>
-    </a>
+
+    <Sidebar.Header>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem>
+         <Sidebar.MenuButton>
+        {#snippet child({ props })}
+        <a href="/" {...props}>
+        <House />
+        <span>Home</span>
+        </a>
+        {/snippet}
+        </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton>
+          {#snippet child({ props })}
+            <Sidebar.Trigger />
+      
+  {/snippet}
+</Sidebar.MenuButton>
+      
+      </Sidebar.MenuItem>
+
+    </Sidebar.Menu>
   </Sidebar.Header>
+
 
   <Sidebar.Content>
     <Sidebar.Group>
@@ -86,6 +101,43 @@
               </Sidebar.MenuButton>
             </Sidebar.MenuItem>
           {/each}
+
+
+            <Collapsible.Root open class="group/collapsible">
+    <Sidebar.MenuItem>
+      <Collapsible.Trigger>
+        {#snippet child({ props })}
+          <Sidebar.MenuButton {...props}>
+            <Settings class="size-4" />
+            <!-- <span>{item.linkText}</span> -->
+            Groups of Items
+              <!-- {#snippet child({ props })}
+                {/snippet} -->
+          </Sidebar.MenuButton>
+        {/snippet}
+      </Collapsible.Trigger>
+      <Collapsible.Content>
+        <Sidebar.MenuSub>
+          <Sidebar.MenuSubItem>
+                <Sidebar.MenuSubButton>
+                <TrainFrontIcon/>
+                Item 1
+              </Sidebar.MenuSubButton>
+            </Sidebar.MenuSubItem>
+            
+            
+            <Sidebar.MenuSubItem>
+              <Sidebar.MenuSubButton>
+                <TrainFrontIcon/>
+                  Item 2
+                </Sidebar.MenuSubButton>
+          </Sidebar.MenuSubItem>
+         
+        </Sidebar.MenuSub>
+      </Collapsible.Content>
+    </Sidebar.MenuItem>
+  </Collapsible.Root>
+
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
