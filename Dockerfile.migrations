@@ -1,22 +1,20 @@
 # docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.migrations -t swifts32/magnolia-migrations:latest --no-cache --push .
 
-FROM node:20-alpine AS migrations
+FROM oven/bun:1-alpine AS migrations
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# Copy lock files
+COPY package.json bun.lock ./
 
-# Copy schema + migrations + config
-COPY ./src/lib/server/db/schema ./schema
+# Install dependencies
+RUN bun install --frozen-lockfile
+
+# Copy migrations folder & migration runner script
 COPY ./src/lib/server/db/migrations ./migrations
-COPY drizzle-prod.config.ts ./drizzle-prod.config.ts
-
-# Install drizzle-kit globally
-# RUN npm install -g drizzle-kit
-# RUN npm install tsx
+COPY migrate.ts ./migrate.ts
 
 ENV NODE_ENV=production
 
-# Default command: run migrations
-CMD ["npx","drizzle-kit", "migrate", "--config=drizzle-prod.config.ts"]
+# Run the migration script directly with Bun
+CMD ["bun", "run", "migrate.ts"]

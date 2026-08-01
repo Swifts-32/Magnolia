@@ -1,3 +1,4 @@
+# docker compose -f 'docker-compose-db.yml' up -d
 services:
   db:
     image: postgres:16-alpine
@@ -16,5 +17,3 @@ services:
 
 volumes:
   postgres_data:
-
-  # docker compose -f 'docker-compose-db.yml' up -d
