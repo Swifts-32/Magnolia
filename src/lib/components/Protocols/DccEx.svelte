@@ -117,7 +117,7 @@
       <Button
         onclick={async () => {
           await writeStringToConnection({
-            command: "<= A DC 3>",
+            command: "<= B DC 3>",
             id: connectionId,
           });
         }}>Set Dc Mode</Button
@@ -126,7 +126,7 @@
       <Button
         onclick={() => {
           writeStringToConnection({
-            command: "<1 A>",
+            command: "<1 B>",
             id: connectionId,
           });
         }}>Power ON (A)</Button
@@ -134,7 +134,7 @@
       <Button
         onclick={() => {
           writeStringToConnection({
-            command: "<0 A>",
+            command: "<0 B>",
             id: connectionId,
           });
         }}>Power OFF (A)</Button

@@ -109,15 +109,20 @@ export const connectConnection = command(z.uuid(), async (connectionId) => {
   const result = await appConnection.connect();
   if (!result.success) error(500, "Connection failed to connect")
 
-  getConnection(connectionId).refresh();
-  getlayoutConnections(appConnection.layoutId).refresh();
+  // await getConnection(connectionId).refresh();
+  // await getlayoutConnections(appConnection.layoutId).refresh();
+
+  await requested(getConnection, 1).refreshAll();
+  await requested(getlayoutConnections, 1).refreshAll();
 });
 
 export const disconnectConnection = command(z.uuid(), async (connectionId) => {
   const connection = await App.unloadConnection(connectionId);
 
-  getConnection(connectionId).refresh();
-  getlayoutConnections(connection.layoutId).refresh();
+  // await getConnection(connectionId).refresh();
+  // await getlayoutConnections(connection.layoutId).refresh();
+  await requested(getConnection, 1).refreshAll();
+  await requested(getlayoutConnections, 1).refreshAll();
 });
 
 export const writeStringToConnection = command(z.object({
@@ -142,10 +147,10 @@ export const streamConnectionLogs = query.live(z.uuid(), async function* (connec
     const nextEvent = await connection.hardwareQueue.next();
 
     sequenceNumber++;
-  
+
     yield {
-        id: sequenceNumber, 
-        text: nextEvent // Your raw DCC-EX text string
+      id: sequenceNumber,
+      text: nextEvent // Your raw DCC-EX text string
     };
   }
 });
