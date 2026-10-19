@@ -1,5 +1,6 @@
 .DS_Store
 .postgres
+.direnv
 node_modules
 /builds
 /.svelte-kit
