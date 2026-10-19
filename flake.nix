@@ -14,8 +14,15 @@
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           bun              # Package manager and runtime
-          nodejs_20        # Node runtime for your express server.js
+          # nodejs_20        # Node runtime for your express server.js
           postgresql_16    # Local PostgreSQL binaries
+
+          # --- Required for compiling native modules like serialport ---
+          python3
+          gnumake
+          gcc
+          pkg-config
+          udev.dev         # Development headers for serialport / udev bindings
         ];
 
         shellHook = ''
