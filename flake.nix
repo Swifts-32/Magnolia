@@ -28,6 +28,8 @@
         shellHook = ''
           echo "Initializing Magnolia WebApp Development Environment..."
 
+          export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
+
           # Set up local PostgreSQL data directory in the project folder
           export PGDATA="$PWD/.postgres"
           if [ ! -d "$PGDATA" ]; then
@@ -42,6 +44,7 @@
           fi
 
           # Ensure a default database exists matching your project needs
+          psql -h localhost -p 5432 -d template1 -c "CREATE ROLE postgres WITH LOGIN SUPERUSER;" 2>/dev/null || true
           createdb -h localhost postgres 2>/dev/null || true
 
           # Set local connection URL for development
