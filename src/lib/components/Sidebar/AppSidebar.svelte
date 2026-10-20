@@ -1,143 +1,105 @@
 <script lang="ts">
   import { page } from "$app/state";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-  import HouseIcon from "@lucide/svelte/icons/house";
-  import GaugeIcon from "@lucide/svelte/icons/gauge";
-  import LinkIcon from "@lucide/svelte/icons/link";
-  import TrainFrontIcon from "@lucide/svelte/icons/train-front";
-  import LayoutGridIcon from "@lucide/svelte/icons/layout-grid";
-  import SettingsIcon from "@lucide/svelte/icons/settings";
-    import { ChevronDown, ChevronLeft, House, Settings } from "@lucide/svelte";
+  import { ChevronDown, House, type LucideProps } from "@lucide/svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+  import type { Component } from "svelte";
 
-  // Define icon map for the provided navBar items
-  const iconMap: Record<string, any> = {
-    // Home: HouseIcon,
-    Throttle: GaugeIcon,
-    Connections: LinkIcon,
-    Trains: TrainFrontIcon,
-    Panel: LayoutGridIcon,
-    Settings: SettingsIcon,
+  export type AppSidebarItem = {
+    linkText: string;
+    url: string | undefined;
+    icon: Component<LucideProps, {}, ""> | undefined;
+    selectable: boolean;
+    children?: AppSidebarItem[];
   };
 
   interface Props {
-    layoutName: string,
-
+    layoutName: string;
+    items: AppSidebarItem[];
   }
 
-  let {layoutName}: Props = $props();
-
-  // Build the dynamic navigation array matching your link layout
-  const links = $derived([
-    {
-      linkText: "Throttle",
-      url: `/layouts/${page.params.id}/throttle`,
-    },
-    {
-      linkText: "Connections",
-      url: `/layouts/${page.params.id}/connections`,
-    },
-    {
-      linkText: "Trains",
-      url: `/layouts/${page.params.id}/trains`,
-    },
-    {
-      linkText: "Panel",
-      url: `/layouts/${page.params.id}/panel`,
-    },
-    {
-      linkText: "Settings",
-      url: `/layouts/${page.params.id}/settings`,
-    },
-  ]);
+  let { layoutName, items = $bindable([]) }: Props = $props();
 </script>
 
-<Sidebar.Root collapsible="icon">
+{#snippet renderTree(i: AppSidebarItem[])}
+  {#each i as item (item.linkText)}
+    {@const Icon = item.icon}
+    {@const isActive = item.url ? page.url.pathname === item.url : false}
 
-    <Sidebar.Header>
-      <Sidebar.Menu>
+    {#if item.children && item.children.length > 0}
+      <!-- Collapsible Parent Node -->
+      <Collapsible.Root class="group/collapsible">
         <Sidebar.MenuItem>
-         <Sidebar.MenuButton>
-        {#snippet child({ props })}
-        <a href="/" {...props}>
-        <House />
-        <span>Home</span>
-        </a>
-        {/snippet}
-        </Sidebar.MenuButton>
+          <Collapsible.Trigger>
+            {#snippet child({ props })}
+              <Sidebar.MenuButton {...props}>
+                {#if Icon}
+                  <Icon class="size-4" />
+                {/if}
+                <span>{item.linkText}</span>
+                <ChevronDown
+                  class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180"
+                />
+              </Sidebar.MenuButton>
+            {/snippet}
+          </Collapsible.Trigger>
+          <Collapsible.Content>
+            <Sidebar.MenuSub>
+              {@render renderTree(item.children)}
+            </Sidebar.MenuSub>
+          </Collapsible.Content>
         </Sidebar.MenuItem>
+      </Collapsible.Root>
+    {:else}
+      <!-- Leaf Node -->
+      <Sidebar.MenuItem>
+        {#if item.selectable}
+          <Sidebar.MenuButton {isActive} title={item.linkText}>
+            {#snippet child({ props })}
+              <a href={item.url ?? "#"} {...props}>
+                <Icon class="size-4" />
+                <span>{item.linkText}</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        {:else}
+          <!-- Non-selectable leaf node (label only) -->
+          <Sidebar.MenuButton
+            class="opacity-70 cursor-default"
+            title={item.linkText}
+          >
+            <Icon class="size-4" />
+            <span>{item.linkText}</span>
+          </Sidebar.MenuButton>
+        {/if}
+      </Sidebar.MenuItem>
+    {/if}
+  {/each}
+{/snippet}
 
+<Sidebar.Root collapsible="none">
+  <Sidebar.Header>
+    <Sidebar.Menu>
       <Sidebar.MenuItem>
         <Sidebar.MenuButton>
           {#snippet child({ props })}
-            <Sidebar.Trigger />
-      
-  {/snippet}
-</Sidebar.MenuButton>
-      
+            <a href="/" {...props}>
+              <House />
+              <span>Layouts</span>
+            </a>
+          {/snippet}
+        </Sidebar.MenuButton>
       </Sidebar.MenuItem>
-
     </Sidebar.Menu>
   </Sidebar.Header>
-
 
   <Sidebar.Content>
     <Sidebar.Group>
       <Sidebar.GroupLabel>{layoutName}</Sidebar.GroupLabel>
       <Sidebar.GroupContent>
         <Sidebar.Menu>
-          {#each links as item (item.linkText)}
-            {const Icon = iconMap[item.linkText] || TrainFrontIcon}
-            {const isActive = page.url.pathname === item.url}
-
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton {isActive} title={item.linkText}>
-                {#snippet child({ props })}
-                  <a href={item.url} {...props}>
-                    <Icon class="size-4" />
-                    <span>{item.linkText}</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-
-
-            <Collapsible.Root open class="group/collapsible">
-    <Sidebar.MenuItem>
-      <Collapsible.Trigger>
-        {#snippet child({ props })}
-          <Sidebar.MenuButton {...props}>
-            <Settings class="size-4" />
-            <!-- <span>{item.linkText}</span> -->
-            Groups of Items
-              <!-- {#snippet child({ props })}
-                {/snippet} -->
-          </Sidebar.MenuButton>
-        {/snippet}
-      </Collapsible.Trigger>
-      <Collapsible.Content>
-        <Sidebar.MenuSub>
-          <Sidebar.MenuSubItem>
-                <Sidebar.MenuSubButton>
-                <TrainFrontIcon/>
-                Item 1
-              </Sidebar.MenuSubButton>
-            </Sidebar.MenuSubItem>
-            
-            
-            <Sidebar.MenuSubItem>
-              <Sidebar.MenuSubButton>
-                <TrainFrontIcon/>
-                  Item 2
-                </Sidebar.MenuSubButton>
-          </Sidebar.MenuSubItem>
-         
-        </Sidebar.MenuSub>
-      </Collapsible.Content>
-    </Sidebar.MenuItem>
-  </Collapsible.Root>
-
+          <!-- Render the full recursive tree -->
+          {@render renderTree(items)}
         </Sidebar.Menu>
       </Sidebar.GroupContent>
     </Sidebar.Group>
