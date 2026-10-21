@@ -69,6 +69,7 @@
         icon: undefined,
         linkText: conn.name,
         selectable: true,
+        status: conn.isConnected ? "success" : "error",
         url: `/layouts/${page.params.id}/connections/${conn.uuid}/`,
       });
     });
@@ -86,7 +87,7 @@
       items={await items}
     />
 
-    <main class="flex-1 overflow-y-auto m-2">
+    <main class="flex-1 overflow-y-auto m-2 border-l border-foreground">
       {@render children?.()}
     </main>
   </Sidebar.Provider>

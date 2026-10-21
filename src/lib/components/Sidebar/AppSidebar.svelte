@@ -10,6 +10,7 @@
     url: string | undefined;
     icon: Component<LucideProps, {}, ""> | undefined;
     selectable: boolean;
+    status?: "success" | "warning" | "error";
     children?: AppSidebarItem[];
   };
 
@@ -58,7 +59,15 @@
             {#snippet child({ props })}
               <a href={item.url ?? "#"} {...props}>
                 <Icon class="size-4" />
-                <span>{item.linkText}</span>
+                {#if item.status == "error"}
+                  <span class="text-red-600">{item.linkText}</span>
+                {:else if item.status == "warning"}
+                  <span class="text-amber-600">{item.linkText}</span>
+                {:else if item.status == "success"}
+                  <span class="text-green-600">{item.linkText}</span>
+                {:else}
+                  <span>{item.linkText}</span>
+                {/if}
               </a>
             {/snippet}
           </Sidebar.MenuButton>
