@@ -50,7 +50,6 @@
       icon: TrainFrontIcon,
       selectable: true,
     },
-
     {
       linkText: "Settings",
       url: `/layouts/${page.params.id}/settings`,
@@ -62,12 +61,37 @@
 
 <svelte:boundary>
   <Sidebar.Provider>
-    <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items} />
+    <!-- Desktop Sidebar (Hidden on mobile) -->
+    <div class="hidden md:block">
+      <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items} />
+    </div>
 
-    <main class="flex-1 overflow-y-auto">
+    <!-- Main Content (Added bottom padding so content isn't hidden behind the mobile bar) -->
+    <main class="flex-1 overflow-y-auto pb-20 md:pb-0 w-full">
       {@render children?.()}
     </main>
   </Sidebar.Provider>
+
+  <!-- Mobile Bottom Navigation Bar (Rendered at root level outside Sidebar.Provider to escape containing blocks) -->
+  <nav
+    class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border flex items-center justify-around h-16 px-2 shadow-lg"
+  >
+    {#each items as item}
+      {@const Icon = item.icon}
+      {@const isActive = item.url ? page.url.pathname === item.url : false}
+      <a
+        href={item.url ?? "#"}
+        class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-xs transition-colors {isActive
+          ? 'text-secondary font-medium'
+          : 'text-muted-foreground hover:text-foreground'}"
+      >
+        {#if Icon}
+          <Icon class="size-5" />
+        {/if}
+        <span class="truncate max-w-15">{item.linkText}</span>
+      </a>
+    {/each}
+  </nav>
 
   {#snippet pending()}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center">
