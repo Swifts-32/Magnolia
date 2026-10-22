@@ -1,7 +1,13 @@
 <script lang="ts">
   import { page } from "$app/state";
   import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-  import { ChevronDown, House, type LucideProps } from "@lucide/svelte";
+  import {
+    ChevronDown,
+    ChevronLeft,
+    House,
+    PanelLeft,
+    type LucideProps,
+  } from "@lucide/svelte";
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
   import type { Component } from "svelte";
 
@@ -20,6 +26,8 @@
   }
 
   let { layoutName, items = $bindable([]) }: Props = $props();
+
+  const sidebar = Sidebar.useSidebar();
 </script>
 
 {#snippet renderTree(i: AppSidebarItem[])}
@@ -61,7 +69,11 @@
           >
             {#snippet child({ props })}
               <a href={item.url ?? "#"} {...props}>
-                <Icon class="size-4" />
+                <Icon
+                  class=" size-4 {page.url.pathname == item.url
+                    ? 'text-secondary'
+                    : 'text-card-foreground'}"
+                />
                 {#if item.status == "error"}
                   <span class="text-red-600">{item.linkText}</span>
                 {:else if item.status == "warning"}
@@ -93,14 +105,21 @@
   {/each}
 {/snippet}
 
-<Sidebar.Root collapsible="none">
+<Sidebar.Root collapsible="icon">
   <Sidebar.Header>
     <Sidebar.Menu>
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton onclick={sidebar.toggle}>
+          <PanelLeft />
+          <span>Collapse</span>
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
+
       <Sidebar.MenuItem>
         <Sidebar.MenuButton>
           {#snippet child({ props })}
             <a href="/" {...props}>
-              <House />
+              <ChevronLeft />
               <span>Layouts</span>
             </a>
           {/snippet}

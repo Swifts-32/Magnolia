@@ -102,13 +102,17 @@
 
 
             <Drawer.Root bind:open={drawerOpen} direction="right" dismissible={false}>
-            <Drawer.Content>
-                <Drawer.Header>
-                    <Drawer.Title>Edit Train</Drawer.Title>
-                </Drawer.Header>
+ <Drawer.Content class="bg-background w-screen!
+    max-w-none! fixed inset-0 h-full  border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md!
+    sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
+    
+  <Drawer.Header>
+      <Drawer.Title>Edit Train</Drawer.Title>
+    </Drawer.Header>
 
-                <EditTrainForm {train}/>
-
+<div class="overflow-y-auto px-4 flex-1 w-full">
+        <EditTrainForm {train}/>
+    </div>
                 <Drawer.Footer>
                 <Button form="edit-train-form"  type="submit"  onclick={() => drawerOpen=false}>Save</Button>
                 <Drawer.Close form="edit-train-form" type="reset" onclick={() => drawerOpen=false}>Cancel</Drawer.Close>

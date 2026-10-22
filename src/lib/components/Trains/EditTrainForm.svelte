@@ -46,7 +46,7 @@
         toast.error("Error editing train: " + error);
       }
     })}
-    class="flex-col flex gap-2 w-full m-4"
+    class="flex-col flex gap-2 w-full max-w-none"
   >
     <input {...layoutId.as("hidden", train.layoutUuid)} />
     <input {...uuid.as("hidden", train.uuid)} />

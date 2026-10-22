@@ -16,78 +16,55 @@
     SettingsIcon,
     TrainFrontIcon,
   } from "@lucide/svelte";
-  import { getlayoutConnections } from "$lib/client/Connections.remote";
 
   let { children }: LayoutProps = $props();
 
-  const curLink = page.url.pathname;
-
-  const items: Promise<AppSidebarItem[]> = $derived.by(async () => {
-    let i: AppSidebarItem[] = [
-      {
-        linkText: "Home",
-        url: `/layouts/${page.params.id}`,
-        icon: House,
-        selectable: true,
-      },
-      {
-        linkText: "Throttle",
-        url: `/layouts/${page.params.id}/throttle`,
-        icon: GaugeIcon,
-        selectable: true,
-      },
-      {
-        linkText: "Trains",
-        url: `/layouts/${page.params.id}/trains`,
-        icon: TrainFrontIcon,
-        selectable: true,
-      },
-      {
-        linkText: "Panel",
-        url: `/layouts/${page.params.id}/panel`,
-        icon: LayoutGridIcon,
-        selectable: true,
-      },
-      {
-        linkText: "Settings",
-        url: `/layouts/${page.params.id}/settings`,
-        icon: SettingsIcon,
-        selectable: true,
-      },
-    ];
-
-    const connectionItem: AppSidebarItem = {
+  const items: AppSidebarItem[] = [
+    {
+      linkText: "Home",
+      url: `/layouts/${page.params.id}`,
+      icon: House,
+      selectable: true,
+    },
+    {
+      linkText: "Throttle",
+      url: `/layouts/${page.params.id}/throttle`,
+      icon: GaugeIcon,
+      selectable: true,
+    },
+    {
+      linkText: "Panel",
+      url: `/layouts/${page.params.id}/panel`,
+      icon: LayoutGridIcon,
+      selectable: true,
+    },
+    {
       linkText: "Connections",
-      url: undefined,
+      url: `/layouts/${page.params.id}/connections`,
       icon: LinkIcon,
       selectable: true,
-      children: [],
-    };
+    },
+    {
+      linkText: "Trains",
+      url: `/layouts/${page.params.id}/trains`,
+      icon: TrainFrontIcon,
+      selectable: true,
+    },
 
-    (await getlayoutConnections(page.params.id)).forEach((conn) => {
-      connectionItem.children?.push({
-        icon: undefined,
-        linkText: conn.name,
-        selectable: true,
-        status: conn.isConnected ? "success" : "error",
-        url: `/layouts/${page.params.id}/connections/${conn.uuid}/`,
-      });
-    });
-
-    i.splice(2, 0, connectionItem);
-
-    return i;
-  });
+    {
+      linkText: "Settings",
+      url: `/layouts/${page.params.id}/settings`,
+      icon: SettingsIcon,
+      selectable: true,
+    },
+  ];
 </script>
 
 <svelte:boundary>
   <Sidebar.Provider>
-    <AppSidebar
-      layoutName={(await getLayout(page.params.id)).name}
-      items={await items}
-    />
+    <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items} />
 
-    <main class="flex-1 overflow-y-auto border-l border-foreground">
+    <main class="flex-1 overflow-y-auto">
       {@render children?.()}
     </main>
   </Sidebar.Provider>

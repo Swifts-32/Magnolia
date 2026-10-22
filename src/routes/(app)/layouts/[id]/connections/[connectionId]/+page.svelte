@@ -3,7 +3,7 @@
   import { toast } from "svelte-sonner";
   import DccEx from "$lib/components/Protocols/DccEx.svelte";
   import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
-  import { Pen } from "@lucide/svelte";
+  import { ChevronLeft, Pen } from "@lucide/svelte";
   import {
     connectConnection,
     disconnectConnection,
@@ -20,10 +20,11 @@
 <!-- {#await getConnection(params.connectionId)}
   <p>Loading Connection</p>
 {:then connection} -->
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4 m-4">
   <div class="flex flex-row gap-2 justify-between items-center">
     <!-- Left Side -->
     <div class="flex items-center justify-between">
+      <ChevronLeft onclick={() => window.history.back()} />
       <div>
         <h1 class="text-3xl font-bold tracking-tight">{connection.name}</h1>
         <!-- <p class="text-sm text-neutral-500">ID: {connection.uuid}</p> -->
