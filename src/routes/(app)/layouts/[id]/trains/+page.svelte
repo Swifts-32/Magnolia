@@ -22,11 +22,11 @@
   {#await getConnection(connectionId)}
     <p>Loading Connection Info</p>
   {:then connection}
-    <p class="text-sm text-gray-400">
+    <p >
       {connection.name}
     </p>
   {:catch}
-    <p class="text-sm text-red-400">No Connection</p>
+    <p class=" text-red-400">No Connection</p>
   {/await}
 {/snippet}
 

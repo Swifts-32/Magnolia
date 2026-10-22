@@ -10,7 +10,6 @@
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "$lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
-  import EditTrainForm from "$lib/components/Trains/EditTrainForm.svelte";
 </script>
 
 <div class="flex">
