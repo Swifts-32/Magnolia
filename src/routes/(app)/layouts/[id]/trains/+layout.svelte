@@ -1,11 +1,20 @@
 <script lang="ts">
   import { page } from "$app/state";
   import Fab from "$lib/components/FAB/Fab.svelte";
-  import { Plus, TrainFront } from "@lucide/svelte";
+  import { EllipsisIcon, Plus, TrainFront } from "@lucide/svelte";
   import { goto } from "$app/navigation";
-  import { getLayoutTrains } from "$lib/client/Trains.remote";
+  import {
+    deleteTrain,
+    duplicateTrain,
+    getLayoutTrains,
+  } from "$lib/client/Trains.remote";
   import { getConnection } from "$lib/client/Connections.remote";
   import AddTrainDialog from "$lib/components/Trains/AddTrainDialog.svelte";
+  import * as Table from "$lib/components/ui/table/index.js";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+  import Button from "$lib/components/ui/button/button.svelte";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { buttonVariants } from "$lib/components/ui/button/index.js";
 
   let { children, params } = $props();
 </script>
@@ -22,42 +31,89 @@
   {/await}
 {/snippet}
 
-<div class="flex h-screen border-t border-gray-700 w-full">
-  <!-- Sidebar -->
-  <aside
-    class="w-fit min-w-30 bg-card border-r border-gray-700 shadow-sm flex flex-col"
-  >
-    <nav class="flex-1 flex flex-col m-1 space-y-2">
+<div class="flex w-full">
+  <Table.Root>
+    <Table.Caption>A list of your trains.</Table.Caption>
+    <Table.Header class="select-none">
+      <Table.Row>
+        <Table.Head class="w-25">Name</Table.Head>
+        <Table.Head class="w-25">Address</Table.Head>
+        <Table.Head>Connection</Table.Head>
+        <Table.Head>Description</Table.Head>
+        <Table.Head class="text-end">Actions</Table.Head>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
       {#each await getLayoutTrains(params.id) as train}
-        {@const url = `/layouts/${params.id}/trains/${train.uuid}`}
-
-        <button
-          class="cursor-pointer p-3 flex rounded-md gap-3 items-center select-none {url ===
-          page.url.pathname
-            ? 'text-accent/50'
-            : 'text-foreground hover:bg-accent/10 '}"
-          onclick={() => goto(url)}
-        >
-          <!-- TODO Add customisable icon/image -->
-          <TrainFront size={40} strokeWidth={1} />
-
-          <p class="text-2xl text-start">{train.name}</p>
-          <div class="flex-col flex items-start">
-            <p class="text-sm text-gray-400">Address: {train.address}</p>
-
+        <Table.Row>
+          <Table.Cell class="font-medium">{train.name}</Table.Cell>
+          <Table.Cell>{train.address}</Table.Cell>
+          <Table.Cell>
             {#if train.connectionUuid}
               {@render trainConnectionName(train.connectionUuid)}
+            {:else}
+              No Connection
             {/if}
-          </div>
-        </button>
+          </Table.Cell>
+          <Table.Cell>{train.comment}</Table.Cell>
+          <Table.Cell class="text-right">
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                {#snippet child({ props })}
+                  <Button {...props} variant="ghost" size="icon" class="size-8">
+                    <EllipsisIcon />
+                    <span class="sr-only">Open menu</span>
+                  </Button>
+                {/snippet}
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content align="end">
+                <DropdownMenu.Item>Edit</DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onclick={async () => duplicateTrain(train.uuid)}
+                  >Duplicate</DropdownMenu.Item
+                >
+                <DropdownMenu.Separator />
+
+                <AlertDialog.Root>
+                  <AlertDialog.Trigger>
+                    {#snippet child({ props })}
+                      <!-- <DropdownMenu.Item {...props} variant="destructive"
+                        >Duplicate</DropdownMenu.Item
+                      > -->
+                      <Button {...props} variant="destructive">Delete</Button>
+                    {/snippet}
+                  </AlertDialog.Trigger>
+                  <AlertDialog.Content>
+                    <AlertDialog.Header>
+                      <AlertDialog.Title
+                        >Are you absolutely sure?</AlertDialog.Title
+                      >
+                      <AlertDialog.Description>
+                        This action cannot be undone. This will permanently
+                        delete the train.
+                      </AlertDialog.Description>
+                    </AlertDialog.Header>
+                    <AlertDialog.Footer>
+                      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+                      <AlertDialog.Action
+                        onclick={async () => deleteTrain(train.uuid)}
+                        >Continue</AlertDialog.Action
+                      >
+                    </AlertDialog.Footer>
+                  </AlertDialog.Content>
+                </AlertDialog.Root>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+          </Table.Cell>
+        </Table.Row>
       {/each}
-    </nav>
-  </aside>
+    </Table.Body>
+  </Table.Root>
 
   <!-- Main content -->
-  <main class="flex-1 py-8 px-6">
+  <!-- <main class="flex-1 py-8 px-6">
     {@render children()}
-  </main>
+  </main> -->
 </div>
 
 <!-- Add Train Button -->

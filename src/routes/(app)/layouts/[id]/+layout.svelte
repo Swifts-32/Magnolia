@@ -87,7 +87,7 @@
       items={await items}
     />
 
-    <main class="flex-1 overflow-y-auto m-2 border-l border-foreground">
+    <main class="flex-1 overflow-y-auto border-l border-foreground">
       {@render children?.()}
     </main>
   </Sidebar.Provider>
