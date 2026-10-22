@@ -12,6 +12,8 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import * as Drawer from "$lib/components/ui/drawer/index.js";
+  import EditTrainForm from "$lib/components/Trains/EditTrainForm.svelte";
 
   let { params } = $props();
 </script>
@@ -44,6 +46,7 @@
       {#each await getLayoutTrains(params.id) as train}
       {let dropdownOpen = $state(false)}
         {let alertOpen = $state(false)}
+        {let drawerOpen = $state(false)}
 
         <Table.Row>
           <Table.Cell class="font-medium">{train.name}</Table.Cell>
@@ -67,7 +70,10 @@
                 {/snippet}
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="end">
-<DropdownMenu.Item onclick={() => (dropdownOpen = false)}>
+<DropdownMenu.Item onclick={() => {
+          dropdownOpen = false;
+          drawerOpen = true;
+        }} >
                   Edit
                   </DropdownMenu.Item>
                   <DropdownMenu.Item
@@ -93,6 +99,22 @@
 
               </DropdownMenu.Content>
             </DropdownMenu.Root>
+
+
+            <Drawer.Root bind:open={drawerOpen} direction="right" dismissible={false}>
+            <Drawer.Content>
+                <Drawer.Header>
+                    <Drawer.Title>Edit Train</Drawer.Title>
+                </Drawer.Header>
+
+                <EditTrainForm {train}/>
+
+                <Drawer.Footer>
+                <Button form="edit-train-form"  type="submit"  onclick={() => drawerOpen=false}>Save</Button>
+                <Drawer.Close form="edit-train-form" type="reset" onclick={() => drawerOpen=false}>Cancel</Drawer.Close>
+                </Drawer.Footer>
+            </Drawer.Content>
+            </Drawer.Root>
 
                             <AlertDialog.Root bind:open={alertOpen}>
 

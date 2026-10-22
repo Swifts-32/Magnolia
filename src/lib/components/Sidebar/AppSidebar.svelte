@@ -55,7 +55,10 @@
       <!-- Leaf Node -->
       <Sidebar.MenuItem>
         {#if item.selectable}
-          <Sidebar.MenuButton {isActive} title={item.linkText}>
+          <Sidebar.MenuButton
+            isActive={page.params.url != item.url && isActive}
+            title={item.linkText}
+          >
             {#snippet child({ props })}
               <a href={item.url ?? "#"} {...props}>
                 <Icon class="size-4" />
@@ -66,7 +69,11 @@
                 {:else if item.status == "success"}
                   <span class="text-green-600">{item.linkText}</span>
                 {:else}
-                  <span>{item.linkText}</span>
+                  <span
+                    class={page.url.pathname == item.url
+                      ? "text-secondary"
+                      : "text-card-foreground"}>{item.linkText}</span
+                  >
                 {/if}
               </a>
             {/snippet}

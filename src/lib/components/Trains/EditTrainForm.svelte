@@ -1,16 +1,10 @@
 <script lang="ts">
   import FunctionTable from "./Functions/FunctionTable.svelte";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
   import { toast } from "svelte-sonner";
-  import { Trash2 } from "@lucide/svelte";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import InputField from "$lib/components/Form/InputField.svelte";
   import Label from "$lib/components/ui/label/label.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
-  import { page } from "$app/state";
-  import { goto } from "$app/navigation";
-  import { deleteTrain, editTrain } from "$lib/client/Trains.remote";
+  import {  editTrain } from "$lib/client/Trains.remote";
   import {
     getConnection,
     getlayoutConnections,
@@ -39,39 +33,6 @@
   let functionTable: FunctionTable | undefined;
 </script>
 
-<!-- Delete Train Dialog -->
-{#snippet deleteTrainDialog()}
-  <AlertDialog.Root>
-    <AlertDialog.Trigger>
-      <Button class="w-full mb-3" variant="destructive">
-        <Trash2 />Delete Train
-      </Button>
-    </AlertDialog.Trigger>
-    <AlertDialog.Content>
-      <AlertDialog.Header>
-        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-        <AlertDialog.Description>
-          This action cannot be undone. Are you sure you want to delete this
-          train?
-        </AlertDialog.Description>
-      </AlertDialog.Header>
-
-      <AlertDialog.Footer>
-        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-        <Dialog.Close>
-          <AlertDialog.Action
-            onclick={async () => {
-              await deleteTrain(train.uuid);
-              goto(`/layouts/${page.params.id}/trains`);
-            }}>Delete train</AlertDialog.Action
-          >
-        </Dialog.Close>
-      </AlertDialog.Footer>
-    </AlertDialog.Content>
-  </AlertDialog.Root>
-{/snippet}
-
-<div class="flex flex-col items-center">
   <form
     id="edit-train-form"
     {...editTrain.enhance(async (form) => {
@@ -85,7 +46,7 @@
         toast.error("Error editing train: " + error);
       }
     })}
-    class="flex-col flex gap-2 w-full"
+    class="flex-col flex gap-2 w-full m-4"
   >
     <input {...layoutId.as("hidden", train.layoutUuid)} />
     <input {...uuid.as("hidden", train.uuid)} />
@@ -151,13 +112,3 @@
       <FunctionTable trainId={train.uuid} bind:this={functionTable} />
     </div>
   </form>
-
-  <div class="flex gap-4 my-4">
-    {@render deleteTrainDialog()}
-
-    <Button type="reset" form="edit-train-form" class="w-28" variant="outline"
-      >Cancel</Button
-    >
-    <Button type="submit" form="edit-train-form" class="w-28">Save</Button>
-  </div>
-</div>
