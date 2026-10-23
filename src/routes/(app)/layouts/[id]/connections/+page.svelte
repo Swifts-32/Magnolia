@@ -3,14 +3,44 @@
   import AddConnectionDialog from "$lib/components/Connections/AddConnectionDialog.svelte";
   import Fab from "$lib/components/FAB/Fab.svelte";
   import { EllipsisIcon, Plus, SquareArrowOutUpRight } from "@lucide/svelte";
-    import * as Table from "$lib/components/ui/table/index.js";
+  import * as Table from "$lib/components/ui/table/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import Button from "$lib/components/ui/button/button.svelte";
   import { connectConnection, deleteConnection, disconnectConnection, duplicateConnection, getlayoutConnections } from "$lib/client/Connections.remote";
-    import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "$lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
+
+  let selectedUuid = $state<string | null>(null);
+  let activeEditUuid = $state<string | null>(null);
+  let activeAlertUuid = $state<string | null>(null);
+
+  async function handleKeydown(event: KeyboardEvent) {
+    const target = event.target as HTMLElement;
+    if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
+      return;
+    }
+
+    if (!selectedUuid) return;
+
+    if (event.key === "e") {
+      event.preventDefault();
+      activeEditUuid = selectedUuid;
+    } else if (event.key === "d") {
+      event.preventDefault();
+      await duplicateConnection(selectedUuid);
+    } else if (event.key === "Delete" && event.ctrlKey) {
+      event.preventDefault();
+      await deleteConnection(selectedUuid);
+      activeAlertUuid = null;
+    } else if (event.key === "Delete") {
+      event.preventDefault();
+      activeAlertUuid = selectedUuid;
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="flex">
 
@@ -29,27 +59,31 @@
     <Table.Body>
       {#each await getlayoutConnections(page.params.id) as conn}
         {let dropdownOpen = $state(false)}
-        {let alertOpen = $state(false)}
-        {let drawerOpen = $state(false)}
 
-        <Table.Row>
-        <Table.Cell><SquareArrowOutUpRight  onclick={() => goto(`${page.url.pathname}/${conn.uuid}`)} /></Table.Cell>
+        <Table.Row 
+          class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedUuid === conn.uuid ? 'bg-muted/30' : ''}"
+          tabindex={0}
+          onmouseenter={() => selectedUuid = conn.uuid}
+          onmouseleave={() => selectedUuid = null}
+          onfocus={() => selectedUuid = conn.uuid}
+        >
+          <Table.Cell>
+            <SquareArrowOutUpRight  onclick={() => goto(`${page.url.pathname}/${conn.uuid}`)} /></Table.Cell>
           <Table.Cell class="font-medium">{conn.name}</Table.Cell>
           <Table.Cell>
-          {#if conn.isConnected}
-          <Button class="w-25" onclick={async () =>
-            await disconnectConnection(conn.uuid)
-          }>
-          Disconnect
-          </Button>
-          {:else}
-          <Button class="w-25" onclick={async () => 
-            await connectConnection(conn.uuid)
-          }>
-          Connect
-          </Button>
-          {/if}
-
+            {#if conn.isConnected}
+              <Button class="w-25" onclick={async () =>
+                await disconnectConnection(conn.uuid)
+              }>
+              Disconnect
+              </Button>
+            {:else}
+              <Button class="w-25" onclick={async () => 
+                await connectConnection(conn.uuid)
+              }>
+              Connect
+              </Button>
+            {/if}
           </Table.Cell>
           <Table.Cell>{conn.protocol}</Table.Cell>
           <Table.Cell>{conn.hardware.type}</Table.Cell>
@@ -64,55 +98,55 @@
                 {/snippet}
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="end">
-<DropdownMenu.Item onclick={() => {
-          dropdownOpen = false;
-          drawerOpen = true;
-        }} >
+                <DropdownMenu.Item onclick={() => {
+                  dropdownOpen = false;
+                  activeEditUuid = conn.uuid;
+                }}>
                   Edit
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
                   onclick={async () => {
                     await duplicateConnection(conn.uuid);
                     dropdownOpen = false;
                   }}
                 >
-                  Duplicate
+                    Duplicate
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
 
                 <DropdownMenu.Item 
-        class="text-destructive focus:bg-destructive/10 focus:text-destructive"
-        onclick={() => {
-          dropdownOpen = false;
-          alertOpen = true;
-        }}
-      >
-        Delete
-      </DropdownMenu.Item>
-
-
+                  class="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  onclick={() => {
+                    dropdownOpen = false;
+                    activeAlertUuid = conn.uuid;
+                  }}
+                >
+                  Delete
+                </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-
-            <Drawer.Root bind:open={drawerOpen} direction="right" dismissible={false}>
- <Drawer.Content class="bg-background w-screen!
-    max-w-none! fixed inset-0 h-full  border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md!
-    sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
-              <Drawer.Header>
+            <Drawer.Root open={activeEditUuid === conn.uuid} 
+              onOpenChange={(open) => { 
+                if (!open && activeEditUuid === conn.uuid) activeEditUuid = null; 
+              }} direction="right" dismissible={false}>
+              <Drawer.Content class="bg-background w-screen!
+                  max-w-none! fixed inset-0 h-full  border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md!
+                  sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
+                  <Drawer.Header>
                     <Drawer.Title>Edit Connection</Drawer.Title>
-                </Drawer.Header>
+                  </Drawer.Header>
 
-
-
-                <Drawer.Footer>
-                <Button form="edit-connection-form"  type="submit"  onclick={() => drawerOpen=false}>Save</Button>
-                <Drawer.Close form="edit-train-form" type="reset" onclick={() => drawerOpen=false}>Cancel</Drawer.Close>
-                </Drawer.Footer>
-            </Drawer.Content>
+                  <Drawer.Footer>
+                    <Button form="edit-connection-form"  type="submit"  onclick={() => activeEditUuid=null}>Save</Button>
+                    <Drawer.Close form="edit-train-form" type="reset" onclick={() => activeEditUuid=null}>Cancel</Drawer.Close>
+                  </Drawer.Footer>
+              </Drawer.Content>
             </Drawer.Root>
 
-                            <AlertDialog.Root bind:open={alertOpen}>
+            <AlertDialog.Root open={activeAlertUuid === conn.uuid} 
+              onOpenChange={(open) => { if (!open) activeAlertUuid = null; }}
+              >
 
                   <AlertDialog.Content>
                     <AlertDialog.Header>
@@ -125,12 +159,11 @@
                       </AlertDialog.Description>
                     </AlertDialog.Header>
                     <AlertDialog.Footer>
-                      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-                   
+                      <AlertDialog.Cancel onclick={() => activeAlertUuid = null}>Cancel</AlertDialog.Cancel>                   
                       <AlertDialog.Action
                         onclick={async () => {
                           await deleteConnection(conn.uuid);
-                          alertOpen = false;
+                          activeAlertUuid = null;
                           dropdownOpen = false;
                         }}
                       >
