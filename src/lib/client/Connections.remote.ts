@@ -72,6 +72,14 @@ export const editConnection = form(
     hardware: HardwareSchema,
   }),
   async ({ uuid, name, layoutId, protocol, hardware }) => {
+    let wasConnected = false;
+    try {
+      await App.unloadConnection(uuid);
+      wasConnected = true;
+    } catch {
+      console.log("Connection not connected");
+    }
+
     await db
       .update(ConnectionTable)
       .set({
@@ -81,8 +89,10 @@ export const editConnection = form(
       })
       .where(eq(ConnectionTable.uuid, uuid));
 
-    await disconnectConnection(uuid);
-    await connectConnection(uuid);
+    if (wasConnected) {
+      await connectConnection(uuid);
+    }
+
     getlayoutConnections(layoutId).refresh();
   },
 );

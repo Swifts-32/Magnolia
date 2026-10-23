@@ -6,6 +6,9 @@
   import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
   import { editConnection } from "$lib/client/Connections.remote";
+  import InputField from "../Form/InputField.svelte";
+  import FormSelect from "./FormComponents/FormSelect.svelte";
+  import { connectionProtocolList } from "$lib/types/Protocols";
 
   interface Props {
     connection: Connection;
@@ -38,9 +41,11 @@
   <input {...layoutId.as("hidden", connection.layoutUuid)} />
   <input {...uuid.as("hidden", connection.uuid)} />
 
-  <ConnectionFormName {name} />
+  <InputField id="name" label="Name" value={connection.name} field={name} />
 
   <ConnectionFormProtocol {protocol} />
+
+  <!-- <FormSelect formElement={protocol} values={connectionProtocolList} /> -->
 
   <ConnectionFormType {hardware} />
 
