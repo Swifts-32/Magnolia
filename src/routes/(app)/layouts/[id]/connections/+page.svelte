@@ -10,6 +10,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "$lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
+  import EditConnectionForm from "$lib/components/Connections/EditConnectionForm.svelte";
 
   let selectedUuid = $state<string | null>(null);
   let activeEditUuid = $state<string | null>(null);
@@ -137,9 +138,13 @@
                     <Drawer.Title>Edit Connection</Drawer.Title>
                   </Drawer.Header>
 
+                  <div class="overflow-y-auto px-4 flex-1 w-full">
+                  <EditConnectionForm connection={conn}/>
+                </div>
+                
                   <Drawer.Footer>
                     <Button form="edit-connection-form"  type="submit"  onclick={() => activeEditUuid=null}>Save</Button>
-                    <Drawer.Close form="edit-train-form" type="reset" onclick={() => activeEditUuid=null}>Cancel</Drawer.Close>
+                    <Drawer.Close form="edit-connection-form" type="reset" onclick={() => activeEditUuid=null}>Cancel</Drawer.Close>
                   </Drawer.Footer>
               </Drawer.Content>
             </Drawer.Root>
