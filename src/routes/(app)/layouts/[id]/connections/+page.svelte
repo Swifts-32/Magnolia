@@ -104,7 +104,9 @@
                   activeEditUuid = conn.uuid;
                 }}>
                   Edit
+                   <DropdownMenu.Shortcut>E</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
+
                 <DropdownMenu.Item
                   onclick={async () => {
                     await duplicateConnection(conn.uuid);
@@ -112,17 +114,20 @@
                   }}
                 >
                     Duplicate
+                    <DropdownMenu.Shortcut>D</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
+
                 <DropdownMenu.Separator />
 
                 <DropdownMenu.Item 
-                  class="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  variant="destructive" 
                   onclick={() => {
                     dropdownOpen = false;
                     activeAlertUuid = conn.uuid;
                   }}
                 >
                   Delete
+                  <DropdownMenu.Shortcut>Del</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
