@@ -13,6 +13,9 @@ export default defineConfig({
         remoteFunctions: true,
       },
       adapter: adapter(),
+      paths: {
+        origin: "http://localhost:3000",
+      },
       alias: {
         "@/*": "./path/to/lib/*",
       },
@@ -20,6 +23,9 @@ export default defineConfig({
         experimental: {
           async: true,
         },
+      },
+      csrf: {
+        trustedOrigins: ["http://localhost:3000", "http://127.0.0.1:3000"],
       },
     }),
     devtoolsJson(),

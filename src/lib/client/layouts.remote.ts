@@ -7,26 +7,29 @@ import { z } from "zod/v4";
 
 export const getLayouts = query(async () => {
   try {
-    const layouts = await db.select({
-      id: LayoutTable.uuid,
-      name: LayoutTable.name,
-    })
+    const layouts = await db
+      .select({
+        id: LayoutTable.uuid,
+        name: LayoutTable.name,
+      })
       .from(LayoutTable)
       .orderBy(LayoutTable.position);
 
     return layouts;
-  }
-  catch (e) {
-    console.log(e)
+  } catch (e) {
+    console.log(e);
     error(500, "Failed to fetch layouts");
   }
 });
 
 export const getLayout = query(z.uuid(), async (id) => {
-  const layouts = await db.select({
-    id: LayoutTable.uuid,
-    name: LayoutTable.name,
-  }).from(LayoutTable).where(eq(LayoutTable.uuid, id));
+  const layouts = await db
+    .select({
+      id: LayoutTable.uuid,
+      name: LayoutTable.name,
+    })
+    .from(LayoutTable)
+    .where(eq(LayoutTable.uuid, id));
 
   if (layouts.length < 1 || layouts.length > 1) error(404, "Not found");
 
@@ -44,10 +47,14 @@ export const createLayout = form(
     });
 
     await getLayouts().refresh();
-  });
+  },
+);
 
 export const deleteLayout = command(z.uuid(), async (layoutId) => {
-  const res = await db.delete(LayoutTable).where(eq(LayoutTable.uuid, layoutId)).returning();
+  const res = await db
+    .delete(LayoutTable)
+    .where(eq(LayoutTable.uuid, layoutId))
+    .returning();
 
   if (res.length === 0) error(404, "Layout not found");
   await getLayouts().refresh();
