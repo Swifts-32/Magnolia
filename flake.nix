@@ -49,28 +49,58 @@
         '';
       };
 
-      # 2. Production Package (How Nix builds your app from source)
-      packages.${system}.default = pkgs.stdenv.mkDerivation {
-        pname = "magnolia";
-        version = "1.0.0";
-        src = self;
+      packages.${system}.default =
+        let
+          # 1. Fixed-output derivation to fetch Bun dependencies with network access
+          bunDeps = pkgs.stdenv.mkDerivation {
+            pname = "magnolia-deps";
+            version = "1.0.0";
+            src = self;
+            nativeBuildInputs = [ pkgs.bun ];
 
-        nativeBuildInputs = [
-          pkgs.bun
-          pkgs.nodejs
-        ];
+            buildPhase = ''
+              export HOME=$TMPDIR
+              # Tell Bun to store cache in the output directory
+              export BUN_INSTALL_CACHE_DIR=$out
+              bun install --frozen-lockfile
+            '';
 
-        buildPhase = ''
-          export HOME=$TMPDIR
-          bun install --frozen-lockfile || bun install
-          bun run build
-        '';
+            # Nix requires a hash for derivations with network access.
+            # Put "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" first,
+            # then Nix will fail and tell you the exact correct hash.
+            outputHashMode = "recursive";
+            outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          };
+        in
+        pkgs.stdenv.mkDerivation {
+          pname = "magnolia";
+          version = "1.0.0";
+          src = self;
 
-        installPhase = ''
-          mkdir -p $out/share/magnolia
-          cp -r build server.js package.json drizzle-config.ts node_modules src $out/share/magnolia/
-        '';
-      };
+          nativeBuildInputs = [
+            pkgs.bun
+            pkgs.nodejs
+          ];
+
+          buildPhase = ''
+            export HOME=$TMPDIR
+
+            # Copy the pre-fetched Bun cache back into place
+            export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
+            cp -r ${bunDeps} $BUN_INSTALL_CACHE_DIR
+
+            # Run install offline using the cached dependencies
+            bun install --offline --frozen-lockfile
+
+            # Build the SvelteKit app
+            bun run build
+          '';
+
+          installPhase = ''
+            mkdir -p $out/share/magnolia
+            cp -r build server.js package.json drizzle-config.ts node_modules src $out/share/magnolia/
+          '';
+        };
 
       # 3. NixOS Module (How your server deploys, migrates, and runs it)
       nixosModules.default =
