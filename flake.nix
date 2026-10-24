@@ -12,7 +12,7 @@
       pkgs = import nixpkgs { inherit system; };
     in
     {
-      # 1. Development Shell (What you use locally)
+      # 1. Development Shell
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           bun
@@ -26,83 +26,56 @@
 
         shellHook = ''
           echo "Initializing Magnolia WebApp Development Environment..."
-
           export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
-
           export PGDATA="$PWD/.postgres"
           if [ ! -d "$PGDATA" ]; then
-            echo "Initializing local PostgreSQL database..."
             initdb -D "$PGDATA" --auth=trust >/dev/null
           fi
-
           if ! pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
-            echo "Starting local PostgreSQL server..."
             pg_ctl -D "$PGDATA" -l "$PWD/.postgres/postgres.log" -o "-k $PWD/.postgres" start >/dev/null 2>&1
           fi
-
           psql -h localhost -p 5432 -d template1 -c "CREATE ROLE postgres WITH LOGIN SUPERUSER;" 2>/dev/null || true
           createdb -h localhost postgres 2>/dev/null || true
-
           export DATABASE_URL="postgresql://postgres@localhost:5432/postgres?host=$PWD/.postgres"
-
-          echo "Database ready! Run 'bun install' followed by 'bun run dev' or start your server."
         '';
       };
 
-      packages.${system}.default =
-        let
-          # 1. Fixed-output derivation to fetch Bun dependencies with network access
-          bunDeps = pkgs.stdenv.mkDerivation {
-            pname = "magnolia-deps";
-            version = "1.0.0";
-            src = self;
-            nativeBuildInputs = [ pkgs.bun ];
+      # 2. Production Package using Bun Standalone Compilation
+      packages.${system}.default = pkgs.stdenv.mkDerivation {
+        pname = "magnolia";
+        version = "1.0.0";
+        src = self;
 
-            buildPhase = ''
-              export HOME=$TMPDIR
-              # Tell Bun to store cache in the output directory
-              export BUN_INSTALL_CACHE_DIR=$out
-              bun install --frozen-lockfile
-            '';
+        nativeBuildInputs = [
+          pkgs.bun
+          pkgs.nodejs
+        ];
 
-            # Nix requires a hash for derivations with network access.
-            # Put "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" first,
-            # then Nix will fail and tell you the exact correct hash.
-            outputHashMode = "recursive";
-            outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-          };
-        in
-        pkgs.stdenv.mkDerivation {
-          pname = "magnolia";
-          version = "1.0.0";
-          src = self;
+        buildPhase = ''
+          export HOME=$TMPDIR
 
-          nativeBuildInputs = [
-            pkgs.bun
-            pkgs.nodejs
-          ];
+          # Install dependencies (runs on your machine or if cache is present)
+          bun install --frozen-lockfile
 
-          buildPhase = ''
-            export HOME=$TMPDIR
+          # Build the SvelteKit frontend/server build output
+          bun run build
 
-            # Copy the pre-fetched Bun cache back into place
-            export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
-            cp -r ${bunDeps} $BUN_INSTALL_CACHE_DIR
+          # Compile Express server and SvelteKit build into a single standalone binary
+          bun build --compile server.js --outfile magnolia
+        '';
 
-            # Run install offline using the cached dependencies
-            bun install --offline --frozen-lockfile
+        installPhase = ''
+          mkdir -p $out/bin $out/share/magnolia
 
-            # Build the SvelteKit app
-            bun run build
-          '';
+          # Copy the standalone binary to bin
+          cp magnolia $out/bin/magnolia
 
-          installPhase = ''
-            mkdir -p $out/share/magnolia
-            cp -r build server.js package.json drizzle-config.ts node_modules src $out/share/magnolia/
-          '';
-        };
+          # Copy migration files and drizzle config needed at runtime
+          cp -r drizzle-config.ts src/lib/server/db/migrations $out/share/magnolia/
+        '';
+      };
 
-      # 3. NixOS Module (How your server deploys, migrates, and runs it)
+      # 3. NixOS Module
       nixosModules.default =
         {
           config,
@@ -146,8 +119,13 @@
                 Type = "simple";
                 User = "postgres";
                 WorkingDirectory = "${self.packages.${system}.default}/share/magnolia";
+
+                # Run database migrations using drizzle-kit via bunx
                 ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit migrate";
-                ExecStart = "${pkgs.bun}/bin/bun run server.js";
+
+                # Run the compiled standalone binary directly
+                ExecStart = "${self.packages.${system}.default}/bin/magnolia";
+
                 Restart = "always";
               };
             };
