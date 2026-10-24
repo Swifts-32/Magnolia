@@ -41,39 +41,93 @@
       };
 
       # 2. Production Package using Bun Standalone Compilation
-      packages.${system}.default = pkgs.stdenv.mkDerivation {
-        pname = "magnolia";
-        version = "1.0.0";
-        src = self;
+      packages.${system}.default =
+        let
+          # 1. Fixed-output derivation to fetch and build native deps safely
+          bunDeps = pkgs.stdenv.mkDerivation {
+            pname = "magnolia-deps";
+            version = "1.0.0";
+            src = self;
+            nativeBuildInputs = with pkgs; [
+              bun
+              nodejs
+              python3
+              gnumake
+              gcc
+              pkg-config
+              udev.dev
+            ];
 
-        nativeBuildInputs = [
-          pkgs.bun
-          pkgs.nodejs
-        ];
+            buildPhase = ''
+              export HOME=$TMPDIR
+              export BUN_INSTALL_CACHE_DIR=$out
+              export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
 
-        buildPhase = ''
-          export HOME=$TMPDIR
+              # 1. Install dependencies without running lifecycle scripts
+              bun install --frozen-lockfile --ignore-scripts --no-save
 
-          # Install dependencies (runs on your machine or if cache is present)
-          bun install --frozen-lockfile
+              # 2. Rewrite shebangs across node_modules to point to Bun
+              find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
-          # Build the SvelteKit frontend/server build output
-          bun run build
+              # 3. Compile native serialport bindings with explicit PATH and headers
+              if [ -d "node_modules/@serialport/bindings-cpp" ]; then
+                cd node_modules/@serialport/bindings-cpp
+                export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.python3}/bin:${pkgs.gnumake}/bin:${pkgs.gcc}/bin:$PATH"
+                npm_config_nodedir="${pkgs.nodejs}" node-gyp rebuild || true
+                cd ../../
+              fi
+            '';
 
-          # Compile Express server and SvelteKit build into a single standalone binary
-          bun build --compile server.js --outfile magnolia
-        '';
+            outputHashMode = "recursive";
+            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
+          };
+        in
+        pkgs.stdenv.mkDerivation {
+          pname = "magnolia";
+          version = "1.0.0";
+          src = self;
 
-        installPhase = ''
-          mkdir -p $out/bin $out/share/magnolia
+          nativeBuildInputs = with pkgs; [
+            bun
+            python3
+            gnumake
+            gcc
+            pkg-config
+            udev.dev
+          ];
 
-          # Copy the standalone binary to bin
-          cp magnolia $out/bin/magnolia
+          buildPhase = ''
+            export HOME=$TMPDIR
+            export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
 
-          # Copy migration files and drizzle config needed at runtime
-          cp -r drizzle-config.ts src/lib/server/db/migrations $out/share/magnolia/
-        '';
-      };
+            # Restore cached dependencies into a writable directory
+            mkdir -p $TMPDIR/bun-cache
+            cp -r ${bunDeps}/* $TMPDIR/bun-cache/
+            export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
+
+            # Run install offline using cache WITHOUT re-triggering scripts
+            bun install --offline --frozen-lockfile --ignore-scripts
+
+            # Rewrite all shebangs in the build tree to point directly to Bun
+            find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
+
+            # Run the build script natively under Bun's runtime engine
+            bun run --bun build
+
+            # Compile Express server and SvelteKit build into a single standalone binary
+            bun build --compile server.js --outfile magnolia
+          '';
+
+          installPhase = ''
+            mkdir -p $out/bin $out/share/magnolia
+
+            # Copy the standalone binary to bin
+            cp magnolia $out/bin/magnolia
+
+            # Copy migration files, drizzle config, and node_modules (required for native serialport bindings at runtime)
+            cp -r drizzle.config.ts src/lib/server/db/migrations node_modules $out/share/magnolia/
+          '';
+        };
 
       # 3. NixOS Module
       nixosModules.default =
@@ -85,7 +139,7 @@
         }:
         {
           options.services.magnolia = {
-            enable = lib.mkEnableOption "Magnolia WebApp";
+            enable = lib.mkEnableOption "magnolia WebApp";
             origin = lib.mkOption {
               type = lib.types.str;
               default = "http://localhost:8080";
@@ -113,6 +167,7 @@
                 PORT = "8080";
                 ORIGIN = config.services.magnolia.origin;
                 DATABASE_URL = "postgresql://postgres@localhost:5432/magnolia?host=/var/run/postgresql";
+                LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib";
               };
 
               serviceConfig = {
