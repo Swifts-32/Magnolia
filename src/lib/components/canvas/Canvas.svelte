@@ -8,7 +8,7 @@
     EditMode,
   } from "./canvasTypes.svelte";
   import { gStore } from "./cellStore.svelte";
-  import * as Dialog from "$lib/components/ui/dialog";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
     import { StraightTrackCell } from "./Cells/Track/StraightTrackCell";
     import { CurveTrackCell } from "./Cells/Track/CurveTrackCell";
     import { BufferTrackCell } from "./Cells/Track/BufferTrackCell";

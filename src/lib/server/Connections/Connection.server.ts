@@ -7,8 +7,8 @@ import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import { getlayoutConnections, type ConnectionHardwareType } from "../../client/Connections.remote";
 import type { IHardware } from "./Hardware/IHardware";
 import type { IProtocol } from "./Protocol/IProtocol";
-import type { ConnectionProtocol } from "$lib/types/Protocols";
-import { protocolEvents } from "$lib/server/events";
+import type { ConnectionProtocol } from "#lib/types/Protocols.js";
+import { protocolEvents } from "#lib/server/events.js";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 import { AsyncEventQueue } from "../eventQueue";
 

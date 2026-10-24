@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
   import type { Snippet } from "svelte";
 
   interface Props {

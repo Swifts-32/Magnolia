@@ -1,12 +1,12 @@
 import { command, form, query } from "$app/server";
-import { App } from "$lib/server/App.server";
-import { DccEx } from "$lib/server/Connections/Protocol/DccEx/DccEx";
-import { db } from "$lib/server/db";
-import { TrainTable, type Train } from "$lib/server/db/schema/trains";
+import { App } from "#lib/server/App.server.js";
+import { DccEx } from "#lib/server/Connections/Protocol/DccEx/DccEx.js";
+import { db } from "#lib/server/db/index.js";
+import { TrainTable, type Train } from "#lib/server/db/schema/trains.js";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
-import { TrainMotion } from "$lib/types/Trains";
+import { TrainMotion } from "#lib/types/Trains.js";
 
 async function getTrainFromDb(trainId: string) {
   const trains: Train[] = await db

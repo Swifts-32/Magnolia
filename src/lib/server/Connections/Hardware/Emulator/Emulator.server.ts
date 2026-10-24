@@ -1,4 +1,4 @@
-import type { ConnectionType } from "$lib/types/Hardware";
+import type { ConnectionType } from "#lib/types/Hardware.js";
 import { type IEmulatorConnection } from "../IHardware";
 
 

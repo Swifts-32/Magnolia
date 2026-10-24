@@ -1,8 +1,8 @@
-<script lang="ts">
-  import type { LayoutUUID } from "$lib/client/LayoutClient.svelte";
-  import { SensorClient } from "$lib/client/Sensors/SensorClient.svelte";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
+<!-- <script lang="ts">
+  import type { LayoutUUID } from "#lib/client/LayoutClient.svelte";
+  import { SensorClient } from "#lib/client/Sensors/SensorClient.svelte";
+  import Button from "#lib/components/ui/button/button.svelte";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
   import { toast } from "svelte-sonner";
   import SensorEditor from "./SensorEditor.svelte";
 
@@ -79,4 +79,4 @@
       <Button class="w-28" onclick={saveDialog}>Save</Button>
     </Dialog.Footer>
   </Dialog.Content>
-</Dialog.Root>
+</Dialog.Root> -->

@@ -1,4 +1,4 @@
-import type { ConnectionProtocol } from "$lib/types/Protocols";
+import type { ConnectionProtocol } from "#lib/types/Protocols.js";
 import type { EventEmitter } from "events"
 
 export interface IProtocol {

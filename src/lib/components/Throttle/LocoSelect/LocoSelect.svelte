@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { cn } from "$lib/utils.js";
+  import { cn } from "#lib/utils.js";
   import { tick } from "svelte";
   import { Check, ChevronsUpDown, Plus } from "@lucide/svelte";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
-  import { getLayoutTrains } from "$lib/client/Trains.remote";
-  import { getConnection } from "$lib/client/Connections.remote";
-  import AddTrainDialog from "$lib/components/Trains/AddTrainDialog.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as Command from "#lib/components/ui/command/index.js";
+  import * as Popover from "#lib/components/ui/popover/index.js";
+  import { getLayoutTrains } from "#lib/client/Trains.remote.js";
+  import { getConnection } from "#lib/client/Connections.remote.js";
+  import AddTrainDialog from "#lib/components/Trains/AddTrainDialog.svelte";
 
   interface Props {
     selTrainId: string | undefined;

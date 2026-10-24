@@ -1,5 +1,5 @@
-// import type { ConnectionUUID, LayoutUUID } from "$lib/client/LayoutClient.svelte";
-// import type { SensorState, SensorType, SensorUuid } from "$lib/client/Sensors/SensorClient.svelte";
+// import type { ConnectionUUID, LayoutUUID } from "#lib/client/LayoutClient.svelte";
+// import type { SensorState, SensorType, SensorUuid } from "#lib/client/Sensors/SensorClient.svelte";
 
 // export interface SensorJsonWeb {
 //   uuid: SensorUuid;

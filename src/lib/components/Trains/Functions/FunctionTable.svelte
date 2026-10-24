@@ -11,18 +11,18 @@
   } from "@lucide/svelte";
   import { flip } from "svelte/animate";
   import { onMount } from "svelte";
-  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { Checkbox } from "#lib/components/ui/checkbox/index.js";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
-  import * as ToggleGroup from "$lib/components/ui/toggle-group/index.js";
-  import { Button } from "$lib/components/ui/button";
+  import * as ToggleGroup from "#lib/components/ui/toggle-group/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
   import {
     addTrainFunction,
     deleteTrainFunction,
     editTrainFunction,
     getTrainFunctions,
     setTrainFunctionPosition,
-  } from "$lib/client/TrainFunctions.remote";
-  import type { TrainFunction } from "$lib/server/db/schema/trains";
+  } from "#lib/client/TrainFunctions.remote.js";
+  import type { TrainFunction } from "#lib/server/db/schema/trains.js";
 
   interface Props {
     trainId: string;

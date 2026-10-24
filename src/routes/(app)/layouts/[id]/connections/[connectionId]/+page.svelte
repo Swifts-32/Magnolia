@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "#lib/components/ui/button/index.js";
   import { toast } from "svelte-sonner";
-  import DccEx from "$lib/components/Protocols/DccEx.svelte";
-  import Lcc from "$lib/components/Protocols/Lcc/Lcc.svelte";
+  import DccEx from "#lib/components/Protocols/DccEx.svelte";
+  import Lcc from "#lib/components/Protocols/Lcc/Lcc.svelte";
   import { ChevronLeft, Pen } from "@lucide/svelte";
   import {
     connectConnection,
     disconnectConnection,
     getConnection,
     getlayoutConnections,
-  } from "$lib/client/Connections.remote";
-  import EditConnectionDialog from "$lib/components/Connections/EditConnectionDialog.svelte";
-  import { Separator } from "$lib/components/ui/separator";
+  } from "#lib/client/Connections.remote.js";
+  import EditConnectionDialog from "#lib/components/Connections/EditConnectionDialog.svelte";
+  import { Separator } from "#lib/components/ui/separator/index.js";
 
   let { params } = $props();
   const connection = $derived(await getConnection(params.connectionId));

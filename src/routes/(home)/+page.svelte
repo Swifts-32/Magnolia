@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Fab from "$lib/components/FAB/Fab.svelte";
-	import Button from "$lib/components/ui/button/button.svelte";
-	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import Fab from "#lib/components/FAB/Fab.svelte";
+	import Button from "#lib/components/ui/button/button.svelte";
+	import * as Dialog from "#lib/components/ui/dialog/index.js";
 	import { toast } from "svelte-sonner";
-	import { createLayout, getLayouts } from "$lib/client/layouts.remote";
+	import { createLayout, getLayouts } from "#lib/client/layouts.remote.js";
 	import { Plus } from "@lucide/svelte";
 
 	let open = $state(false);

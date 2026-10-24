@@ -2,11 +2,11 @@
   import { Trash2 } from "@lucide/svelte";
   import type { PageProps } from "./$types";
   import { goto } from "$app/navigation";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-  import { Button } from "$lib/components/ui/button";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
-  import { deleteLayout } from "$lib/client/layouts.remote";
+  import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { deleteLayout } from "#lib/client/layouts.remote.js";
 
   let { data }: PageProps = $props();
 </script>

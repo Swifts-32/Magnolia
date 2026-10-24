@@ -1,5 +1,5 @@
-import { OperateMode } from "$lib/components/canvas/canvasTypes.svelte";
-import { gStore } from "$lib/components/canvas/cellStore.svelte";
+import { OperateMode } from "#lib/components/canvas/canvasTypes.svelte.js";
+import { gStore } from "#lib/components/canvas/cellStore.svelte.js";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = ({ params }) => {

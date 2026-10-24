@@ -1,16 +1,16 @@
 <script lang="ts">
   import FunctionTable from "./Functions/FunctionTable.svelte";
   import { toast } from "svelte-sonner";
-  import InputField from "$lib/components/Form/InputField.svelte";
-  import Label from "$lib/components/ui/label/label.svelte";
-  import * as Select from "$lib/components/ui/select/index.js";
-  import {  editTrain } from "$lib/client/Trains.remote";
+  import InputField from "#lib/components/Form/InputField.svelte";
+  import Label from "#lib/components/ui/label/label.svelte";
+  import * as Select from "#lib/components/ui/select/index.js";
+  import {  editTrain } from "#lib/client/Trains.remote.js";
   import {
     getConnection,
     getlayoutConnections,
-  } from "$lib/client/Connections.remote";
+  } from "#lib/client/Connections.remote.js";
   import { onMount } from "svelte";
-  import type { Train } from "$lib/server/db/schema/trains";
+  import type { Train } from "#lib/server/db/schema/trains.js";
 
   interface Props {
     train: Train;

@@ -2,12 +2,12 @@
   import { page } from "$app/state";
   import { Toaster } from "svelte-sonner";
   import type { LayoutProps } from "./$types";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import Button from "#lib/components/ui/button/button.svelte";
+  import * as Sidebar from "#lib/components/ui/sidebar/index.js";
   import AppSidebar, {
     type AppSidebarItem,
-  } from "$lib/components/Sidebar/AppSidebar.svelte";
-  import { getLayout } from "$lib/client/layouts.remote";
+  } from "#lib/components/Sidebar/AppSidebar.svelte";
+  import { getLayout } from "#lib/client/layouts.remote.js";
   import {
     GaugeIcon,
     House,
@@ -63,7 +63,12 @@
   <Sidebar.Provider>
     <!-- Desktop Sidebar (Hidden on mobile) -->
     <div class="hidden md:block">
-      <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items} />
+      {#if page.params.id}
+        <AppSidebar
+          layoutName={(await getLayout(page.params.id)).name}
+          {items}
+        />
+      {/if}
     </div>
 
     <!-- Main Content (Added bottom padding so content isn't hidden behind the mobile bar) -->

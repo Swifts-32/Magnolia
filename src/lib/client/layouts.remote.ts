@@ -1,6 +1,6 @@
 import { command, form, query } from "$app/server";
-import { db } from "$lib/server/db";
-import { LayoutTable } from "$lib/server/db/schema/layouts";
+import { db } from "#lib/server/db/index.js";
+import { LayoutTable } from "#lib/server/db/schema/layouts.js";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";

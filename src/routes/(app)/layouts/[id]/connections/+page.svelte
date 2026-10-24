@@ -1,16 +1,16 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import AddConnectionDialog from "$lib/components/Connections/AddConnectionDialog.svelte";
-  import Fab from "$lib/components/FAB/Fab.svelte";
+  import AddConnectionDialog from "#lib/components/Connections/AddConnectionDialog.svelte";
+  import Fab from "#lib/components/FAB/Fab.svelte";
   import { EllipsisIcon, Plus, SquareArrowOutUpRight } from "@lucide/svelte";
-  import * as Table from "$lib/components/ui/table/index.js";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import { connectConnection, deleteConnection, disconnectConnection, duplicateConnection, getlayoutConnections } from "$lib/client/Connections.remote";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-  import * as Drawer from "$lib/components/ui/drawer/index.js";
+  import * as Table from "#lib/components/ui/table/index.js";
+  import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
+  import Button from "#lib/components/ui/button/button.svelte";
+  import { connectConnection, deleteConnection, disconnectConnection, duplicateConnection, getlayoutConnections } from "#lib/client/Connections.remote.js";
+  import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
+  import * as Drawer from "#lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
-  import EditConnectionForm from "$lib/components/Connections/EditConnectionForm.svelte";
+  import EditConnectionForm from "#lib/components/Connections/EditConnectionForm.svelte";
 
   let selectedUuid = $state<string | null>(null);
   let activeEditUuid = $state<string | null>(null);
@@ -43,6 +43,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+{#if page.params.id}
 <div class="flex">
 
       <Table.Root>
@@ -195,3 +196,4 @@
     </Fab>
   </AddConnectionDialog>
 </div>
+{/if}

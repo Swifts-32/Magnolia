@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Slider, type SliderSingleRootProps } from "bits-ui";
-	import { cn } from "$lib/utils.js";
+	import { cn } from "#lib/utils.js";
 	import { Menu } from "@lucide/svelte";
 	// let {
 	// 	value = $bindable(),

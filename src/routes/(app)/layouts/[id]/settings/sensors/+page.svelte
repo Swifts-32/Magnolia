@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "#lib/components/ui/button/index.js";
   import type { LayoutProps } from "../$types";
 
   let { data }: LayoutProps = $props();

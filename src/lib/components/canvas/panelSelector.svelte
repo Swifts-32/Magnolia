@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Eye, Pencil } from "@lucide/svelte";
-    import { cn } from "$lib/utils";
+    import { cn } from "#lib/utils.js";
     import { EditMode, Modes, OperateMode } from "./canvasTypes.svelte";
     import type { Snippet } from "svelte";
     import { gStore } from "./cellStore.svelte";

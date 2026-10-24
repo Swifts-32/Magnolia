@@ -2,12 +2,12 @@
     import {
         CellTypes,
         EditMode,
-    } from "$lib/components/canvas/canvasTypes.svelte";
-    import { gStore } from "$lib/components/canvas/cellStore.svelte";
-    import ToolbarTools from "$lib/components/canvas/Toolbar/ToolbarTools.svelte";
-    import ToolbarButton from "$lib/components/canvas/ToolbarButton.svelte";
-    import Button from "$lib/components/ui/button/button.svelte";
-    import Separator from "$lib/components/ui/separator/separator.svelte";
+    } from "#lib/components/canvas/canvasTypes.svelte.js";
+    import { gStore } from "#lib/components/canvas/cellStore.svelte.js";
+    import ToolbarTools from "#lib/components/canvas/Toolbar/ToolbarTools.svelte";
+    import ToolbarButton from "#lib/components/canvas/ToolbarButton.svelte";
+    import Button from "#lib/components/ui/button/button.svelte";
+    import Separator from "#lib/components/ui/separator/separator.svelte";
     import {
         ClipboardPaste,
         Copy,

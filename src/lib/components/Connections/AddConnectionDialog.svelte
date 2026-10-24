@@ -1,13 +1,13 @@
 <script lang="ts">
   import { toast } from "svelte-sonner";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "#lib/components/ui/button/index.js";
   import type { Snippet } from "svelte";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
   import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
   import ConnectionFormProtocol from "./FormComponents/ConnectionFormProtocol.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
-  import { createConnection } from "$lib/client/Connections.remote";
+  import { createConnection } from "#lib/client/Connections.remote.js";
 
   interface Props {
     layoutId: string;

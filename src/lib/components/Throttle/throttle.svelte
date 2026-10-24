@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { Card } from "$lib/components/ui/card";
-  import { Slider } from "$lib/components/ui/slider";
+  import { Card } from "#lib/components/ui/card/index.js";
+  import { Slider } from "#lib/components/ui/slider/index.js";
   import { CircleAlert, Trash } from "@lucide/svelte";
-  import DirectionSelector from "$lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
+  import DirectionSelector from "#lib/components/Throttle/DirectionSelector/DirectionSelector.svelte";
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
-  import LocoSelect from "$lib/components/Throttle/LocoSelect/LocoSelect.svelte";
+  import LocoSelect from "#lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import Button from "../ui/button/button.svelte";
-  import type { TrainUuid } from "$lib/types/Trains";
+  import type { TrainUuid } from "#lib/types/Trains.js";
   import EmptyFunctionCarousel from "./FunctionButton/EmptyFunctionCarousel.svelte";
-    import { getTrain, setTrainMotion, trainEmergencyStop } from "$lib/client/Trains.remote";
+    import { getTrain, setTrainMotion, trainEmergencyStop } from "#lib/client/Trains.remote.js";
 
   interface Props {
     layoutId: string;

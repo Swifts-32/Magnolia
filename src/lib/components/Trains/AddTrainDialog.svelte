@@ -1,14 +1,14 @@
 <script lang="ts">
+  import type { RemoteFormIssue } from '$app/server';
   import { toast } from "svelte-sonner";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
-  import { Button } from "$lib/components/ui/button";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
   import type { Snippet } from "svelte";
-  import type { RemoteFormIssue } from "@sveltejs/kit";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import * as Select from "$lib/components/ui/select/index.js";
-    import { createTrain } from "$lib/client/Trains.remote";
-    import { getConnection, getlayoutConnections } from "$lib/client/Connections.remote";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
+    import { createTrain } from "#lib/client/Trains.remote.js";
+    import { getConnection, getlayoutConnections } from "#lib/client/Connections.remote.js";
 
   interface Props {
     layoutId: string;
@@ -97,10 +97,7 @@
           <Select.Root
             type="single"
             {...connectionId.as("text")}
-            bind:value={
-              () => (connectionIdValue ? String(connectionIdValue) : undefined),
-              (value) => connectionId.set(value ?? "undefined")
-            }
+            bind:value={() => connectionIdValue ? String(connectionIdValue) : undefined, (value) => connectionId.set(value ?? "undefined")}
           >
             <Select.Trigger class="col-span-3">
               {connectionIdValue

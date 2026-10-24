@@ -1,14 +1,14 @@
 <script lang="ts">
   import { toast } from "svelte-sonner";
-  import type { Connection } from "$lib/server/db/schema/connection";
+  import type { Connection } from "#lib/server/db/schema/connection.js";
   import ConnectionFormProtocol from "./FormComponents/ConnectionFormProtocol.svelte";
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
   import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
-  import { editConnection } from "$lib/client/Connections.remote";
+  import { editConnection } from "#lib/client/Connections.remote.js";
   import InputField from "../Form/InputField.svelte";
   import FormSelect from "./FormComponents/FormSelect.svelte";
-  import { connectionProtocolList } from "$lib/types/Protocols";
+  import { connectionProtocolList } from "#lib/types/Protocols.js";
 
   interface Props {
     connection: Connection;

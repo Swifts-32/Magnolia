@@ -1,7 +1,7 @@
 import { requested } from "$app/server";
-import { getTracksStatus } from "$lib/client/Protocols/DccEx.remote";
-import { protocolEvents } from "$lib/server/events";
-import type { ConnectionProtocol } from "$lib/types/Protocols";
+import { getTracksStatus } from "#lib/client/Protocols/DccEx.remote.js";
+import { protocolEvents } from "#lib/server/events.js";
+import type { ConnectionProtocol } from "#lib/types/Protocols.js";
 import type { IProtocol } from "../IProtocol";
 import { DccExLocoManager } from "./DccExLoco";
 import type EventEmitter from "events";

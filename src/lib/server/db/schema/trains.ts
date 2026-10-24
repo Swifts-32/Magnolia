@@ -4,8 +4,8 @@ import { AppSchema } from "./app";
 import { relations, type InferSelectModel } from "drizzle-orm";
 import { UserTable } from "./users";
 import { ConnectionTable } from "./connection";
-import { TrainFunctionIconsList, TrainFunctionModesList } from "$lib/types/TrainFunctions";
-import { TrainDirectionsList } from "$lib/types/Trains";
+import { TrainFunctionIconsList, TrainFunctionModesList } from "#lib/types/TrainFunctions.js";
+import { TrainDirectionsList } from "#lib/types/Trains.js";
 
 export const TrainDirection = pgEnum("trainDirection", TrainDirectionsList);
 export const TrainFunctionIcon = pgEnum("trainFunctionIcon", TrainFunctionIconsList);

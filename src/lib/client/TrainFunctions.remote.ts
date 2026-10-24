@@ -1,10 +1,10 @@
 import { command, query } from "$app/server";
-import { db } from "$lib/server/db";
-import { TrainFunctionTable } from "$lib/server/db/schema/trains";
+import { db } from "#lib/server/db/index.js";
+import { TrainFunctionTable } from "#lib/server/db/schema/trains.js";
 import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod/v4";
-import { TrainFunction, TrainFunctionKey } from "$lib/types/TrainFunctions";
+import { TrainFunction, TrainFunctionKey } from "#lib/types/TrainFunctions.js";
 
 
 // Get the train's functions using the train id

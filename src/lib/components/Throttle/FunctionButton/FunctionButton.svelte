@@ -1,7 +1,7 @@
 <script lang="ts">
-    import FunctionIcons from "$lib/components/Trains/Functions/FunctionIcons.svelte";
-	import Button from "$lib/components/ui/button/button.svelte";
-	import Toggle from "$lib/components/ui/toggle/toggle.svelte";
+    import FunctionIcons from "#lib/components/Trains/Functions/FunctionIcons.svelte";
+	import Button from "#lib/components/ui/button/button.svelte";
+	import Toggle from "#lib/components/ui/toggle/toggle.svelte";
 	import {
 		getTrainFunction,
 		selectTrainFunction,

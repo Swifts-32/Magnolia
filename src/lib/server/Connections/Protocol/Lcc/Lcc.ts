@@ -1,8 +1,8 @@
 // src/lib/server/Protocols/Lcc/Lcc.ts
-import type { ConnectionProtocol } from "$lib/types/Protocols";
+import type { ConnectionProtocol } from "#lib/types/Protocols.js";
 import type EventEmitter from "events";
 import type { IProtocol } from "../IProtocol";
-import { App } from "$lib/server/App.server";
+import { App } from "#lib/server/App.server.js";
 import { encode } from "punycode";
 
 export interface LccNode {
@@ -37,7 +37,9 @@ export class Lcc implements IProtocol {
   private readonly maxLogLines = 200;
 
   // Our node ID
-  private readonly MY_NODE_ID = Buffer.from([0x05, 0x01, 0x01, 0x01, 0x01, 0x01]);
+  private readonly MY_NODE_ID = Buffer.from([
+    0x05, 0x01, 0x01, 0x01, 0x01, 0x01,
+  ]);
 
   constructor(connectionId: string) {
     this.connectionId = connectionId;
@@ -45,6 +47,10 @@ export class Lcc implements IProtocol {
 
   public setEventEmitter(emitter: EventEmitter): void {
     this.events = emitter;
+  }
+
+  public onParsedOutput(data: any): void {
+    // TODO IMPLEMENT
   }
 
   // ------------------------------------------------------------
@@ -77,13 +83,23 @@ export class Lcc implements IProtocol {
   // OUTGOING COMMANDS (called by UI)
   // ------------------------------------------------------------
   public sendInfoRequest(): void {
-    const frame = this.buildFrame(0x0490, this.MY_NODE_ID, undefined, Buffer.alloc(0));
+    const frame = this.buildFrame(
+      0x0490,
+      this.MY_NODE_ID,
+      undefined,
+      Buffer.alloc(0),
+    );
     this.sendSlip(frame);
   }
 
   public sendSnipRequest(nodeId: string): void {
     const dest = this.nodeIdStringToBuffer(nodeId);
-    const frame = this.buildFrame(0x0de8, this.MY_NODE_ID, dest, Buffer.alloc(0));
+    const frame = this.buildFrame(
+      0x0de8,
+      this.MY_NODE_ID,
+      dest,
+      Buffer.alloc(0),
+    );
     this.sendSlip(frame);
   }
 
@@ -94,7 +110,12 @@ export class Lcc implements IProtocol {
   }
 
   public sendVerifiedNodeIdRequest(): void {
-    const frame = this.buildFrame(0x0170, this.MY_NODE_ID, undefined, Buffer.alloc(0));
+    const frame = this.buildFrame(
+      0x0170,
+      this.MY_NODE_ID,
+      undefined,
+      Buffer.alloc(0),
+    );
     this.sendSlip(frame);
   }
 
@@ -121,7 +142,7 @@ export class Lcc implements IProtocol {
     const encoded = Buffer.concat([
       Buffer.from([0xc0]),
       this.encodeSlip(frame),
-      Buffer.from([0xc0])
+      Buffer.from([0xc0]),
     ]);
 
     const connection = await App.getConnection(this.connectionId);
@@ -147,8 +168,16 @@ export class Lcc implements IProtocol {
     const out: number[] = [];
     for (let i = 0; i < buf.length; i++) {
       if (buf[i] === 0xdb) {
-        if (buf[i + 1] === 0xdc) { out.push(0xc0); i++; continue; }
-        if (buf[i + 1] === 0xdd) { out.push(0xdb); i++; continue; }
+        if (buf[i + 1] === 0xdc) {
+          out.push(0xc0);
+          i++;
+          continue;
+        }
+        if (buf[i + 1] === 0xdd) {
+          out.push(0xdb);
+          i++;
+          continue;
+        }
       }
       out.push(buf[i]);
     }
@@ -175,8 +204,7 @@ export class Lcc implements IProtocol {
       // SNIP Reply
       this.handleSnipReply(frame, srcId);
       return;
-    }
-    else if ((mti & 0xFF00) === 0x1C00) {
+    } else if ((mti & 0xff00) === 0x1c00) {
       this.handleDatagram(frame, srcId);
       return;
     }
@@ -200,13 +228,18 @@ export class Lcc implements IProtocol {
       swVersion: existing?.swVersion,
       userName: existing?.userName,
       description: existing?.description,
-      lastSeen: now
+      lastSeen: now,
     });
 
     if (isNew) {
       this.log(`[LCC] New node discovered: ${srcId}`);
       // Auto SNIP request
-      const frame = this.buildFrame(0x0de8, this.MY_NODE_ID, srcBuf, Buffer.alloc(0));
+      const frame = this.buildFrame(
+        0x0de8,
+        this.MY_NODE_ID,
+        srcBuf,
+        Buffer.alloc(0),
+      );
       this.sendSlip(frame);
     }
 
@@ -245,7 +278,7 @@ export class Lcc implements IProtocol {
       swVersion: mfg[3],
       userName: user[0],
       description: user[1],
-      lastSeen: node?.lastSeen ?? Date.now()
+      lastSeen: node?.lastSeen ?? Date.now(),
     });
 
     this.log(`[LCC] SNIP updated for ${srcId}`);
@@ -302,14 +335,21 @@ export class Lcc implements IProtocol {
   //   ]);
   // }
 
-  private buildFrame(mti: number, src: Buffer, dest: Buffer | undefined, data: Buffer): Buffer {
+  private buildFrame(
+    mti: number,
+    src: Buffer,
+    dest: Buffer | undefined,
+    data: Buffer,
+  ): Buffer {
     // MTI
     const mtiBuf = Buffer.alloc(2);
     mtiBuf.writeUInt16BE(mti, 0);
 
     // Validate node IDs
-    if (src.length !== 6) throw new Error(`SRC must be 6 bytes, got ${src.length}`);
-    if (dest && dest.length !== 6) throw new Error(`DEST must be 6 bytes, got ${dest.length}`);
+    if (src.length !== 6)
+      throw new Error(`SRC must be 6 bytes, got ${src.length}`);
+    if (dest && dest.length !== 6)
+      throw new Error(`DEST must be 6 bytes, got ${dest.length}`);
 
     // Data length
     const lenBuf = Buffer.alloc(2);
@@ -324,8 +364,6 @@ export class Lcc implements IProtocol {
 
     return Buffer.concat(parts);
   }
-
-
 
   // ------------------------------------------------------------
   // 🔥 ESP LOG HANDLING
@@ -348,7 +386,9 @@ export class Lcc implements IProtocol {
   // 🔥 HELPERS
   // ------------------------------------------------------------
   private nodeIdBufferToString(buf: Buffer): string {
-    return [...buf].map(b => b.toString(16).padStart(2, "0").toUpperCase()).join(":");
+    return [...buf]
+      .map((b) => b.toString(16).padStart(2, "0").toUpperCase())
+      .join(":");
   }
 
   private nodeIdStringToBuffer(id: string): Buffer {
@@ -363,14 +403,14 @@ export class Lcc implements IProtocol {
     this.events?.emit("update", {
       connectionId: this.connectionId,
       type: "lcc_log",
-      log: msg
+      log: msg,
     });
   }
 
   private emitNodes(): void {
     this.events?.emit("update", {
       connectionId: this.connectionId,
-      type: "lcc_nodes"
+      type: "lcc_nodes",
     });
   }
 
@@ -407,12 +447,12 @@ export class Lcc implements IProtocol {
 
     const node = this.nodes.get(srcId);
     if (!node) return;
-    
-    if (space !== 0xFF) return; // CDI only
-    
+
+    if (space !== 0xff) return; // CDI only
+
     if (!node.cdi) node.cdi = "";
     node.cdi += data.toString("utf8");
-    
+
     // TODO not beinf called
     if (data.includes(0x00)) {
       console.log("5");
@@ -433,13 +473,13 @@ export class Lcc implements IProtocol {
     const payload = Buffer.alloc(7);
     payload[0] = 0x40; // READ
     payload.writeUInt32BE(address, 1);
-    payload[5] = 0xFF; // CDI space
-    payload[6] = 64;   // length
+    payload[5] = 0xff; // CDI space
+    payload[6] = 64; // length
 
     const contentId = Buffer.from([0x20]);
     const data = Buffer.concat([contentId, payload]);
 
-    const frame = this.buildFrame(0x1C48, this.MY_NODE_ID, dest, data);
+    const frame = this.buildFrame(0x1c48, this.MY_NODE_ID, dest, data);
     this.sendSlip(frame);
   }
 
@@ -451,5 +491,4 @@ export class Lcc implements IProtocol {
     }
     this.requestCdiDatagram(nodeId, 0);
   }
-
 }

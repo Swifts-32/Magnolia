@@ -1,7 +1,7 @@
 // See https://kit.svelte.dev/docs/types#app
 
-import type { Session } from "$lib/server/db/schema/sessions";
-import type { User } from "$lib/server/db/schema/users";
+import type { Session } from "#lib/server/db/schema/sessions.js";
+import type { User } from "#lib/server/db/schema/users.js";
 import type { ZodUUID } from "zod/v4";
 
 // for information about these interfaces

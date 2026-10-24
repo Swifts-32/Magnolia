@@ -1,4 +1,4 @@
-// import type { SensorState, SensorType } from "$lib/client/Sensors/SensorClient.svelte";
+// import type { SensorState, SensorType } from "#lib/client/Sensors/SensorClient.svelte";
 // import { Sensor, type SensorJsonWeb } from "./Sensor";
 
 // export interface LccSensorJsonWeb extends SensorJsonWeb {

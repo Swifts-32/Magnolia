@@ -1,5 +1,5 @@
-import { browser } from '$app/environment';
-import { getOrCreateTabSession } from '$lib/client/Auth/session';
+import { browser } from "$app/env";
+import { getOrCreateTabSession } from '#lib/client/Auth/session.js';
 
 export const load = async ({ fetch: orginalfetch }) => {
   if (browser) {
@@ -9,10 +9,8 @@ export const load = async ({ fetch: orginalfetch }) => {
     const originalFetch = window.fetch;
     window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
       init = init || {};
-      init.headers = {
-        ...(init.headers || {}),
-        "x-session-id": sessionId
-      };
+      init.headers = { ...init.headers || {}, "x-session-id": sessionId };
+
       return originalFetch(input, init);
     }) as typeof window.fetch;
 

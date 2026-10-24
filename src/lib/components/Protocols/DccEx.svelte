@@ -1,12 +1,12 @@
 <script lang="ts">
   import { Button } from "../ui/button";
-  import { getTracksStatus } from "$lib/client/Protocols/DccEx.remote";
+  import { getTracksStatus } from "#lib/client/Protocols/DccEx.remote.js";
   import { onMount } from "svelte";
-  import * as Card from "$lib/components/ui/card/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
   import {
     streamConnectionLogs,
     writeStringToConnection,
-  } from "$lib/client/Connections.remote";
+  } from "#lib/client/Connections.remote.js";
   import Terminal from "../Terminal/Terminal.svelte";
 
   interface Props {

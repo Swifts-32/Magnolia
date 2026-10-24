@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import * as Sidebar from "$lib/components/ui/sidebar/index.js";
+  import * as Sidebar from "#lib/components/ui/sidebar/index.js";
   import {
     ChevronDown,
     ChevronLeft,
@@ -8,7 +8,7 @@
     PanelLeft,
     type LucideProps,
   } from "@lucide/svelte";
-  import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+  import * as Collapsible from "#lib/components/ui/collapsible/index.js";
   import type { Component } from "svelte";
 
   export type AppSidebarItem = {
@@ -64,7 +64,7 @@
       <Sidebar.MenuItem>
         {#if item.selectable}
           <Sidebar.MenuButton
-            isActive={page.params.url != item.url && isActive}
+            isActive={page.url.pathname != item.url && isActive}
             title={item.linkText}
           >
             {#snippet child({ props })}

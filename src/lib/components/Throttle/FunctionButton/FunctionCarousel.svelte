@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { CarouselAPI } from "$lib/components/ui/carousel/context";
-	import * as Carousel from "$lib/components/ui/carousel/index";
+	import type { CarouselAPI } from "#lib/components/ui/carousel/context.js";
+	import * as Carousel from "#lib/components/ui/carousel/index.js";
 	import FunctionButton from "./FunctionButton.svelte";
-	import type { TrainFunction } from "$lib/server/db/schema/trains";
+	import type { TrainFunction } from "#lib/server/db/schema/trains.js";
 	import EmptyFunctionCarousel from "./EmptyFunctionCarousel.svelte";
-    import { getTrainFunctions } from "$lib/client/TrainFunctions.remote";
+    import { getTrainFunctions } from "#lib/client/TrainFunctions.remote.js";
 
 	interface Props {
 		disabled?: boolean;

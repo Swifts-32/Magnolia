@@ -1,4 +1,4 @@
-import { protocolEvents } from "$lib/server/events";
+import { protocolEvents } from "#lib/server/events.js";
 
 export const GET = () => {
   let send: ((data: any) => void) | null = null;

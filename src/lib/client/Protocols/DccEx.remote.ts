@@ -1,9 +1,9 @@
 import { query } from "$app/server";
-import { App } from "$lib/server/App.server";
+import { App } from "#lib/server/App.server.js";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
 import { DccEx } from "../../server/Connections/Protocol/DccEx/DccEx";
-import { protocolEvents } from "$lib/server/events";
+import { protocolEvents } from "#lib/server/events.js";
 
 protocolEvents.on('dccEx_trackManager', (connectionId: string) => {
   getTracksStatus(connectionId).refresh();

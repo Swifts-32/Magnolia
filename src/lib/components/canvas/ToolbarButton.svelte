@@ -51,7 +51,7 @@
     {name}
   </Button>
 {:else if size == "icon"}
-  <Toggle size="icon" onclick={handleToggle} class={className} {...restProps}>
+  <Toggle size="sm" onclick={handleToggle} class={className} {...restProps}>
     {@render children?.()}
   </Toggle>
 {/if}

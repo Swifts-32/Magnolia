@@ -1,7 +1,7 @@
 <script>
 	// import { page } from "$app/state";
-	// import { NavBarData } from "$lib/components/NavBar/linkUtils.svelte";
-	// import NavBar from "$lib/components/NavBar/NavBar.svelte";
+	// import { NavBarData } from "#lib/components/NavBar/linkUtils.svelte.js";
+	// import NavBar from "#lib/components/NavBar/NavBar.svelte";
 	import { Toaster } from "svelte-sonner";
 
 	let { children } = $props();

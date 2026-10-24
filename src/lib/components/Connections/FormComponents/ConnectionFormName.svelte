@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { createConnection } from "$lib/client/Connections.remote";
-  import Input from "$lib/components/ui/input/input.svelte";
-  import Label from "$lib/components/ui/label/label.svelte";
+  import type { createConnection } from "#lib/client/Connections.remote.js";
+  import Input from "#lib/components/ui/input/input.svelte";
+  import Label from "#lib/components/ui/label/label.svelte";
 
   interface Props {
     name: typeof createConnection.fields.name;

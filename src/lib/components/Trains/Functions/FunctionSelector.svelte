@@ -1,12 +1,11 @@
 <script lang="ts">
-  import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
-  import { Check } from "lucide-svelte";
+  import * as Command from "#lib/components/ui/command/index.js";
+  import * as Popover from "#lib/components/ui/popover/index.js";
+  import Button from "#lib/components/ui/button/button.svelte";
   import FunctionIcons from "./FunctionIcons.svelte";
-  import type { TrainFunction } from "$lib/server/db/schema/trains";
-  import { getTrainFunctions } from "$lib/client/TrainFunctions.remote";
+  import type { TrainFunction } from "#lib/server/db/schema/trains.js";
+  import { getTrainFunctions } from "#lib/client/TrainFunctions.remote.js";
+  import { ChevronsUpDown, Check } from "@lucide/svelte";
 
   interface Props {
     trainId: string;

@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
+  import type { RemoteFormField } from '$app/server';
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
   import { tick } from "svelte";
-  import {
-    getSerialPorts,
-    type SerialPortInfo,
-  } from "./SerialConnections.remote";
-  import type { RemoteFormField } from "@sveltejs/kit";
+  import { getSerialPorts, type SerialPortInfo } from "./SerialConnections.remote";
 
   interface Props {
     path: RemoteFormField<string>;

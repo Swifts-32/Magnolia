@@ -2,15 +2,15 @@
   import { toast } from "svelte-sonner";
   import { Trash2 } from "@lucide/svelte";
   import type { Snippet } from "svelte";
-  import type { Connection } from "$lib/server/db/schema/connection";
-  import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
-  import Button from "$lib/components/ui/button/button.svelte";
+  import type { Connection } from "#lib/server/db/schema/connection.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
+  import Button from "#lib/components/ui/button/button.svelte";
   import ConnectionFormProtocol from "./FormComponents/ConnectionFormProtocol.svelte";
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
   import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
-    import { deleteConnection, editConnection } from "$lib/client/Connections.remote";
+    import { deleteConnection, editConnection } from "#lib/client/Connections.remote.js";
 
   interface Props {
     connection: Connection;
