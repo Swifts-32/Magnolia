@@ -18,9 +18,11 @@
       packages = forEachSystem (
         system:
         let
+          # Always use x86_64-linux pkgs for the heavy frontend build to avoid QEMU emulation!
+          hostPkgs = import nixpkgs { system = "x86_64-linux"; };
+          # Target pkgs matches whatever system is being built (x86 for local, aarch64 for Pi)
           pkgs = import nixpkgs { inherit system; };
 
-          # 1. Dependency fetching fixed-output derivation
           bunDeps = pkgs.stdenv.mkDerivation {
             pname = "magnolia-deps";
             version = "1.0.0";
@@ -35,17 +37,18 @@
             '';
 
             outputHashMode = "recursive";
-            # outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
             outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
+            # outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+
           };
 
-          # 2. Native Frontend Build (Now with proper library paths for module evaluation)
-          frontendBuild = pkgs.stdenv.mkDerivation {
+          # Frontend compiled NATIVELY on x86_64 in seconds (bypasses ARM emulation entirely)
+          frontendBuild = hostPkgs.stdenv.mkDerivation {
             pname = "magnolia-frontend";
             version = "1.0.0";
             src = self;
 
-            nativeBuildInputs = with pkgs; [
+            nativeBuildInputs = with hostPkgs; [
               bun
               nodejs
               python3
@@ -57,16 +60,15 @@
 
             buildPhase = ''
               export HOME=$TMPDIR
-              export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
+              export LD_LIBRARY_PATH="${hostPkgs.stdenv.cc.cc.lib}/lib:${hostPkgs.udev}/lib:$LD_LIBRARY_PATH"
 
               mkdir -p $TMPDIR/bun-cache
               cp -r ${bunDeps}/* $TMPDIR/bun-cache/
               export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
 
               bun install --offline --frozen-lockfile --ignore-scripts
-              find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
+              find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${hostPkgs.bun}/bin/bun|' {} + || true
 
-              # Run SvelteKit build natively with library paths available
               bun run --bun build
             '';
 
@@ -75,7 +77,6 @@
               cp -r build $out/build
             '';
           };
-
         in
         {
           default = pkgs.stdenv.mkDerivation {
@@ -104,7 +105,7 @@
               bun install --offline --frozen-lockfile --ignore-scripts
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
-              # Inject the pre-built frontend assets, bypassing emulation build errors
+              # Inject the lightning-fast x86-built frontend assets
               rm -rf build
               cp -r ${frontendBuild}/build build
 
@@ -117,7 +118,7 @@
                 )
               fi
 
-              # Compile standalone binary using the injected assets
+              # Compile standalone binary
               bun build --compile server.js --outfile magnolia
             '';
 
