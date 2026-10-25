@@ -168,7 +168,7 @@
                 Type = "simple";
                 User = "postgres";
                 WorkingDirectory = "${self.packages.${pkgs.stdenv.system}.default}/share/magnolia";
-                ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit push";
+                ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit push --force";
                 ExecStart = "${pkgs.bun}/bin/bun server.js";
                 Restart = "always";
               };
