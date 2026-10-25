@@ -175,7 +175,7 @@
                 Type = "simple";
                 User = "postgres";
                 WorkingDirectory = "${self.packages.${pkgs.stdenv.system}.default}/share/magnolia";
-                ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit migrate";
+                ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit push";
                 ExecStart = "${self.packages.${pkgs.stdenv.system}.default}/bin/magnolia";
                 Restart = "always";
               };
