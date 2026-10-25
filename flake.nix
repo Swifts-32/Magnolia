@@ -18,9 +18,9 @@
       packages = forEachSystem (
         system:
         let
-          # Always use x86_64-linux pkgs for the heavy frontend build to avoid QEMU emulation!
+          # Build the heavy frontend natively on x86_64 to avoid emulation bottlenecks
           hostPkgs = import nixpkgs { system = "x86_64-linux"; };
-          # Target pkgs matches whatever system is being built (x86 for local, aarch64 for Pi)
+          # Target pkgs matches the system being built (x86 for laptop, aarch64 for Pi)
           pkgs = import nixpkgs { inherit system; };
 
           bunDeps = pkgs.stdenv.mkDerivation {
@@ -38,11 +38,8 @@
 
             outputHashMode = "recursive";
             outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
-            # outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-
           };
 
-          # Frontend compiled NATIVELY on x86_64 in seconds (bypasses ARM emulation entirely)
           frontendBuild = hostPkgs.stdenv.mkDerivation {
             pname = "magnolia-frontend";
             version = "1.0.0";
@@ -117,15 +114,11 @@
                   npm_config_nodedir="${pkgs.nodejs}" bun x node-gyp rebuild || true
                 )
               fi
-
-              # Compile standalone binary
-              bun build --compile server.js --outfile magnolia
             '';
 
             installPhase = ''
-              mkdir -p $out/bin $out/share/magnolia
-              cp magnolia $out/bin/magnolia
-              cp -r drizzle.config.ts src/lib/server/db/migrations node_modules $out/share/magnolia/
+              mkdir -p $out/share/magnolia
+              cp -r server.js build drizzle.config.ts src node_modules package.json $out/share/magnolia/
             '';
           };
         }
@@ -176,7 +169,7 @@
                 User = "postgres";
                 WorkingDirectory = "${self.packages.${pkgs.stdenv.system}.default}/share/magnolia";
                 ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit push";
-                ExecStart = "${self.packages.${pkgs.stdenv.system}.default}/bin/magnolia";
+                ExecStart = "${pkgs.bun}/bin/bun server.js";
                 Restart = "always";
               };
             };
