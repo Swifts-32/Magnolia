@@ -20,6 +20,7 @@
         let
           pkgs = import nixpkgs { inherit system; };
 
+          # 1. Dependency fetching fixed-output derivation
           bunDeps = pkgs.stdenv.mkDerivation {
             pname = "magnolia-deps";
             version = "1.0.0";
@@ -29,17 +30,52 @@
             buildPhase = ''
               export HOME=$TMPDIR
               export BUN_INSTALL_CACHE_DIR=$out
-
-              # Ensure Bun fetches all optional platform bindings (like rolldown binaries)
               bun install --frozen-lockfile --ignore-scripts --no-save
-
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
             '';
 
             outputHashMode = "recursive";
-            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
             # outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
           };
+
+          # 2. Native Frontend Build (Now with proper library paths for module evaluation)
+          frontendBuild = pkgs.stdenv.mkDerivation {
+            pname = "magnolia-frontend";
+            version = "1.0.0";
+            src = self;
+
+            nativeBuildInputs = with pkgs; [
+              bun
+              nodejs
+              python3
+              gnumake
+              gcc
+              pkg-config
+              udev.dev
+            ];
+
+            buildPhase = ''
+              export HOME=$TMPDIR
+              export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
+
+              mkdir -p $TMPDIR/bun-cache
+              cp -r ${bunDeps}/* $TMPDIR/bun-cache/
+              export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
+
+              bun install --offline --frozen-lockfile --ignore-scripts
+              find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
+
+              # Run SvelteKit build natively with library paths available
+              bun run --bun build
+            '';
+
+            installPhase = ''
+              mkdir -p $out
+              cp -r build $out/build
+            '';
+          };
+
         in
         {
           default = pkgs.stdenv.mkDerivation {
@@ -68,7 +104,11 @@
               bun install --offline --frozen-lockfile --ignore-scripts
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
-              # Compile native serialport bindings safely using bun x node-gyp
+              # Inject the pre-built frontend assets, bypassing emulation build errors
+              rm -rf build
+              cp -r ${frontendBuild}/build build
+
+              # Compile native serialport bindings for the target architecture
               if [ -d "node_modules/@serialport/bindings-cpp" ]; then
                 (
                   cd node_modules/@serialport/bindings-cpp
@@ -77,8 +117,7 @@
                 )
               fi
 
-              # Run SvelteKit build and compile standalone binary
-              bun run --bun build
+              # Compile standalone binary using the injected assets
               bun build --compile server.js --outfile magnolia
             '';
 
