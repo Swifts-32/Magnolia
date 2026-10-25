@@ -29,12 +29,16 @@
             buildPhase = ''
               export HOME=$TMPDIR
               export BUN_INSTALL_CACHE_DIR=$out
+
+              # Ensure Bun fetches all optional platform bindings (like rolldown binaries)
               bun install --frozen-lockfile --ignore-scripts --no-save
+
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
             '';
 
             outputHashMode = "recursive";
             outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
+            # outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
           };
         in
         {
@@ -64,16 +68,16 @@
               bun install --offline --frozen-lockfile --ignore-scripts
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
-              # Compile native serialport bindings safely inside a subshell
+              # Compile native serialport bindings safely using bun x node-gyp
               if [ -d "node_modules/@serialport/bindings-cpp" ]; then
                 (
                   cd node_modules/@serialport/bindings-cpp
                   export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.python3}/bin:${pkgs.gnumake}/bin:${pkgs.gcc}/bin:$PATH"
-                  npm_config_nodedir="${pkgs.nodejs}" node-gyp rebuild || true
+                  npm_config_nodedir="${pkgs.nodejs}" bun x node-gyp rebuild || true
                 )
               fi
 
-              # Now guaranteed to be in the project root where server.js lives
+              # Run SvelteKit build and compile standalone binary
               bun run --bun build
               bun build --compile server.js --outfile magnolia
             '';
