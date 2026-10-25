@@ -34,7 +34,7 @@
             '';
 
             outputHashMode = "recursive";
-            outputHash = "sha256-IcZtCm47+gDjfJnIhinAa/XPFz+agkch6ninRXtg5Uw=";
+            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
           };
         in
         {
@@ -64,13 +64,16 @@
               bun install --offline --frozen-lockfile --ignore-scripts
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
+              # Compile native serialport bindings safely inside a subshell
               if [ -d "node_modules/@serialport/bindings-cpp" ]; then
-                cd node_modules/@serialport/bindings-cpp
-                export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.python3}/bin:${pkgs.gnumake}/bin:${pkgs.gcc}/bin:$PATH"
-                npm_config_nodedir="${pkgs.nodejs}" node-gyp rebuild || true
-                cd ../../
+                (
+                  cd node_modules/@serialport/bindings-cpp
+                  export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.python3}/bin:${pkgs.gnumake}/bin:${pkgs.gcc}/bin:$PATH"
+                  npm_config_nodedir="${pkgs.nodejs}" node-gyp rebuild || true
+                )
               fi
 
+              # Now guaranteed to be in the project root where server.js lives
               bun run --bun build
               bun build --compile server.js --outfile magnolia
             '';
