@@ -27,7 +27,12 @@
             pname = "magnolia-deps";
             version = "1.0.0";
             src = self;
-            nativeBuildInputs = with pkgs; [ bun ];
+            nativeBuildInputs = with pkgs; [
+              bun
+              python3
+              gnumake
+              gcc
+            ];
 
             buildPhase = ''
               export HOME=$TMPDIR
@@ -37,7 +42,7 @@
             '';
 
             outputHashMode = "recursive";
-            outputHash = "sha256-6OHw996pFrVANwGzWWLJo0nG63qFd3BCTl+wnLRyGxg=";
+            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
           };
 
           frontendBuild = hostPkgs.stdenv.mkDerivation {
