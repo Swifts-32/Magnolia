@@ -14,7 +14,7 @@ export default defineConfig({
       },
       adapter: adapter(),
       paths: {
-        origin: "http://localhost:3000",
+        origin: process.env.ORIGIN,
       },
       alias: {
         "@/*": "./path/to/lib/*",
