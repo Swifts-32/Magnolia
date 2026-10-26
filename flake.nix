@@ -18,21 +18,35 @@
       packages = forEachSystem (
         system:
         let
-          # Build the heavy frontend natively on x86_64 to avoid emulation bottlenecks
           hostPkgs = import nixpkgs { system = "x86_64-linux"; };
-          # Target pkgs matches the system being built (x86 for laptop, aarch64 for Pi)
           pkgs = import nixpkgs { inherit system; };
 
-          bunDeps = pkgs.stdenv.mkDerivation {
-            pname = "magnolia-deps";
+          # Host dependencies (x86_64) for the native frontend build
+          hostBunDeps = hostPkgs.stdenv.mkDerivation {
+            pname = "magnolia-host-deps";
             version = "1.0.0";
             src = self;
-            nativeBuildInputs = with pkgs; [
+            nativeBuildInputs = with hostPkgs; [
               bun
-              python3
-              gnumake
-              gcc
             ];
+
+            buildPhase = ''
+              export HOME=$TMPDIR
+              export BUN_INSTALL_CACHE_DIR=$out
+              bun install --frozen-lockfile --ignore-scripts --no-save
+              find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${hostPkgs.bun}/bin/bun|' {} + || true
+            '';
+
+            outputHashMode = "recursive";
+            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
+          };
+
+          # Target dependencies (matches target system, e.g., aarch64 for Pi)
+          targetBunDeps = pkgs.stdenv.mkDerivation {
+            pname = "magnolia-target-deps";
+            version = "1.0.0";
+            src = self;
+            nativeBuildInputs = with pkgs; [ bun ];
 
             buildPhase = ''
               export HOME=$TMPDIR
@@ -42,7 +56,7 @@
             '';
 
             outputHashMode = "recursive";
-            outputHash = "sha256-6OHw996pFrVANwGzWWLJo0nG63qFd3BCTl+wnLRyGxg=";
+            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
           };
 
           frontendBuild = hostPkgs.stdenv.mkDerivation {
@@ -65,7 +79,7 @@
               export LD_LIBRARY_PATH="${hostPkgs.stdenv.cc.cc.lib}/lib:${hostPkgs.udev}/lib:$LD_LIBRARY_PATH"
 
               mkdir -p $TMPDIR/bun-cache
-              cp -r ${bunDeps}/* $TMPDIR/bun-cache/
+              cp -r ${hostBunDeps}/* $TMPDIR/bun-cache/
               export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
 
               bun install --offline --frozen-lockfile --ignore-scripts
@@ -101,7 +115,7 @@
               export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
 
               mkdir -p $TMPDIR/bun-cache
-              cp -r ${bunDeps}/* $TMPDIR/bun-cache/
+              cp -r ${targetBunDeps}/* $TMPDIR/bun-cache/
               export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
 
               bun install --offline --frozen-lockfile --ignore-scripts
