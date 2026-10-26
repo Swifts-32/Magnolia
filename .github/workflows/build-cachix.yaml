@@ -12,8 +12,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Enable ARM64 emulation on the x86 runner
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            extra-platforms = aarch64-linux
 
       - name: Setup Cachix
         uses: cachix/cachix-action@v17
