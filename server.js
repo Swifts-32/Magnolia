@@ -6,6 +6,8 @@ import { Pool } from "pg";
 const app = express();
 const PORT = 8080;
 
+app.set("trust proxy", true);
+
 async function testDatabase() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
