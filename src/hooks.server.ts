@@ -27,6 +27,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 };
 
 export const handleError: HandleServerError = ({ error, event, kind }) => {
+  console.error("Detailed Server Error:", error);
+
   if (kind === "validation") {
     return {
       message: `Validation error occurred`,
