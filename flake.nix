@@ -37,7 +37,7 @@
             '';
 
             outputHashMode = "recursive";
-            outputHash = "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI=";
+            outputHash = "sha256-6OHw996pFrVANwGzWWLJo0nG63qFd3BCTl+wnLRyGxg=";
           };
 
           frontendBuild = hostPkgs.stdenv.mkDerivation {
