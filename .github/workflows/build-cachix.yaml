@@ -1,9 +1,9 @@
 name: Build and Push to Cachix
 
 on:
-  [workflow_dispatch]
   push:
     branches: [release]
+  workflow_dispatch:
 
 jobs:
   build:
