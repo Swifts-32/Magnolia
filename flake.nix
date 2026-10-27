@@ -15,6 +15,43 @@
       forEachSystem = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
+      devShells = forEachSystem (
+        system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        {
+          default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              bun
+              postgresql_16
+              python3
+              gnumake
+              gcc
+              pkg-config
+              udev.dev
+            ];
+
+            shellHook = ''
+              echo "Initializing Magnolia WebApp Development Environment..."
+              export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
+              export PGDATA="$PWD/.postgres"
+              if [ ! -d "$PGDATA" ]; then
+                initdb -D "$PGDATA" --auth=trust >/dev/null
+              fi
+              if ! pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
+                pg_ctl -D "$PGDATA" -l "$PWD/.postgres/postgres.log" -o "-k $PWD/.postgres" start >/dev/null 2>&1
+              fi
+              psql -h localhost -p 5432 -d template1 -c "CREATE ROLE postgres WITH LOGIN SUPERUSER;" 2>/dev/null || true
+              createdb -h localhost postgres 2>/dev/null || true
+              export DATABASE_URL="postgresql://postgres@localhost:5432/postgres?host=$PWD/.postgres"
+
+              echo "Database ready! Run 'bun install' followed by 'bun run dev' or start your server."
+            '';
+          };
+        }
+      );
+
       packages = forEachSystem (
         system:
         let
