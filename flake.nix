@@ -18,17 +18,39 @@
       packages = forEachSystem (
         system:
         let
-          hostPkgs = import nixpkgs { system = "x86_64-linux"; };
           pkgs = import nixpkgs { inherit system; };
+          hostPkgs = pkgs;
+
+          # Filtered fileset for dependencies (root must be a path literal ./., not self)
+          depFileset = nixpkgs.lib.fileset.toSource {
+            root = ./.;
+            fileset = nixpkgs.lib.fileset.unions [
+              ./package.json
+              ./bun.lock
+            ];
+          };
+
+          # Filtered fileset for frontend build
+          frontendFileset = nixpkgs.lib.fileset.toSource {
+            root = ./.;
+            fileset = nixpkgs.lib.fileset.unions [
+              ./package.json
+              ./bun.lock
+              ./src
+              ./vite.config.ts
+              ./tsconfig.json
+              ./server.js
+              ./tailwind.config.js
+              ./postcss.config.js
+            ];
+          };
 
           # Host dependencies (x86_64) for the native frontend build
           hostBunDeps = hostPkgs.stdenv.mkDerivation {
             pname = "magnolia-host-deps";
             version = "1.0.0";
-            src = self;
-            nativeBuildInputs = with hostPkgs; [
-              bun
-            ];
+            src = depFileset;
+            nativeBuildInputs = with hostPkgs; [ bun ];
 
             buildPhase = ''
               export HOME=$TMPDIR
@@ -45,7 +67,7 @@
           targetBunDeps = pkgs.stdenv.mkDerivation {
             pname = "magnolia-target-deps";
             version = "1.0.0";
-            src = self;
+            src = depFileset;
             nativeBuildInputs = with pkgs; [ bun ];
 
             buildPhase = ''
@@ -62,7 +84,7 @@
           frontendBuild = hostPkgs.stdenv.mkDerivation {
             pname = "magnolia-frontend";
             version = "1.0.0";
-            src = self;
+            src = frontendFileset;
 
             nativeBuildInputs = with hostPkgs; [
               bun
@@ -121,7 +143,7 @@
               bun install --offline --frozen-lockfile --ignore-scripts
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
-              # Inject the lightning-fast x86-built frontend assets
+              # Inject frontend assets
               rm -rf build
               cp -r ${frontendBuild}/build build
 
