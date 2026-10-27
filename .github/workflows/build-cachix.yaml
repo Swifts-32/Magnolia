@@ -7,20 +7,30 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: x86_64-linux
+            runner: ubuntu-latest
+          - system: aarch64-linux
+            runner: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runner }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Enable ARM64 emulation on the x86 runner
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+
+      - name: Restore & Save Nix Store Cache
+        uses: nix-community/cache-action@v6
         with:
-          extra_nix_config: |
-            extra-platforms = aarch64-linux
+          primary-key: nix-${{ matrix.system }}-${{ hashFiles('**/flake.lock', '**/package.json', '**/bun.lockb') }}
+          restore-keys: |
+            nix-${{ matrix.system }}-
 
       - name: Setup Cachix
         uses: cachix/cachix-action@v17
@@ -28,5 +38,5 @@ jobs:
           name: magnolia
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
-      - name: Build ARM64 Package
-        run: nix build .#packages.aarch64-linux.default
+      - name: Build Package for ${{ matrix.system }}
+        run: nix build .#packages.${{ matrix.system }}.default
