@@ -26,9 +26,9 @@ jobs:
         uses: cachix/install-nix-action@v31
 
       - name: Restore & Save Nix Store Cache
-        uses: nix-community/cache-action@v6
+        uses: nix-community/cache-nix-action@v7
         with:
-          primary-key: nix-${{ matrix.system }}-${{ hashFiles('**/flake.lock', '**/package.json', '**/bun.lockb') }}
+          primary-key: nix-${{ matrix.system }}-${{ hashFiles('**/flake.lock', '**/package.json', '**/bun.lock') }}
           restore-keys: |
             nix-${{ matrix.system }}-
 
