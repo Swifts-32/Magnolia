@@ -19,9 +19,10 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
-          hostPkgs = pkgs;
+          # Always build the frontend using x86_64-linux for speed and binary compatibility
+          hostPkgs = import nixpkgs { system = "x86_64-linux"; };
 
-          # Filtered fileset for dependencies (root must be a path literal ./., not self)
+          # Filtered fileset for dependencies
           depFileset = nixpkgs.lib.fileset.toSource {
             root = ./.;
             fileset = nixpkgs.lib.fileset.unions [
@@ -45,7 +46,7 @@
             ];
           };
 
-          # Host dependencies (x86_64) for the native frontend build
+          # Host dependencies (x86_64) for the frontend build
           hostBunDeps = hostPkgs.stdenv.mkDerivation {
             pname = "magnolia-host-deps";
             version = "1.0.0";
@@ -143,7 +144,7 @@
               bun install --offline --frozen-lockfile --ignore-scripts
               find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
 
-              # Inject frontend assets
+              # Inject the lightning-fast x86-built frontend assets
               rm -rf build
               cp -r ${frontendBuild}/build build
 
