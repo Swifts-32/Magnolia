@@ -1,6 +1,6 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { DATABASE_URL } from '$app/env/private';
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import { DATABASE_URL } from "$app/env/private";
 
 const connectionString = DATABASE_URL;
 
@@ -11,5 +11,5 @@ const pool = new Pool({
 });
 
 export const db = drizzle({
-  client: pool
+  client: pool,
 });
