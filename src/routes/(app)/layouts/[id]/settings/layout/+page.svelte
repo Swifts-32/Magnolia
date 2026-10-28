@@ -11,7 +11,7 @@
   let { data }: PageProps = $props();
 </script>
 
-<div>
+<div class="m-4">
   <h1 class="text-4xl mb-8">Layout</h1>
 
   <!-- Layout Name -->
