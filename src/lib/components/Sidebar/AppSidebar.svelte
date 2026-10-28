@@ -28,12 +28,39 @@
   let { layoutName, items = $bindable([]) }: Props = $props();
 
   const sidebar = Sidebar.useSidebar();
+
+  const getAllUrls = (list: AppSidebarItem[]): string[] => {
+    let urls: string[] = [];
+    for (const i of list) {
+      if (i.url) urls.push(i.url);
+      if (i.children) urls.push(...getAllUrls(i.children));
+    }
+    return urls;
+  };
+
+  const allUrls = $derived(getAllUrls(items));
+
+  const isItemActive = (itemUrl: string | undefined): boolean => {
+    if (!itemUrl) return false;
+    const pathname = page.url.pathname;
+    if (pathname === itemUrl) return true;
+    if (itemUrl !== "/" && pathname.startsWith(itemUrl + "/")) {
+      const hasLongerMatch = allUrls.some(
+        (u) =>
+          u !== itemUrl &&
+          u.startsWith(itemUrl) &&
+          (pathname === u || pathname.startsWith(u + "/")),
+      );
+      return !hasLongerMatch;
+    }
+    return false;
+  };
 </script>
 
 {#snippet renderTree(i: AppSidebarItem[])}
   {#each i as item (item.linkText)}
     {@const Icon = item.icon}
-    {@const isActive = item.url ? page.url.pathname === item.url : false}
+    {@const isActive = isItemActive(item.url)}
 
     {#if item.children && item.children.length > 0}
       <!-- Collapsible Parent Node -->
@@ -63,14 +90,11 @@
       <!-- Leaf Node -->
       <Sidebar.MenuItem>
         {#if item.selectable}
-          <Sidebar.MenuButton
-            isActive={page.url.pathname != item.url && isActive}
-            title={item.linkText}
-          >
+          <Sidebar.MenuButton {isActive} title={item.linkText}>
             {#snippet child({ props })}
               <a href={item.url ?? "#"} {...props}>
                 <Icon
-                  class=" size-4 {page.url.pathname == item.url
+                  class=" size-4 {isActive
                     ? 'text-secondary'
                     : 'text-card-foreground'}"
                 />
@@ -82,9 +106,8 @@
                   <span class="text-green-600">{item.linkText}</span>
                 {:else}
                   <span
-                    class={page.url.pathname == item.url
-                      ? "text-secondary"
-                      : "text-card-foreground"}>{item.linkText}</span
+                    class={isActive ? "text-secondary" : "text-card-foreground"}
+                    >{item.linkText}</span
                   >
                 {/if}
               </a>
