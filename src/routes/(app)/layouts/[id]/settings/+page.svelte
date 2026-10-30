@@ -16,7 +16,7 @@
   ];
 </script>
 
-<div class="flex flex-col gap-4 m-8 mt-12 h-full items-center">
+<div class="flex flex-col gap-4 m-8 mt-12 items-center">
   {#each navItems as navItem}
     <Item.Root variant="outline" class="w-full lg:w-1/2 md:w-2/3">
       {#snippet child({ props })}
