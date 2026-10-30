@@ -4,12 +4,11 @@
   import {
     ChevronDown,
     ChevronLeft,
-    House,
     PanelLeft,
     type LucideProps,
   } from "@lucide/svelte";
   import * as Collapsible from "#lib/components/ui/collapsible/index.js";
-  import type { Component } from "svelte";
+  import type { Component, Snippet } from "svelte";
 
   export type AppSidebarItem = {
     linkText: string;
@@ -23,9 +22,10 @@
   interface Props {
     layoutName: string;
     items: AppSidebarItem[];
+    children?: Snippet;
   }
 
-  let { layoutName, items = $bindable([]) }: Props = $props();
+  let { layoutName, items = $bindable([]), children }: Props = $props();
 
   const sidebar = Sidebar.useSidebar();
 
@@ -128,41 +128,44 @@
   {/each}
 {/snippet}
 
-<Sidebar.Root collapsible="icon">
-  <Sidebar.Header>
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton onclick={sidebar.toggle}>
-          <PanelLeft />
-          <span>Collapse</span>
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
+<Sidebar.Provider>
+  <Sidebar.Root collapsible="icon">
+    <Sidebar.Header>
+      <Sidebar.Menu>
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton>
+            <PanelLeft />
+            <span>Collapse</span>
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
 
-      <Sidebar.MenuItem>
-        <Sidebar.MenuButton>
-          {#snippet child({ props })}
-            <a href="/" {...props}>
-              <ChevronLeft />
-              <span>Layouts</span>
-            </a>
-          {/snippet}
-        </Sidebar.MenuButton>
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
-  </Sidebar.Header>
+        <Sidebar.MenuItem>
+          <Sidebar.MenuButton>
+            {#snippet child({ props })}
+              <a href="/" {...props}>
+                <ChevronLeft />
+                <span>Layouts</span>
+              </a>
+            {/snippet}
+          </Sidebar.MenuButton>
+        </Sidebar.MenuItem>
+      </Sidebar.Menu>
+    </Sidebar.Header>
 
-  <Sidebar.Content>
-    <Sidebar.Group>
-      <Sidebar.GroupLabel>{layoutName}</Sidebar.GroupLabel>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          <!-- Render the full recursive tree -->
-          {@render renderTree(items)}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
-  </Sidebar.Content>
+    <Sidebar.Content>
+      <Sidebar.Group>
+        <Sidebar.GroupLabel>{layoutName}</Sidebar.GroupLabel>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {@render renderTree(items)}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    </Sidebar.Content>
 
-  <Sidebar.Footer />
-  <Sidebar.Rail />
-</Sidebar.Root>
+    <Sidebar.Footer />
+    <Sidebar.Rail />
+  </Sidebar.Root>
+
+  {@render children?.()}
+</Sidebar.Provider>
