@@ -64,13 +64,13 @@
 
 <svelte:boundary>
   {#if isMobile.current}
-    <main class="flex-1 overflow-y-auto pb-0 w-full">
+    <main class="flex-1 overflow-y-auto w-full">
       {@render children?.()}
     </main>
     <AppBottomBar {items} />
   {:else if page.params.id}
     <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items}>
-      <main class="flex-1 overflow-y-auto pb-20 w-full">
+      <main class="flex-1 overflow-y-auto w-full">
         {@render children?.()}
       </main>
     </AppSidebar>
