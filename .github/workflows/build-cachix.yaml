@@ -29,8 +29,6 @@ jobs:
         uses: nix-community/cache-nix-action@v7
         with:
           primary-key: nix-${{ matrix.system }}-${{ hashFiles('**/flake.lock', '**/package.json', '**/bun.lock') }}
-          restore-keys: |
-            nix-${{ matrix.system }}-
 
       - name: Setup Cachix
         uses: cachix/cachix-action@v17
