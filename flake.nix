@@ -181,7 +181,7 @@
 
             installPhase = ''
               mkdir -p $out/share/magnolia
-              cp -r server.js build drizzle.config.ts src node_modules package.json $out/share/magnolia/
+              cp -r build drizzle.config.ts src node_modules package.json $out/share/magnolia/
             '';
           };
         }
@@ -222,9 +222,11 @@
 
               environment = {
                 PORT = "8080";
+                HOST = "0.0.0.0";
                 ORIGIN = config.services.magnolia.origin;
                 DATABASE_URL = "postgresql://postgres@localhost:5432/magnolia?host=/var/run/postgresql";
-                LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib";
+
+                # Built-in adapter-node environment variables for reverse proxies
                 PROTOCOL_HEADER = "x-forwarded-proto";
                 HOST_HEADER = "x-forwarded-host";
               };
@@ -234,7 +236,7 @@
                 User = "postgres";
                 WorkingDirectory = "${self.packages.${pkgs.stdenv.system}.default}/share/magnolia";
                 ExecStartPre = "${pkgs.bun}/bin/bun x drizzle-kit push --force";
-                ExecStart = "${pkgs.bun}/bin/bun server.js";
+                ExecStart = "${pkgs.bun}/bin/bun build/index.js";
                 Restart = "always";
               };
             };
