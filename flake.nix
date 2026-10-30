@@ -226,6 +226,8 @@
                 ORIGIN = config.services.magnolia.origin;
                 DATABASE_URL = "postgresql://postgres@localhost:5432/magnolia?host=/var/run/postgresql";
 
+                LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib";
+
                 # Built-in adapter-node environment variables for reverse proxies
                 PROTOCOL_HEADER = "x-forwarded-proto";
                 HOST_HEADER = "x-forwarded-host";
