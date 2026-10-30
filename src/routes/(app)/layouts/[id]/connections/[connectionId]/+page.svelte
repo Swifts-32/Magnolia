@@ -48,12 +48,6 @@
 
     <!-- Right Side -->
     <div class="flex items-center gap-4">
-      <EditConnectionDialog {connection}>
-        <div>
-          <Pen />
-        </div>
-      </EditConnectionDialog>
-
       {#if connection.isConnected}
         <Button
           onclick={async () => {

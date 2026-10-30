@@ -60,7 +60,7 @@
   {/await}
 {/snippet}
 
-<div class="flex w-full">
+<div class="flex w-full overflow-x-hidden">
   <Table.Root>
     <Table.Caption>A list of your trains.</Table.Caption>
     <Table.Header class="select-none">
@@ -92,7 +92,7 @@
               No Connection
             {/if}
           </Table.Cell>
-          <Table.Cell>{train.comment}</Table.Cell>
+          <Table.Cell class="whitespace-normal break-words max-w-[150px] sm:max-w-xs">{train.comment}</Table.Cell>
           <Table.Cell class="text-right">
             <DropdownMenu.Root bind:open={dropdownOpen}>
               <DropdownMenu.Trigger>

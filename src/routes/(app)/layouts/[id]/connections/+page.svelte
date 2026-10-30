@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import AddConnectionDialog from "#lib/components/Connections/AddConnectionDialog.svelte";
   import Fab from "#lib/components/FAB/Fab.svelte";
-  import { EllipsisIcon, Plus, SquareArrowOutUpRight } from "@lucide/svelte";
+  import { EllipsisIcon, Plus, PowerIcon, PowerOff, SquareArrowOutUpRight } from "@lucide/svelte";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
@@ -11,6 +11,7 @@
   import * as Drawer from "#lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
   import EditConnectionForm from "#lib/components/Connections/EditConnectionForm.svelte";
+  import { toast } from "svelte-sonner";
 
   let selectedUuid = $state<string | null>(null);
   let activeEditUuid = $state<string | null>(null);
@@ -30,6 +31,10 @@
     } else if (event.key === "d") {
       event.preventDefault();
       await duplicateConnection(selectedUuid);
+    } 
+    else if (event.key === "o") {
+      event.preventDefault();
+      gotoConnection(selectedUuid);
     } else if (event.key === "Delete" && event.ctrlKey) {
       event.preventDefault();
       await deleteConnection(selectedUuid);
@@ -38,6 +43,10 @@
       event.preventDefault();
       activeAlertUuid = selectedUuid;
     }
+  }
+
+  function gotoConnection(connId: string) {
+    goto(`${page.url.pathname}/${connId}`)
   }
 </script>
 
@@ -50,9 +59,8 @@
     <Table.Caption>A list of your connections.</Table.Caption>
     <Table.Header class="select-none">
       <Table.Row>
-        <Table.Head class="w-5"></Table.Head>
+        <Table.Head class="w-2"></Table.Head>
         <Table.Head class="w-25">Name</Table.Head>
-        <Table.Head class="w-30">Connected</Table.Head>
         <Table.Head class="w-20">Protocol</Table.Head>
         <Table.Head class="w-20">Hardware</Table.Head>
         <Table.Head class="text-end">Actions</Table.Head>
@@ -69,24 +77,25 @@
           onmouseleave={() => selectedUuid = null}
           onfocus={() => selectedUuid = conn.uuid}
         >
-          <Table.Cell>
-            <SquareArrowOutUpRight  onclick={() => goto(`${page.url.pathname}/${conn.uuid}`)} /></Table.Cell>
+            <Table.Cell class="flex gap-2">
+              {#if conn.isConnected}
+                <Button size="icon" variant="destructive" onclick={async () => {
+                  await disconnectConnection(conn.uuid);
+                  toast.success("Disconnected");
+                }}>
+                <PowerOff/>
+                </Button>
+              {:else}
+                <Button size="icon" onclick={async () => {
+                  await connectConnection(conn.uuid)
+                  toast.success("Connected");
+                }}>
+                <PowerIcon/>
+  
+                </Button>
+              {/if}              
+            </Table.Cell>
           <Table.Cell class="font-medium">{conn.name}</Table.Cell>
-          <Table.Cell>
-            {#if conn.isConnected}
-              <Button class="w-25" onclick={async () =>
-                await disconnectConnection(conn.uuid)
-              }>
-              Disconnect
-              </Button>
-            {:else}
-              <Button class="w-25" onclick={async () => 
-                await connectConnection(conn.uuid)
-              }>
-              Connect
-              </Button>
-            {/if}
-          </Table.Cell>
           <Table.Cell>{conn.protocol}</Table.Cell>
           <Table.Cell>{conn.hardware.type}</Table.Cell>
           <Table.Cell class="text-right">
@@ -106,6 +115,11 @@
                 }}>
                   Edit
                    <DropdownMenu.Shortcut>E</DropdownMenu.Shortcut>
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Item onclick={() => gotoConnection(conn.uuid)}>
+                  Open
+                   <DropdownMenu.Shortcut>O</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
 
                 <DropdownMenu.Item
