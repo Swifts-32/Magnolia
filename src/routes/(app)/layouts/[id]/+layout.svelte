@@ -63,20 +63,22 @@
 </script>
 
 <svelte:boundary>
-  {#if isMobile.current}
-    <main class="flex-1 overflow-y-auto w-full">
-      {@render children?.()}
-    </main>
-    <AppBottomBar {items} />
-  {:else if page.params.id}
-    <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items}>
-      <main class="flex-1 overflow-y-auto w-full">
+  <main class="h-svh w-screen flex overflow-hidden">
+    {#if isMobile.current}
+      <main class="flex-1 overflow-y-auto w-full min-h-0 pb-16">
         {@render children?.()}
       </main>
-    </AppSidebar>
-  {/if}
+      <AppBottomBar {items} />
+    {:else if page.params.id}
+      <AppSidebar layoutName={(await getLayout(page.params.id)).name} {items}>
+        <main class="flex-1 overflow-y-auto w-full min-h-0">
+          {@render children?.()}
+        </main>
+      </AppSidebar>
+    {/if}
 
-  <Toaster richColors theme="dark" position="bottom-left" />
+    <Toaster richColors theme="dark" position="bottom-left" />
+  </main>
 
   {#snippet pending()}
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center">

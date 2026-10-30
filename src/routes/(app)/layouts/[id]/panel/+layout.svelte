@@ -10,7 +10,7 @@
   const isMobile = new IsMobile();
 </script>
 
-<div class="max-h-svh w-full flex flex-col overflow-hidden">
+<div class="size-full flex flex-col overflow-hidden">
   {#if isMobile.current}
     <div class="w-full h-40 flex bg-secondary p-4 items-center shrink-0">
       {@render children()}
@@ -25,7 +25,5 @@
     </PanelSelector>
   {/if}
 
-  <div class="grow relative min-h-0 overflow-hidden">
-    <Canvas />
-  </div>
+  <Canvas />
 </div>

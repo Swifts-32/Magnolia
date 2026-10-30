@@ -6,7 +6,7 @@ html, body {
   overscroll-behavior-y: none;
   height: 100%;
   overflow: hidden; /* Keeps your h-svh layout locked securely in place */
-}
+ } 
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,

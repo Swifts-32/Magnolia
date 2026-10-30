@@ -9,9 +9,9 @@
   } from "./canvasTypes.svelte";
   import { gStore } from "./cellStore.svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
-    import { StraightTrackCell } from "./Cells/Track/StraightTrackCell";
-    import { CurveTrackCell } from "./Cells/Track/CurveTrackCell";
-    import { BufferTrackCell } from "./Cells/Track/BufferTrackCell";
+  import { StraightTrackCell } from "./Cells/Track/StraightTrackCell";
+  import { CurveTrackCell } from "./Cells/Track/CurveTrackCell";
+  import { BufferTrackCell } from "./Cells/Track/BufferTrackCell";
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let ctx: CanvasRenderingContext2D | null = null;
@@ -191,11 +191,9 @@
 
         if (cell) {
           gStore.addCell(x, y, cell);
-        }
-        else {
+        } else {
           gStore.removeCell(x, y);
         }
-
       }
     }
 
@@ -309,10 +307,12 @@
   }
 </script>
 
-<main>
+<main
+  class="relative w-full h-full flex items-center justify-center overflow-hidden"
+>
   <canvas
     bind:this={canvas}
-    class="bg-gray-300"
+    class="bg-gray-300 w-full h-full object-contain block"
     onwheel={handleZoom}
     onmousedown={handleMouseDown}
     onmousemove={handleMouseMove}
