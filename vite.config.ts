@@ -16,9 +16,6 @@ export default defineConfig({
       paths: {
         origin: process.env.ORIGIN,
       },
-      alias: {
-        "@/*": "./path/to/lib/*",
-      },
       compilerOptions: {
         experimental: {
           async: true,
