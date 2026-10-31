@@ -1,9 +1,12 @@
 <script lang="ts">
-  import type { RemoteFormField } from '$app/server';
+  import type { RemoteFormField } from "$app/server";
   import { Label } from "#lib/components/ui/label/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
   import { tick } from "svelte";
-  import { getSerialPorts, type SerialPortInfo } from "./SerialConnections.remote";
+  import {
+    getSerialPorts,
+    type SerialPortInfo,
+  } from "./SerialConnections.remote";
 
   interface Props {
     path: RemoteFormField<string>;
@@ -57,9 +60,17 @@
     >
       {#each serialPorts as port}
         <option
+          value={port.path}
           class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
-          >{port.path}</option
         >
+          {#if port.friendlyName || port.manufacturer}
+            {port.friendlyName ?? "Unknown Device"}
+            {#if port.manufacturer}({port.manufacturer}){/if}
+            — {port.path}
+          {:else}
+            {port.path} (Generic Port)
+          {/if}
+        </option>
       {/each}
     </select>
 
