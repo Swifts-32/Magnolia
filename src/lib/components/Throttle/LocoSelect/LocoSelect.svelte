@@ -93,13 +93,17 @@
                   class="flex flex-col justify-center items-start text-sm leading-3 text-gray-400"
                 >
                   <p>Address: {train.address}</p>
-                  {#await getConnection(train.connectionUuid) then connection}
-                    <p class="text-sm text-gray-400">
-                      Connection: {connection.name}
-                    </p>
-                  {:catch}
+                  {#if train.connectionUuid}
+                    {#await getConnection(train.connectionUuid) then connection}
+                      <p class="text-sm text-gray-400">
+                        Connection: {connection.name}
+                      </p>
+                    {:catch}
+                      <p class="text-sm text-red-400">No Connection</p>
+                    {/await}
+                  {:else}
                     <p class="text-sm text-red-400">No Connection</p>
-                  {/await}
+                  {/if}
                 </div>
               </div>
               <Check

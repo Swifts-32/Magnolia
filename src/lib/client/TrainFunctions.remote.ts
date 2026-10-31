@@ -98,18 +98,10 @@ export const toggleTrainFunction = command(
   },
 );
 
-const selectTrainFunctionSchema = z.object({
-  value: z.string(),
-  trainId: z.uuid(),
+export const selectTrainFunction = command(z.uuid(), async (id) => {
+  // TODO Update connection
+  // await getTrainFunctions(data.trainId).refresh();
 });
-export const selectTrainFunction = command(
-  selectTrainFunctionSchema,
-  async (data) => {
-    // Update connection
-
-    await getTrainFunctions(data.trainId).refresh();
-  },
-);
 
 export const addTrainFunction = command(
   TrainFunction,

@@ -8,7 +8,11 @@
   import Button from "../ui/button/button.svelte";
   import type { TrainUuid } from "#lib/types/Trains.js";
   import EmptyFunctionCarousel from "./FunctionButton/EmptyFunctionCarousel.svelte";
-    import { getTrain, setTrainMotion, trainEmergencyStop } from "#lib/client/Trains.remote.js";
+  import {
+    getTrain,
+    setTrainMotion,
+    trainEmergencyStop,
+  } from "#lib/client/Trains.remote.js";
 
   interface Props {
     layoutId: string;
@@ -54,7 +58,7 @@
   }
 </script>
 
-<Card class="p-5 min-w-[300px] w-fit h-[375px] flex flex-col select-none gap-4">
+<Card class="p-5 min-w-75 w-fit h-95 flex flex-col select-none gap-4">
   <!-- Loco Select and Delete Throttle Button -->
   <div class="flex gap-2 w-full">
     <!-- Loco Select -->
