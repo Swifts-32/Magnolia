@@ -1,233 +1,86 @@
 <script lang="ts">
   import {
     Bell,
-    GripVertical,
     Lightbulb,
-    Plus,
     Sun,
-    Text,
+    TextAlignStart,
     Trash,
     Volume2,
   } from "@lucide/svelte";
-  import { flip } from "svelte/animate";
-  import { onMount } from "svelte";
   import { Checkbox } from "#lib/components/ui/checkbox/index.js";
-  import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import * as ToggleGroup from "#lib/components/ui/toggle-group/index.js";
-  import { Button } from "#lib/components/ui/button/index.js";
-  import {
-    addTrainFunction,
-    deleteTrainFunction,
-    editTrainFunction,
-    getTrainFunctions,
-    setTrainFunctionPosition,
-  } from "#lib/client/TrainFunctions.remote.js";
-  import type { TrainFunction } from "#lib/server/db/schema/trains.js";
+  import type { TrainFunction } from "#lib/types/TrainFunctions.ts";
+  import Label from "#lib/components/ui/label/label.svelte";
+  import Input from "#lib/components/ui/input/input.svelte";
+  import Button from "#lib/components/ui/button/button.svelte";
 
   interface Props {
-    trainId: string;
+    funct: TrainFunction;
+    ondelete?: () => void;
   }
 
-  let { trainId }: Props = $props();
-
-  // TODO - Support Position
-  // TODO - Support Value Assignment - Need to prevent conflicts
-
-  export async function save() {
-    // Deleted Functions
-    const deleted = originalFunctions.filter(
-      (o) => !trainFunctions.some((n) => n.value === o.value),
-    );
-
-    for (const f of deleted) {
-      await deleteTrainFunction({ trainId: f.trainId, value: f.value });
-    }
-
-    // Added Functions
-    const added = trainFunctions.filter(
-      (n) => !originalFunctions.some((o) => o.value === n.value),
-    );
-
-    for (const f of added) {
-      await addTrainFunction(f);
-    }
-
-    // Update train functions
-    trainFunctions.forEach(async (f) => {
-      await editTrainFunction(f);
-    });
-  }
-
-  let trainFunctions: (TrainFunction & { id: string })[] = $state([]);
-  let originalFunctions: { value: string; trainId: string }[] = $state([]);
-  const flipDurationMs = 100;
-
-  onMount(async () => {
-    const functs = await getTrainFunctions(trainId);
-    trainFunctions = functs.toSorted((a, b) => a.position - b.position);
-
-    originalFunctions = functs.map((f) => ({
-      value: f.value,
-      trainId: f.trainId,
-    }));
-  });
-
-  function handleDndConsider(e: CustomEvent<DndEvent<any>>) {
-    trainFunctions = e.detail.items;
-  }
-
-  async function handleDndFinalize(e: CustomEvent<DndEvent<any>>) {
-    for (const [index, item] of e.detail.items.entries()) {
-      const newPos = index; // new position is its place in the array
-      if (item.position !== newPos) {
-        await setTrainFunctionPosition({
-          trainId,
-          value: item.value,
-          position: newPos,
-        });
-      }
-    }
-  }
-
-  async function createFunction() {
-    // Select a function value (numerical) that is not already in use
-    let i = 0;
-    while (trainFunctions.some((fn) => fn.value === `F${i}`)) {
-      i++;
-    }
-
-    const newValue = `F${i}`;
-
-    trainFunctions = [
-      ...trainFunctions,
-      {
-        id: `${trainId}_${newValue}`,
-        icon: "Text",
-        mode: "Toggle",
-        name: `New Function ${i}`,
-        position: trainFunctions.length + 1,
-        state: false,
-        trainId: trainId,
-        value: newValue,
-        visible: true,
-      },
-    ];
-  }
+  let { funct, ondelete }: Props = $props();
 </script>
 
-{#snippet tableHeader(width: number | undefined, text: string)}
-  <th class="p-4 border-b text-center {width ? `w-${width}` : 'w-min'}">
-    <p
-      class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-    >
-      {text}
-    </p>
-  </th>
-{/snippet}
+<div class="flex-col flex gap-4 w-full max-w-none">
+  <div class="grid grid-cols-4 items-center gap-4">
+    <Label id="funct-name" class="text-right">Name</Label>
+    <div class="col-span-3">
+      <Input id="funct-name" bind:value={funct.name} />
+    </div>
+  </div>
 
-<Button class="w-full my-2" variant="outline" onclick={createFunction}>
-  <Plus />Add Function
-</Button>
+  <div class="grid grid-cols-4 items-center gap-4">
+    <Label id="funct-value" class="text-right">Value</Label>
+    <div class="col-span-3">
+      <Input id="funct-value" bind:value={funct.value} />
+    </div>
+  </div>
 
-<table class="w-full text-left table-auto">
-  <thead>
-    <tr>
-      {@render tableHeader(2, "")}
-      {@render tableHeader(undefined, "Value")}
-      {@render tableHeader(undefined, "Name")}
-      {@render tableHeader(undefined, "Icon")}
-      {@render tableHeader(undefined, "Is Toggle")}
-      {@render tableHeader(undefined, "Visible")}
-      {@render tableHeader(undefined, "")}
-    </tr>
-  </thead>
-
-  <tbody
-    use:dragHandleZone={{
-      items: trainFunctions,
-      flipDurationMs: flipDurationMs,
-    }}
-    onconsider={handleDndConsider}
-    onfinalize={handleDndFinalize}
-  >
-    {#each trainFunctions as funct (funct.value)}
-      <tr
-        animate:flip={{ duration: 200 }}
-        class="hover:bg-secondary hover:text-secondary-foreground"
+  <div class="grid grid-cols-4 items-center gap-4">
+    <Label id="funct-icon" class="text-right">Icon</Label>
+    <div class="col-span-3">
+      <ToggleGroup.Root
+        id="funct-icon"
+        type="single"
+        variant="outline"
+        bind:value={funct.icon}
       >
-        <td
-          class="p-4 border-b border-blue-gray-50 cursor-grab"
-          use:dragHandle
-          aria-label="drag-handle for {funct.value}"
-        >
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            <GripVertical class="w-5 h-5" />
-          </p>
-        </td>
-        <td class="p-2 border-b border-blue-gray-50 text-center">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            {funct.value}
-          </p>
-        </td>
+        <ToggleGroup.Item value="Bell"><Bell /></ToggleGroup.Item>
+        <ToggleGroup.Item value="Speaker"><Volume2 /></ToggleGroup.Item>
+        <ToggleGroup.Item value="Light1"><Lightbulb /></ToggleGroup.Item>
+        <ToggleGroup.Item value="Light2"><Sun /></ToggleGroup.Item>
+        <ToggleGroup.Item value="Text"><TextAlignStart /></ToggleGroup.Item>
+      </ToggleGroup.Root>
+    </div>
+  </div>
 
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            <input type="text" bind:value={funct.name} />
-          </p>
-        </td>
+  <div class="flex gap-4 justify-center w-full">
+    <div class="flex gap-2">
+      <Label id="funct-mode" class="text-right">Mode</Label>
+      <Checkbox
+        id="funct-mode"
+        bind:checked={
+          () => funct.mode === "Toggle",
+          (v) => (v ? (funct.mode = "Toggle") : (funct.mode = "Select"))
+        }
+      />
+    </div>
 
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <div class="flex justify-center">
-            <ToggleGroup.Root
-              type="single"
-              variant="outline"
-              bind:value={funct.icon}
-            >
-              <ToggleGroup.Item value="Bell"><Bell /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Speaker"><Volume2 /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Light1"><Lightbulb /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Light2"><Sun /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Text"><Text /></ToggleGroup.Item>
-            </ToggleGroup.Root>
-          </div>
-        </td>
-        <td class="p-4 border-b border-blue-gray-50">
-          <div class="flex justify-center">
-            <Checkbox
-              bind:checked={
-                () => funct.mode === "Toggle",
-                (v) => (v ? (funct.mode = "Toggle") : (funct.mode = "Select"))
-              }
-            />
-          </div>
-        </td>
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <div class="flex justify-center">
-            <Checkbox bind:checked={funct.visible} class="text-red-600" />
-          </div>
-        </td>
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <div class="flex justify-center">
-            <button
-              type="button"
-              onclick={() => {
-                trainFunctions = trainFunctions.filter(
-                  (f) => f.value !== funct.value,
-                );
-              }}
-              class="cursor-pointer"
-            >
-              <Trash class="text-red-800" />
-            </button>
-          </div>
-        </td>
-      </tr>
-    {/each}
-  </tbody>
-</table>
+    <div class="flex gap-2">
+      <Label id="funct-visible" class="text-right">Visible</Label>
+      <Checkbox
+        id="funct-visible"
+        bind:checked={funct.visible}
+        class="text-red-600"
+      />
+    </div>
+  </div>
+
+  <div class="flex justify-center py-4">
+    <Button variant="destructive" size="lg" class="w-full" onclick={ondelete}>
+      Delete Function
+      <Trash class="text-red-800" />
+    </Button>
+  </div>
+</div>

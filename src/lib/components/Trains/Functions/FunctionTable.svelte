@@ -1,9 +1,9 @@
 <script lang="ts">
   import { GripVertical, Plus } from "@lucide/svelte";
-  import { flip } from "svelte/animate";
   import { onMount } from "svelte";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { Button } from "#lib/components/ui/button/index.js";
+  import * as Drawer from "#lib/components/ui/drawer/index.js";
   import {
     addTrainFunction,
     deleteTrainFunction,
@@ -13,6 +13,7 @@
   } from "#lib/client/TrainFunctions.remote.js";
   import type { TrainFunction } from "#lib/server/db/schema/trains.js";
   import FunctionIcons from "./FunctionIcons.svelte";
+  import FunctionForm from "./FunctionForm.svelte";
 
   interface Props {
     trainId: string;
@@ -47,6 +48,7 @@
 
   let trainFunctions: (TrainFunction & { id: string })[] = $state([]);
   let originalFunctions: { value: string; trainId: string }[] = $state([]);
+  let activeFunctionValue = $state<string | null>(null);
   const flipDurationMs = 100;
 
   onMount(async () => {
@@ -54,7 +56,7 @@
     trainFunctions = functs
       .map((f) => ({
         ...f,
-        id: f.id ?? `${f.trainId}_${f.value}`, // Fallback ID generation if missing
+        id: f.id ?? `${f.trainId}_${f.value}`,
       }))
       .toSorted((a, b) => a.position - b.position);
 
@@ -72,7 +74,7 @@
     trainFunctions = e.detail.items;
 
     for (const [index, item] of e.detail.items.entries()) {
-      const newPos = index; // new position is its place in the array
+      const newPos = index;
       if (item.position !== newPos) {
         await setTrainFunctionPosition({
           trainId,
@@ -84,7 +86,6 @@
   }
 
   async function createFunction() {
-    // Select a function value (numerical) that is not already in use
     let i = 0;
     while (trainFunctions.some((fn) => fn.value === `F${i}`)) {
       i++;
@@ -150,14 +151,15 @@
   >
     {#each trainFunctions as funct (funct.value)}
       <tr
-        animate:flip={{ duration: 200 }}
-        class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+        class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer"
+        onclick={() => (activeFunctionValue = funct.value)}
       >
         <!-- Drag Handle Cell -->
         <td
           class="p-4 align-middle cursor-grab active:cursor-grabbing"
           use:dragHandle
           aria-label="drag-handle for {funct.value}"
+          onclick={(e) => e.stopPropagation()}
         >
           <GripVertical class="w-5 h-5 text-muted-foreground" />
         </td>
@@ -179,6 +181,46 @@
           </div>
         </td>
       </tr>
+
+      <!-- Edit Function Drawer -->
+      <Drawer.Root
+        open={activeFunctionValue === funct.value}
+        onOpenChange={(open) => {
+          if (!open && activeFunctionValue === funct.value)
+            activeFunctionValue = null;
+        }}
+        direction="right"
+        dismissible={false}
+      >
+        <Drawer.Content
+          class="bg-background w-screen! max-w-none! fixed inset-0 h-full border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md! sm:max-w-md! sm:rounded-none flex flex-col *:w-full"
+        >
+          <Drawer.Header>
+            <Drawer.Title>Edit Function ({funct.value})</Drawer.Title>
+          </Drawer.Header>
+
+          <div
+            class="overflow-y-auto px-4 flex-1 w-full flex flex-col gap-4 py-4"
+          >
+            <FunctionForm
+              {funct}
+              ondelete={() => {
+                trainFunctions = trainFunctions.filter(
+                  (f) => f.value !== funct.value,
+                );
+                activeFunctionValue = null;
+              }}
+            />
+          </div>
+
+          <Drawer.Footer>
+            <Button onclick={() => (activeFunctionValue = null)}>Done</Button>
+            <Drawer.Close onclick={() => (activeFunctionValue = null)}
+              >Close</Drawer.Close
+            >
+          </Drawer.Footer>
+        </Drawer.Content>
+      </Drawer.Root>
     {/each}
   </tbody>
 </table>
