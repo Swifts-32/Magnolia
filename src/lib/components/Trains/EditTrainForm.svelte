@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <div class="w-full overflow-y-auto">
+    <div class="w-full">
       <FunctionTable trainId={train.uuid} bind:this={functionTable} />
     </div>
   </form>

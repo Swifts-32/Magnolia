@@ -1,19 +1,8 @@
 <script lang="ts">
-  import {
-    Bell,
-    GripVertical,
-    Lightbulb,
-    Plus,
-    Sun,
-    Text,
-    Trash,
-    Volume2,
-  } from "@lucide/svelte";
+  import { GripVertical, Plus } from "@lucide/svelte";
   import { flip } from "svelte/animate";
   import { onMount } from "svelte";
-  import { Checkbox } from "#lib/components/ui/checkbox/index.js";
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
-  import * as ToggleGroup from "#lib/components/ui/toggle-group/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import {
     addTrainFunction,
@@ -23,15 +12,13 @@
     setTrainFunctionPosition,
   } from "#lib/client/TrainFunctions.remote.js";
   import type { TrainFunction } from "#lib/server/db/schema/trains.js";
+  import FunctionIcons from "./FunctionIcons.svelte";
 
   interface Props {
     trainId: string;
   }
 
   let { trainId }: Props = $props();
-
-  // TODO - Support Position
-  // TODO - Support Value Assignment - Need to prevent conflicts
 
   export async function save() {
     // Deleted Functions
@@ -64,7 +51,12 @@
 
   onMount(async () => {
     const functs = await getTrainFunctions(trainId);
-    trainFunctions = functs.toSorted((a, b) => a.position - b.position);
+    trainFunctions = functs
+      .map((f) => ({
+        ...f,
+        id: f.id ?? `${f.trainId}_${f.value}`, // Fallback ID generation if missing
+      }))
+      .toSorted((a, b) => a.position - b.position);
 
     originalFunctions = functs.map((f) => ({
       value: f.value,
@@ -77,6 +69,8 @@
   }
 
   async function handleDndFinalize(e: CustomEvent<DndEvent<any>>) {
+    trainFunctions = e.detail.items;
+
     for (const [index, item] of e.detail.items.entries()) {
       const newPos = index; // new position is its place in the array
       if (item.position !== newPos) {
@@ -115,34 +109,38 @@
   }
 </script>
 
-{#snippet tableHeader(width: number | undefined, text: string)}
-  <th class="p-4 border-b text-center {width ? `w-${width}` : 'w-min'}">
-    <p
-      class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"
-    >
-      {text}
-    </p>
-  </th>
-{/snippet}
-
 <Button class="w-full my-2" variant="outline" onclick={createFunction}>
   <Plus />Add Function
 </Button>
 
-<table class="w-full text-left table-auto">
-  <thead>
-    <tr>
-      {@render tableHeader(2, "")}
-      {@render tableHeader(undefined, "Value")}
-      {@render tableHeader(undefined, "Name")}
-      {@render tableHeader(undefined, "Icon")}
-      {@render tableHeader(undefined, "Is Toggle")}
-      {@render tableHeader(undefined, "Visible")}
-      {@render tableHeader(undefined, "")}
+<!-- Styled with Shadcn table classes for a seamless design match -->
+<table class="w-full caption-bottom text-sm">
+  <caption class="mt-4 text-sm text-muted-foreground"
+    >A list of your train functions.</caption
+  >
+  <thead class="[&_tr]:border-b">
+    <tr
+      class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+    >
+      <th
+        class="h-12 w-12 px-4 text-left align-middle font-medium text-muted-foreground"
+      ></th>
+      <th
+        class="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
+        >Value</th
+      >
+      <th
+        class="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
+        >Name</th
+      >
+      <th
+        class="h-12 px-4 text-right align-middle font-medium text-muted-foreground"
+        >Icon</th
+      >
     </tr>
   </thead>
-
   <tbody
+    class="[&_tr:last-child]:border-0"
     use:dragHandleZone={{
       items: trainFunctions,
       flipDurationMs: flipDurationMs,
@@ -153,78 +151,31 @@
     {#each trainFunctions as funct (funct.value)}
       <tr
         animate:flip={{ duration: 200 }}
-        class="hover:bg-secondary hover:text-secondary-foreground"
+        class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
       >
+        <!-- Drag Handle Cell -->
         <td
-          class="p-4 border-b border-blue-gray-50 cursor-grab"
+          class="p-4 align-middle cursor-grab active:cursor-grabbing"
           use:dragHandle
           aria-label="drag-handle for {funct.value}"
         >
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            <GripVertical class="w-5 h-5" />
-          </p>
-        </td>
-        <td class="p-2 border-b border-blue-gray-50 text-center">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            {funct.value}
-          </p>
+          <GripVertical class="w-5 h-5 text-muted-foreground" />
         </td>
 
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <p
-            class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900"
-          >
-            <input type="text" bind:value={funct.name} />
-          </p>
+        <!-- Value Cell -->
+        <td class="p-4 align-middle font-medium">
+          {funct.value}
         </td>
 
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <div class="flex justify-center">
-            <ToggleGroup.Root
-              type="single"
-              variant="outline"
-              bind:value={funct.icon}
-            >
-              <ToggleGroup.Item value="Bell"><Bell /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Speaker"><Volume2 /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Light1"><Lightbulb /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Light2"><Sun /></ToggleGroup.Item>
-              <ToggleGroup.Item value="Text"><Text /></ToggleGroup.Item>
-            </ToggleGroup.Root>
-          </div>
+        <!-- Name Cell -->
+        <td class="p-4 align-middle">
+          {funct.name}
         </td>
-        <td class="p-4 border-b border-blue-gray-50">
-          <div class="flex justify-center">
-            <Checkbox
-              bind:checked={
-                () => funct.mode === "Toggle",
-                (v) => (v ? (funct.mode = "Toggle") : (funct.mode = "Select"))
-              }
-            />
-          </div>
-        </td>
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <div class="flex justify-center">
-            <Checkbox bind:checked={funct.visible} class="text-red-600" />
-          </div>
-        </td>
-        <td class="p-4 border-b border-blue-gray-50 text-center">
-          <div class="flex justify-center">
-            <button
-              type="button"
-              onclick={() => {
-                trainFunctions = trainFunctions.filter(
-                  (f) => f.value !== funct.value,
-                );
-              }}
-              class="cursor-pointer"
-            >
-              <Trash class="text-red-800" />
-            </button>
+
+        <!-- Icon Cell -->
+        <td class="p-4 align-middle text-right">
+          <div class="flex justify-end">
+            <FunctionIcons selectedIcon={funct.icon} size={20} text={false} />
           </div>
         </td>
       </tr>
