@@ -48,28 +48,16 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-{#snippet trainConnectionName(connectionId: string)}
-  {#await getConnection(connectionId)}
-    <p>Loading Connection Info</p>
-  {:then connection}
-    <p>
-      {connection.name}
-    </p>
-  {:catch}
-    <p class="text-red-400">No Cosnnection</p>
-  {/await}
-{/snippet}
-
-<div class="flex w-full overflow-x-hidden">
-  <Table.Root>
+<div class="w-full overflow-x-none">
+  <Table.Root class="w-full table-fixed">
     <Table.Caption>A list of your trains.</Table.Caption>
     <Table.Header class="select-none">
       <Table.Row>
-        <Table.Head class="w-25">Name</Table.Head>
-        <Table.Head class="w-25">Address</Table.Head>
-        <Table.Head class="w-30">Connection</Table.Head>
-        <Table.Head>Description</Table.Head>
-        <Table.Head class="text-end">Actions</Table.Head>
+        <Table.Head class="w-[30] md:w-30">Name</Table.Head>
+        <Table.Head class="w-[20%] md:w-20">Address</Table.Head>
+        <Table.Head class="w-[30%] md:w-30 truncate">Connection</Table.Head>
+        <Table.Head class="hidden md:table-cell md:w-auto">Description</Table.Head>
+        <Table.Head class="w-[20%] truncate text-end">Actions</Table.Head>
       </Table.Row>
     </Table.Header>
     <Table.Body>
@@ -83,9 +71,9 @@
           onmouseleave={() => selectedUuid = null}
           onfocus={() => selectedUuid = train.uuid}
         >
-          <Table.Cell class="font-medium">{train.name}</Table.Cell>
-          <Table.Cell>{train.address}</Table.Cell>
-          <Table.Cell>
+          <Table.Cell class="font-medium truncate">{train.name}</Table.Cell>
+          <Table.Cell class="truncate">{train.address}</Table.Cell>
+          <Table.Cell class="truncate">
             {#await getConnection(train.connectionUuid)}
               <p>Loading Connection Info</p>
             {:then connection}
@@ -97,7 +85,7 @@
             {/await}
            
           </Table.Cell>
-          <Table.Cell class="whitespace-normal wrap-break-word max-w-38 sm:max-w-xs">{train.comment}</Table.Cell>
+          <Table.Cell class="hidden md:table-cell truncate">{train.comment}</Table.Cell>
           <Table.Cell class="text-right">
             <DropdownMenu.Root bind:open={dropdownOpen}>
               <DropdownMenu.Trigger>
