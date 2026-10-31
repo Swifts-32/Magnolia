@@ -75,7 +75,6 @@
               ./src
               ./vite.config.ts
               ./tsconfig.json
-              ./server.js
               ./tailwind.config.js
               ./postcss.config.js
             ];
