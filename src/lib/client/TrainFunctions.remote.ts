@@ -113,8 +113,19 @@ export const selectTrainFunction = command(
 
 export const addTrainFunction = command(
   TrainFunction,
-  async ({ value, trainId, name, icon, mode, visible, position, state }) => {
+  async ({
+    id,
+    value,
+    trainId,
+    name,
+    icon,
+    mode,
+    visible,
+    position,
+    state,
+  }) => {
     await db.insert(TrainFunctionTable).values({
+      id,
       value,
       icon,
       mode,
@@ -131,10 +142,21 @@ export const addTrainFunction = command(
 
 export const editTrainFunction = command(
   TrainFunction,
-  async ({ value, trainId, name, icon, mode, visible, position, state }) => {
+  async ({
+    id,
+    value,
+    trainId,
+    name,
+    icon,
+    mode,
+    visible,
+    position,
+    state,
+  }) => {
     await db
       .update(TrainFunctionTable)
       .set({
+        value,
         icon,
         mode,
         name,
@@ -143,12 +165,7 @@ export const editTrainFunction = command(
         trainId,
         visible,
       })
-      .where(
-        and(
-          eq(TrainFunctionTable.value, value),
-          eq(TrainFunctionTable.trainId, trainId),
-        ),
-      );
+      .where(eq(TrainFunctionTable.id, id));
 
     await getTrainFunctions(trainId).refresh();
   },

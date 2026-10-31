@@ -74,7 +74,8 @@
           <Table.Cell class="font-medium truncate">{train.name}</Table.Cell>
           <Table.Cell class="truncate">{train.address}</Table.Cell>
           <Table.Cell class="truncate">
-            {#await getConnection(train.connectionUuid)}
+          {#if train.connectionUuid} 
+          {#await getConnection(train.connectionUuid)}
               <p>Loading Connection Info</p>
             {:then connection}
               <p>
@@ -83,6 +84,9 @@
             {:catch}
               <p class="text-red-400">No Connection</p>
             {/await}
+          {:else}
+            <p class="text-red-400">No Connection</p>
+          {/if}
            
           </Table.Cell>
           <Table.Cell class="hidden md:table-cell truncate">{train.comment}</Table.Cell>

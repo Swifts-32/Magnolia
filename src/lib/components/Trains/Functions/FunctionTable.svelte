@@ -140,7 +140,7 @@
     onconsider={handleDndConsider}
     onfinalize={handleDndFinalize}
   >
-    {#each trainFunctions as funct (funct.id)}
+    {#each trainFunctions as funct, i (funct.id)}
       <tr
         class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer"
         onclick={() => (activeFunctId = funct.id)}
@@ -193,7 +193,7 @@
             class="overflow-y-auto px-4 flex-1 w-full flex flex-col gap-4 py-4"
           >
             <FunctionForm
-              {funct}
+              bind:funct={trainFunctions[i]}
               ondelete={() => {
                 trainFunctions = trainFunctions.filter(
                   (f) => f.id !== funct.id,

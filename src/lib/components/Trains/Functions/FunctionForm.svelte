@@ -60,10 +60,8 @@
       <Label id="funct-mode" class="text-right">Mode</Label>
       <Checkbox
         id="funct-mode"
-        bind:checked={
-          () => funct.mode === "Toggle",
-          (v) => (v ? (funct.mode = "Toggle") : (funct.mode = "Select"))
-        }
+        checked={funct.mode === "Toggle"}
+        onCheckedChange={(v) => (funct.mode = v ? "Toggle" : "Select")}
       />
     </div>
 
