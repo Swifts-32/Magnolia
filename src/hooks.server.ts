@@ -1,5 +1,4 @@
 import type { Handle, HandleServerError } from "@sveltejs/kit/hooks";
-import type { ValidationError } from "@sveltejs/kit";
 
 if (typeof crypto !== "undefined" && !crypto.randomUUID) {
   crypto.randomUUID = () =>
