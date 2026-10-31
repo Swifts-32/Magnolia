@@ -204,10 +204,7 @@
           </div>
 
           <Drawer.Footer>
-            <Button onclick={() => (activeFunctId = null)}>Done</Button>
-            <Drawer.Close onclick={() => (activeFunctId = null)}
-              >Close</Drawer.Close
-            >
+            <Button onclick={() => (activeFunctId = null)}>Back</Button>
           </Drawer.Footer>
         </Drawer.Content>
       </Drawer.Root>
