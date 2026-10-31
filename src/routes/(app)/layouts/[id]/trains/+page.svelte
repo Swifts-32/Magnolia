@@ -56,7 +56,7 @@
       {connection.name}
     </p>
   {:catch}
-    <p class="text-red-400">No Connection</p>
+    <p class="text-red-400">No Cosnnection</p>
   {/await}
 {/snippet}
 
@@ -86,13 +86,18 @@
           <Table.Cell class="font-medium">{train.name}</Table.Cell>
           <Table.Cell>{train.address}</Table.Cell>
           <Table.Cell>
-            {#if train.connectionUuid}
-              {@render trainConnectionName(train.connectionUuid)}
-            {:else}
-              No Connection
-            {/if}
+            {#await getConnection(train.connectionUuid)}
+              <p>Loading Connection Info</p>
+            {:then connection}
+              <p>
+                {connection.name}
+              </p>
+            {:catch}
+              <p class="text-red-400">No Connection</p>
+            {/await}
+           
           </Table.Cell>
-          <Table.Cell class="whitespace-normal break-words max-w-[150px] sm:max-w-xs">{train.comment}</Table.Cell>
+          <Table.Cell class="whitespace-normal wrap-break-word max-w-38 sm:max-w-xs">{train.comment}</Table.Cell>
           <Table.Cell class="text-right">
             <DropdownMenu.Root bind:open={dropdownOpen}>
               <DropdownMenu.Trigger>
