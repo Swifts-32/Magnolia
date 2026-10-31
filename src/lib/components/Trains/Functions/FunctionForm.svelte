@@ -19,7 +19,7 @@
     ondelete?: () => void;
   }
 
-  let { funct, ondelete }: Props = $props();
+  let { funct = $bindable(), ondelete }: Props = $props();
 </script>
 
 <div class="flex-col flex gap-4 w-full max-w-none">

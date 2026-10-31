@@ -4,53 +4,60 @@ import { TrainFunctionTable } from "#lib/server/db/schema/trains.js";
 import { error } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod/v4";
-import { TrainFunction, TrainFunctionKey } from "#lib/types/TrainFunctions.js";
-
+import { TrainFunction } from "#lib/types/TrainFunctions.js";
 
 // Get the train's functions using the train id
 async function getTrainFunctionsFromDb(trainId: string) {
-  const trains: TrainFunction[] = await db.select().from(TrainFunctionTable).where(eq(TrainFunctionTable.trainId, trainId));
+  const trains: TrainFunction[] = await db
+    .select()
+    .from(TrainFunctionTable)
+    .where(eq(TrainFunctionTable.trainId, trainId));
   return trains;
 }
 
 export const getTrainFunctions = query(z.uuid(), async (trainId) => {
-
   const functions = await getTrainFunctionsFromDb(trainId);
-
-  // For svelte dnd
-  return functions.map(fn => ({
-    ...fn,
-    id: fn.value,
-  }));
+  return functions;
 });
 
-export const setTrainFunctionPosition = command(TrainFunctionKey.extend({
-  position: z.number(),
-}), async ({ trainId, value, position }) => {
+export const setTrainFunctionPosition = command(
+  z.object({
+    id: z.uuid(),
+    position: z.number(),
+  }),
+  async ({ id, position }) => {
+    const res = await db
+      .update(TrainFunctionTable)
+      .set({
+        position,
+      })
+      .where(eq(TrainFunctionTable.id, id))
+      .returning();
 
-  await db.update(TrainFunctionTable).set({
-    position
-  }).where(and(eq(TrainFunctionTable.value, value), eq(TrainFunctionTable.trainId, trainId)))
+    if (res.length === 0) error(404, "Train function not found");
 
-  getTrainFunctions(trainId).refresh();
-});
+    getTrainFunctions(res[0].trainId).refresh();
+  },
+);
 
-export const getTrainFunction = query(TrainFunctionKey, async (data) => {
-  const trains: TrainFunction[] = await db.select().from(TrainFunctionTable)
-    .where(and(eq(TrainFunctionTable.value, data.value), eq(TrainFunctionTable.trainId, data.trainId)));
+export const getTrainFunction = query(z.uuid(), async (id) => {
+  const trains: TrainFunction[] = await db
+    .select()
+    .from(TrainFunctionTable)
+    .where(eq(TrainFunctionTable.id, id));
 
   return trains[0];
 });
 
-
-export const deleteTrainFunction = command(TrainFunctionKey, async (data) => {
-  const res = await db.delete(TrainFunctionTable)
-    .where(and(eq(TrainFunctionTable.value, data.value), eq(TrainFunctionTable.trainId, data.trainId)))
+export const deleteTrainFunction = command(z.uuid(), async (id) => {
+  const res = await db
+    .delete(TrainFunctionTable)
+    .where(eq(TrainFunctionTable.id, id))
     .returning();
 
   if (res.length === 0) error(404, "Train function not found");
 
-  await getTrainFunctions(data.trainId).refresh();
+  await getTrainFunctions(res[0].trainId).refresh();
 });
 
 // Create a default function with the train Id
@@ -58,76 +65,91 @@ export const createDefaultTrainFunction = command(z.uuid(), async (trainId) => {
   const functions = await getTrainFunctionsFromDb(trainId);
   // Select a function value (numerical) that is not already in use
   let i = 0;
-  while (functions.some(fn => fn.value === `F${i}`)) {
+  while (functions.some((fn) => fn.value === `F${i}`)) {
     i++;
   }
 
   await db.insert(TrainFunctionTable).values({
     trainId,
     value: `F${i}`,
-    name: `New Function ${i}`
+    name: `New Function ${i}`,
   });
 
   await getTrainFunctions(trainId).refresh();
 });
 
-const toggleTrainFunctionSchema = z.object({
-  value: z.string(),
-  trainId: z.uuid(),
-  state: z.boolean(),
-});
-export const toggleTrainFunction = command(toggleTrainFunctionSchema, async (data) => {
-  await db.update(TrainFunctionTable).set({
-    state: data.state,
-  }).where(and(eq(TrainFunctionTable.value, data.value), eq(TrainFunctionTable.trainId, data.trainId)));
+export const toggleTrainFunction = command(
+  z.object({
+    id: z.uuid(),
+    state: z.boolean(),
+  }),
+  async ({ id, state }) => {
+    const res = await db
+      .update(TrainFunctionTable)
+      .set({
+        state,
+      })
+      .where(eq(TrainFunctionTable.id, id))
+      .returning();
 
-  await getTrainFunction({
-    trainId: data.trainId,
-    value: data.value,
-  }).refresh();
-})
+    if (res.length === 0) error(404, "Train function not found");
+
+    getTrainFunctions(res[0].trainId).refresh();
+  },
+);
 
 const selectTrainFunctionSchema = z.object({
   value: z.string(),
   trainId: z.uuid(),
 });
-export const selectTrainFunction = command(selectTrainFunctionSchema, async (data) => {
-  // Update connection
+export const selectTrainFunction = command(
+  selectTrainFunctionSchema,
+  async (data) => {
+    // Update connection
 
-  await getTrainFunctions(data.trainId).refresh();
+    await getTrainFunctions(data.trainId).refresh();
+  },
+);
 
-})
+export const addTrainFunction = command(
+  TrainFunction,
+  async ({ value, trainId, name, icon, mode, visible, position, state }) => {
+    await db.insert(TrainFunctionTable).values({
+      value,
+      icon,
+      mode,
+      name,
+      position,
+      state,
+      trainId,
+      visible,
+    });
 
-export const addTrainFunction = command(TrainFunction, async (
-  { value, trainId, name, icon, mode, visible, position, state }
-) => {
-  await db.insert(TrainFunctionTable).values({
-    value,
-    icon,
-    mode,
-    name,
-    position,
-    state,
-    trainId,
-    visible,
-  });
+    await getTrainFunctions(trainId).refresh();
+  },
+);
 
-  await getTrainFunctions(trainId).refresh();
-});
+export const editTrainFunction = command(
+  TrainFunction,
+  async ({ value, trainId, name, icon, mode, visible, position, state }) => {
+    await db
+      .update(TrainFunctionTable)
+      .set({
+        icon,
+        mode,
+        name,
+        position,
+        state,
+        trainId,
+        visible,
+      })
+      .where(
+        and(
+          eq(TrainFunctionTable.value, value),
+          eq(TrainFunctionTable.trainId, trainId),
+        ),
+      );
 
-export const editTrainFunction = command(TrainFunction, async (
-  { value, trainId, name, icon, mode, visible, position, state }
-) => {
-  await db.update(TrainFunctionTable).set({
-    icon,
-    mode,
-    name,
-    position,
-    state,
-    trainId,
-    visible,
-  }).where(and(eq(TrainFunctionTable.value, value), eq(TrainFunctionTable.trainId, trainId)));
-
-  await getTrainFunctions(trainId).refresh();
-});
-
+    await getTrainFunctions(trainId).refresh();
+  },
+);

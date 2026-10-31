@@ -23,21 +23,21 @@
 
   export async function save() {
     // Deleted Functions
-    const deleted = originalFunctions.filter(
-      (o) => !trainFunctions.some((n) => n.value === o.value),
+    const deletedIds = originalFunctIds.filter(
+      (o) => !trainFunctions.some((n) => n.id === o),
     );
 
-    for (const f of deleted) {
-      await deleteTrainFunction({ trainId: f.trainId, value: f.value });
+    for (const id of deletedIds) {
+      await deleteTrainFunction(id);
     }
 
     // Added Functions
-    const added = trainFunctions.filter(
-      (n) => !originalFunctions.some((o) => o.value === n.value),
+    const addedIds = trainFunctions.filter(
+      (n) => !originalFunctIds.some((o) => o === n.id),
     );
 
-    for (const f of added) {
-      await addTrainFunction(f);
+    for (const id of addedIds) {
+      await addTrainFunction(id);
     }
 
     // Update train functions
@@ -47,23 +47,15 @@
   }
 
   let trainFunctions: (TrainFunction & { id: string })[] = $state([]);
-  let originalFunctions: { value: string; trainId: string }[] = $state([]);
-  let activeFunctionValue = $state<string | null>(null);
+  let originalFunctIds: string[] = $state([]);
+  let activeFunctId = $state<string | null>(null);
   const flipDurationMs = 100;
 
   onMount(async () => {
     const functs = await getTrainFunctions(trainId);
-    trainFunctions = functs
-      .map((f) => ({
-        ...f,
-        id: f.id ?? `${f.trainId}_${f.value}`,
-      }))
-      .toSorted((a, b) => a.position - b.position);
+    trainFunctions = functs.toSorted((a, b) => a.position - b.position);
 
-    originalFunctions = functs.map((f) => ({
-      value: f.value,
-      trainId: f.trainId,
-    }));
+    originalFunctIds = functs.map((f) => f.id);
   });
 
   function handleDndConsider(e: CustomEvent<DndEvent<any>>) {
@@ -71,17 +63,16 @@
   }
 
   async function handleDndFinalize(e: CustomEvent<DndEvent<any>>) {
-    trainFunctions = e.detail.items;
+    trainFunctions = e.detail.items.map((item, index) => ({
+      ...item,
+      position: index,
+    }));
 
-    for (const [index, item] of e.detail.items.entries()) {
-      const newPos = index;
-      if (item.position !== newPos) {
-        await setTrainFunctionPosition({
-          trainId,
-          value: item.value,
-          position: newPos,
-        });
-      }
+    for (const [index, item] of trainFunctions.entries()) {
+      await setTrainFunctionPosition({
+        id: item.id,
+        position: index,
+      });
     }
   }
 
@@ -96,7 +87,7 @@
     trainFunctions = [
       ...trainFunctions,
       {
-        id: `${trainId}_${newValue}`,
+        id: crypto.randomUUID(),
         icon: "Text",
         mode: "Toggle",
         name: `New Function ${i}`,
@@ -149,16 +140,16 @@
     onconsider={handleDndConsider}
     onfinalize={handleDndFinalize}
   >
-    {#each trainFunctions as funct (funct.value)}
+    {#each trainFunctions as funct (funct.id)}
       <tr
         class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer"
-        onclick={() => (activeFunctionValue = funct.value)}
+        onclick={() => (activeFunctId = funct.id)}
       >
         <!-- Drag Handle Cell -->
         <td
           class="p-4 align-middle cursor-grab active:cursor-grabbing"
           use:dragHandle
-          aria-label="drag-handle for {funct.value}"
+          aria-label="drag-handle for {funct.id}"
           onclick={(e) => e.stopPropagation()}
         >
           <GripVertical class="w-5 h-5 text-muted-foreground" />
@@ -184,10 +175,9 @@
 
       <!-- Edit Function Drawer -->
       <Drawer.Root
-        open={activeFunctionValue === funct.value}
+        open={activeFunctId === funct.id}
         onOpenChange={(open) => {
-          if (!open && activeFunctionValue === funct.value)
-            activeFunctionValue = null;
+          if (!open && activeFunctId === funct.id) activeFunctId = null;
         }}
         direction="right"
         dismissible={false}
@@ -206,16 +196,16 @@
               {funct}
               ondelete={() => {
                 trainFunctions = trainFunctions.filter(
-                  (f) => f.value !== funct.value,
+                  (f) => f.id !== funct.id,
                 );
-                activeFunctionValue = null;
+                activeFunctId = null;
               }}
             />
           </div>
 
           <Drawer.Footer>
-            <Button onclick={() => (activeFunctionValue = null)}>Done</Button>
-            <Drawer.Close onclick={() => (activeFunctionValue = null)}
+            <Button onclick={() => (activeFunctId = null)}>Done</Button>
+            <Drawer.Close onclick={() => (activeFunctId = null)}
               >Close</Drawer.Close
             >
           </Drawer.Footer>
