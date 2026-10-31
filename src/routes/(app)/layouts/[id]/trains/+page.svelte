@@ -53,7 +53,7 @@
     <Table.Caption>A list of your trains.</Table.Caption>
     <Table.Header class="select-none">
       <Table.Row>
-        <Table.Head class="w-[30] md:w-30">Name</Table.Head>
+        <Table.Head class="w-[30%] md:w-30">Name</Table.Head>
         <Table.Head class="w-[20%] md:w-20">Address</Table.Head>
         <Table.Head class="w-[30%] md:w-30 truncate">Connection</Table.Head>
         <Table.Head class="hidden md:table-cell md:w-auto">Description</Table.Head>
@@ -137,7 +137,7 @@
                 if (!open && activeEditUuid === train.uuid) activeEditUuid = null; 
               }} 
               direction="right" 
-              dismissible={false}
+              dismissible={true}
             >
               <Drawer.Content class="bg-background w-screen! max-w-none! fixed inset-0 h-full border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md! sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
                 <Drawer.Header>

@@ -150,7 +150,7 @@
             <Drawer.Root open={activeEditUuid === conn.uuid} 
               onOpenChange={(open) => { 
                 if (!open && activeEditUuid === conn.uuid) activeEditUuid = null; 
-              }} direction="right" dismissible={false}>
+              }} direction="right">
               <Drawer.Content class="bg-background w-screen!
                   max-w-none! fixed inset-0 h-full  border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md!
                   sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
