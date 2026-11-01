@@ -34,20 +34,25 @@ export const getSensor = query(z.uuid(), async (sensorId) => {
   return await getSensorFromDb(sensorId);
 });
 
-export const createSensor = form(SensorInsertSchema, async (data) => {
-  await db.insert(SensorTable).values({
-    layoutId: data.layoutId,
-    name: data.name,
-    address: data.address,
-    comment: data.comment || null,
-    connectionId: data.connectionId ?? null,
-    inverted: data.inverted ?? false,
-    activationDelay: data.activationDelay ?? 0,
-    deactivationDelay: data.deactivationDelay ?? 0,
-  });
+export const createSensor = form(
+  SensorInsertSchema.omit({
+    id: true,
+  }),
+  async (data) => {
+    await db.insert(SensorTable).values({
+      layoutId: data.layoutId,
+      name: data.name,
+      address: data.address,
+      comment: data.comment || null,
+      connectionId: data.connectionId ?? null,
+      inverted: data.inverted ?? false,
+      activationDelay: data.activationDelay ?? 0,
+      deactivationDelay: data.deactivationDelay ?? 0,
+    });
 
-  await getLayoutSensors(data.layoutId).refresh();
-});
+    await getLayoutSensors(data.layoutId).refresh();
+  },
+);
 
 export const editSensor = form(
   SensorInsertSchema,

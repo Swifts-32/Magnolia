@@ -7,13 +7,13 @@
     getLayoutSensors,
   } from "#lib/client/Sensors.remote.js";
   import { getConnection } from "#lib/client/Connections.remote.js";
-  // import AddSensorDialog from "#lib/components/Sensors/AddSensorDialog.svelte";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "#lib/components/ui/drawer/index.js";
-  // import EditSensorForm from "#lib/components/Sensors/EditSensorForm.svelte";
+  import AddSensorDialog from "#lib/components/Sensor/AddSensorDialog.svelte";
+  import EditSensorForm from "#lib/components/Sensor/EditSensorForm.svelte";
 
   let { params } = $props();
 
@@ -169,7 +169,7 @@
                 </Drawer.Header>
 
                 <div class="overflow-y-auto px-4 flex-1 w-full">
-                  <!-- <EditSensorForm {sensor}/> -->
+                  <EditSensorForm {sensor}/>
                 </div>
 
                 <Drawer.Footer>
@@ -212,8 +212,8 @@
 </div>
 
 <!-- Add Sensor Button -->
-<!-- <AddSensorDialog layoutId={params.id}>
+<AddSensorDialog layoutId={params.id}>
   <Fab label="Add Sensor">
     <Plus class="size-8" />
   </Fab>
-</AddSensorDialog> -->
+</AddSensorDialog>
