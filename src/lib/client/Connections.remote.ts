@@ -1,12 +1,12 @@
 import { command, form, query, requested } from "$app/server";
-import { ConnectionProtocol } from "#lib/types/Protocols.js";
+import { ConnectionProtocol } from "#lib/types/protocolConstants.js";
 import { App } from "#lib/server/App.server.js";
 import { db } from "#lib/server/db/index.js";
 import { ConnectionTable } from "#lib/server/db/schema/connection.js";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { uuid, z } from "zod/v4";
-import { ConnectionType } from "#lib/types/Hardware.js";
+import { HardwareSchema } from "#lib/types/hardwareConstants.ts";
 
 // Get a connection using the connection Id
 export const getConnection = query(
@@ -53,15 +53,6 @@ export const deleteConnection = command(z.uuid(), async (connectionId) => {
 
   await getlayoutConnections(connections[0].layoutUuid).refresh();
 });
-
-const HardwareSchema = z.object({
-  type: ConnectionType,
-  baudRate: z.number().optional(),
-  path: z.string().optional(),
-  address: z.number().optional(),
-});
-
-export type ConnectionHardwareType = z.infer<typeof HardwareSchema>;
 
 export const editConnection = form(
   z.object({

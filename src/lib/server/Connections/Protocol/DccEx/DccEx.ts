@@ -1,12 +1,20 @@
 import { requested } from "$app/server";
 import { getTracksStatus } from "#lib/client/Protocols/DccEx.remote.js";
 import { protocolEvents } from "#lib/server/events.js";
-import type { ConnectionProtocol } from "#lib/types/Protocols.js";
+import type { ConnectionProtocol } from "#lib/types/protocolConstants.js";
 import type { IProtocol } from "../IProtocol";
 import { DccExLocoManager } from "./DccExLoco";
 import type EventEmitter from "events";
 
-export type DccExTrackStates = "PROG" | "MAIN" | "MAIN_INV" | "MAIN_AUTO" | "DC" | "DCX" | "DC_INV" | "NONE";
+export type DccExTrackStates =
+  | "PROG"
+  | "MAIN"
+  | "MAIN_INV"
+  | "MAIN_AUTO"
+  | "DC"
+  | "DCX"
+  | "DC_INV"
+  | "NONE";
 export type DccExTrackPower = "ON" | "OFF" | "UNKNOWN";
 
 export class DccEx implements IProtocol {
@@ -31,12 +39,12 @@ export class DccEx implements IProtocol {
   }
 
   public trackStatus: {
-    trackletter: string, // A -> H
-    state: DccExTrackStates,
-    power: DccExTrackPower,
-    cab?: number,
-    current?: number,
-    maxCurrent?: number,
+    trackletter: string; // A -> H
+    state: DccExTrackStates;
+    power: DccExTrackPower;
+    cab?: number;
+    current?: number;
+    maxCurrent?: number;
   }[] = [];
 
   public processCommand(command: Buffer) {
@@ -52,18 +60,18 @@ export class DccEx implements IProtocol {
       this.events?.emit("update", {
         connectionId: this.connectionId,
         type: "locos",
-      })
+      });
       return;
     }
 
-    // Track manager messages 
+    // Track manager messages
     if (text.startsWith("<=")) {
       this.processTrackManagerCommands(text);
-      protocolEvents.emit('dccEx_trackManager', this.connectionId);
+      protocolEvents.emit("dccEx_trackManager", this.connectionId);
       return;
     }
 
-    // Power broadcasts 
+    // Power broadcasts
     if (text.startsWith("<p")) {
       this.processPowerBroadcast(text);
 
@@ -74,7 +82,7 @@ export class DccEx implements IProtocol {
       return;
     }
 
-    // Current readings 
+    // Current readings
     if (text.startsWith("<jI")) {
       this.processCurrentList(text);
       this.events?.emit("update", {
@@ -93,7 +101,6 @@ export class DccEx implements IProtocol {
       });
       return;
     }
-
   }
 
   private async processTrackManagerCommands(command: string) {
@@ -111,15 +118,17 @@ export class DccEx implements IProtocol {
 
     // If PROG is set, all other tracks must be NONE
     if (state === "PROG") {
-      this.trackStatus = this.trackStatus.map(t =>
+      this.trackStatus = this.trackStatus.map((t) =>
         t.trackletter !== trackletter
           ? { ...t, state: "NONE", cab: undefined }
-          : t
+          : t,
       );
     }
 
     // Find existing track entry
-    const existing = this.trackStatus.find(t => t.trackletter === trackletter);
+    const existing = this.trackStatus.find(
+      (t) => t.trackletter === trackletter,
+    );
 
     if (existing) {
       existing.state = state;
@@ -136,7 +145,7 @@ export class DccEx implements IProtocol {
     }
   }
 
-  // ------------------------------- 
+  // -------------------------------
   // POWER BROADCASTS (<pOnOFF>)
   // -------------------------------
   private processPowerBroadcast(command: string) {
@@ -155,17 +164,15 @@ export class DccEx implements IProtocol {
     const track = parts[1]; // A–H, MAIN, PROG, JOIN, or undefined
 
     let power: DccExTrackPower =
-      onOff === "1" ? "ON" :
-        onOff === "0" ? "OFF" :
-          "UNKNOWN";
+      onOff === "1" ? "ON" : onOff === "0" ? "OFF" : "UNKNOWN";
 
     // -------------------------------
     // CASE 1: <p0> or <p1> (all tracks)
     // -------------------------------
     if (!track) {
-      this.trackStatus = this.trackStatus.map(t => ({
+      this.trackStatus = this.trackStatus.map((t) => ({
         ...t,
-        power
+        power,
       }));
 
       return;
@@ -175,7 +182,7 @@ export class DccEx implements IProtocol {
     // CASE 2: <p1 A> (single track A–H)
     // -------------------------------
     if (/^[A-H]$/.test(track)) {
-      const t = this.trackStatus.find(x => x.trackletter === track);
+      const t = this.trackStatus.find((x) => x.trackletter === track);
       if (t) t.power = power;
 
       return;
@@ -199,28 +206,28 @@ export class DccEx implements IProtocol {
     console.warn("Unknown power broadcast:", command);
   }
 
-  // ------------------------------- 
-  // CURRENT LIST (<jI [...]>) 
-  // ------------------------------- 
+  // -------------------------------
+  // CURRENT LIST (<jI [...]>)
+  // -------------------------------
   private processCurrentList(command: string) {
-    // Example: <jI [123 456 789]> 
+    // Example: <jI [123 456 789]>
     const match = command.match(/\[(.*?)\]/);
     if (!match) return;
 
     const values = match[1].trim().split(/\s+/).map(Number);
 
     values.forEach((value, index) => {
-      const trackletter = String.fromCharCode(65 + index); // A=65 
-      const t = this.trackStatus.find(x => x.trackletter === trackletter);
+      const trackletter = String.fromCharCode(65 + index); // A=65
+      const t = this.trackStatus.find((x) => x.trackletter === trackletter);
       if (t) t.current = value;
     });
   }
 
-  // ------------------------------- 
+  // -------------------------------
   // MAX CURRENT LIST (<jG [...]>)
-  // ------------------------------- 
+  // -------------------------------
   private processMaxCurrentList(command: string) {
-    // Example: <jG [500 500 500]> 
+    // Example: <jG [500 500 500]>
     const match = command.match(/\[(.*?)\]/);
     if (!match) return;
 
@@ -228,7 +235,7 @@ export class DccEx implements IProtocol {
 
     values.forEach((value, index) => {
       const trackletter = String.fromCharCode(65 + index);
-      const t = this.trackStatus.find(x => x.trackletter === trackletter);
+      const t = this.trackStatus.find((x) => x.trackletter === trackletter);
       if (t) t.maxCurrent = value;
     });
   }

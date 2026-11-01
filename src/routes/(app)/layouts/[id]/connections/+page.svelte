@@ -12,6 +12,8 @@
   import { goto } from "$app/navigation";
   import EditConnectionForm from "#lib/components/Connections/EditConnectionForm.svelte";
   import { toast } from "svelte-sonner";
+  import { getConnectionHardwareName } from "#lib/types/hardwareConstants.ts";
+  import { getProtocolName } from "#lib/types/protocolConstants.ts";
 
   let selectedUuid = $state<string | null>(null);
   let activeEditUuid = $state<string | null>(null);
@@ -96,8 +98,8 @@
               {/if}              
             </Table.Cell>
           <Table.Cell class="font-medium">{conn.name}</Table.Cell>
-          <Table.Cell>{conn.protocol}</Table.Cell>
-          <Table.Cell>{conn.hardware.type}</Table.Cell>
+          <Table.Cell>{getProtocolName(conn.protocol)}</Table.Cell>
+          <Table.Cell>{getConnectionHardwareName(conn.hardware.type)}</Table.Cell>
           <Table.Cell class="text-right">
             <DropdownMenu.Root bind:open={dropdownOpen}>
               <DropdownMenu.Trigger>

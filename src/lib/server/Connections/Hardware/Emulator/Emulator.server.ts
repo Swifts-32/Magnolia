@@ -1,22 +1,19 @@
-import type { ConnectionType } from "#lib/types/Hardware.js";
+import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
 import { type IEmulatorConnection } from "../IHardware";
-
 
 export class EmulatorConnection implements IEmulatorConnection {
   public isConnected: boolean = false;
-  public connType: ConnectionType = "Emulator";
+  public connType: ConnectionHardwareList = "Emulator";
 
   private dataReceived: ((data: Buffer) => void) | null = null;
   public onDataReceived(callback: (data: Buffer) => void) {
     this.dataReceived = callback;
   }
 
-
   connect(): Promise<boolean> {
     this.isConnected = true;
     return Promise.resolve(true);
   }
-
 
   disconnect(): Promise<boolean> {
     this.isConnected = false;
@@ -27,7 +24,6 @@ export class EmulatorConnection implements IEmulatorConnection {
     const command = data.toString().trim();
 
     if (!this.dataReceived) return;
-
 
     switch (true) {
       // ✅ Power Control: Turn Power On/Off
@@ -46,7 +42,9 @@ export class EmulatorConnection implements IEmulatorConnection {
        **/
       // Example: <t 3 30 1> (Train 3 at Speed 30, Direction 1=Forward)
       case /^<t (\d+) (-1|\d|\d{2}|1[012][0-9]) ([01])>$/.test(command): {
-        const match = command.match(/^<t (\d+) (-1|\d|\d{2}|1[012][0-9]) ([01])>$/);
+        const match = command.match(
+          /^<t (\d+) (-1|\d|\d{2}|1[012][0-9]) ([01])>$/,
+        );
         if (match) {
           const cab = parseInt(match[1]); // Loco ID
           const speed = parseInt(match[2]); // Speed (0-127, -1 = Emergency Stop)
@@ -65,7 +63,9 @@ export class EmulatorConnection implements IEmulatorConnection {
           // Function Map (Placeholder: Assuming default function map = 0)
           const functionMap = 0;
 
-          this.dataReceived(Buffer.from(`<l ${cab} 0 ${speedByte} ${functionMap}>`));
+          this.dataReceived(
+            Buffer.from(`<l ${cab} 0 ${speedByte} ${functionMap}>`),
+          );
         }
         break;
       }
@@ -78,7 +78,11 @@ export class EmulatorConnection implements IEmulatorConnection {
           const functionID = match[2] as unknown as number;
           const state = match[3];
 
-          this.dataReceived(Buffer.from(`<l ${cab} 0 56 ${state === "1" ? 1 << functionID : 0}>`));
+          this.dataReceived(
+            Buffer.from(
+              `<l ${cab} 0 56 ${state === "1" ? 1 << functionID : 0}>`,
+            ),
+          );
         }
         break;
       }
@@ -107,12 +111,11 @@ export class EmulatorConnection implements IEmulatorConnection {
         this.dataReceived(Buffer.from("<X Unknown Command>" + command)); // DCC-EX convention: <X Error Message>
         break;
     }
-
   }
 
   toJson() {
     return JSON.stringify({
-      connType: this.connType
+      connType: this.connType,
     });
   }
 }

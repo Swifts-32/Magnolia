@@ -3,12 +3,9 @@
   import type { Connection } from "#lib/server/db/schema/connection.js";
   import ConnectionFormProtocol from "./FormComponents/ConnectionFormProtocol.svelte";
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
-  import ConnectionFormName from "./FormComponents/ConnectionFormName.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
   import { editConnection } from "#lib/client/Connections.remote.js";
   import InputField from "../Form/InputField.svelte";
-  import FormSelect from "./FormComponents/FormSelect.svelte";
-  import { connectionProtocolList } from "#lib/types/Protocols.js";
 
   interface Props {
     connection: Connection;
@@ -47,7 +44,7 @@
 
   <!-- <FormSelect formElement={protocol} values={connectionProtocolList} /> -->
 
-  <ConnectionFormType {hardware} />
+  <ConnectionFormType {protocol} {hardware} />
 
   <ConnectionFormHardware {hardware} />
 </form>

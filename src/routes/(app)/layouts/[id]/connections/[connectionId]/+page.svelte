@@ -12,6 +12,7 @@
   } from "#lib/client/Connections.remote.js";
   import EditConnectionDialog from "#lib/components/Connections/EditConnectionDialog.svelte";
   import { Separator } from "#lib/components/ui/separator/index.js";
+  import Sunbeam from "#lib/components/Protocols/Sunbeam/Sunbeam.svelte";
 
   let { params } = $props();
   const connection = $derived(await getConnection(params.connectionId));
@@ -89,6 +90,8 @@
         <DccEx connectionId={connection.uuid} />
       {:else if connection.protocol === "Lcc"}
         <Lcc connectionId={connection.uuid} />
+      {:else if connection.protocol === "Sunbeam"}
+        <Sunbeam connectionId={connection.uuid} />
       {/if}
       <!-- {/key} -->
     {/if}

@@ -59,7 +59,7 @@
 
         <ConnectionFormProtocol {protocol} />
 
-        <ConnectionFormType {hardware} />
+        <ConnectionFormType {protocol} {hardware} />
 
         <ConnectionFormHardware {hardware} />
       </div>

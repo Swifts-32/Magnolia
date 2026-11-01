@@ -1,9 +1,7 @@
-// src/lib/server/Protocols/Lcc/Lcc.ts
-import type { ConnectionProtocol } from "#lib/types/Protocols.js";
+import type { ConnectionProtocol } from "#lib/types/protocolConstants.js";
 import type EventEmitter from "events";
 import type { IProtocol } from "../IProtocol";
 import { App } from "#lib/server/App.server.js";
-import { encode } from "punycode";
 
 export interface LccNode {
   id: string;
