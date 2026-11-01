@@ -168,10 +168,10 @@
                       {#each blocks as block}
                         <tr>
                           <td
-                            class="py-3 truncate max-w-[100px]"
+                            class="py-3 max-w-100"
                             title={block.uuid}
                           >
-                            {block.uuid.slice(0, 8)}...
+                            {block.uuid}
                           </td>
                           <td class="py-3">
                             <span

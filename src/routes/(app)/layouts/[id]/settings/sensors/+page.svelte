@@ -62,7 +62,7 @@
       </Table.Row>
     </Table.Header>
     <Table.Body>
-      {#each await getLayoutSensors(params.id) as sensor}
+      {#each await getLayoutSensors(params.id) as sensor (sensor.id)}
         {let dropdownOpen = $state(false)}
 
         <Table.Row 

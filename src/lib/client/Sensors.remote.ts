@@ -20,15 +20,23 @@ async function getSensorFromDb(sensorId: string) {
   return sensors[0];
 }
 
-export const getLayoutSensors = query(z.uuid(), async (layoutId) => {
-  const sensors: Sensor[] = await db
-    .select()
-    .from(SensorTable)
-    .orderBy(SensorTable.name)
-    .where(eq(SensorTable.layoutId, layoutId));
+export const getLayoutSensors = query.live(
+  z.uuid(),
+  async function* (layoutId) {
+    while (true) {
+      const sensors: Sensor[] = await db
+        .select()
+        .from(SensorTable)
+        .orderBy(SensorTable.name)
+        .where(eq(SensorTable.layoutId, layoutId));
 
-  return sensors;
-});
+      yield sensors;
+
+      // Poll interval for real-time updates (adjust frequency as needed)
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  },
+);
 
 export const getSensor = query(z.uuid(), async (sensorId) => {
   return await getSensorFromDb(sensorId);
@@ -49,8 +57,6 @@ export const createSensor = form(
       activationDelay: data.activationDelay ?? 0,
       deactivationDelay: data.deactivationDelay ?? 0,
     });
-
-    await getLayoutSensors(data.layoutId).refresh();
   },
 );
 
@@ -70,22 +76,16 @@ export const editSensor = form(
         deactivationDelay: data.deactivationDelay ?? 0,
       })
       .where(eq(SensorTable.id, data.id));
-
-    await getLayoutSensors(layoutId).refresh();
   },
 );
 
 export const deleteSensor = command(z.uuid(), async (sensorId) => {
-  const sensor = await getSensorFromDb(sensorId);
-
   const res = await db
     .delete(SensorTable)
     .where(eq(SensorTable.id, sensorId))
     .returning();
 
   if (res.length === 0) error(404, "Sensor not found");
-
-  await getLayoutSensors(sensor.layoutId).refresh();
 });
 
 export const duplicateSensor = command(z.uuid(), async (sensorId) => {
@@ -97,6 +97,4 @@ export const duplicateSensor = command(z.uuid(), async (sensorId) => {
     ...rest,
     name: `${sensor.name} (Copy)`,
   });
-
-  await getLayoutSensors(sensor.layoutId).refresh();
 });
