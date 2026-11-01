@@ -46,8 +46,7 @@ export class WebServerConnection implements IWebServerConnection {
       this.connected = true;
       return true;
     } catch (error: any) {
-      console.error("WebServer connection failed with error:", error);
-      // console.error("Connection failed:", error.message);
+      console.error("Connection failed:", error.message);
       this.connected = false;
       return false;
     }

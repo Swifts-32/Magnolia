@@ -7,16 +7,37 @@ class app {
   private connections: Map<string, Connection> = new Map();
 
   public async loadConnection(id: string) {
-    const connections = await db.select().from(ConnectionTable).where(eq(ConnectionTable.uuid, id));;
+    const connections = await db
+      .select()
+      .from(ConnectionTable)
+      .where(eq(ConnectionTable.uuid, id));
+    if (connections.length === 0)
+      throw new Error("Connection not found in database");
+
     const connection = connections[0];
 
-    const appConnection = new Connection(connection.uuid, connection.name, connection.hardware, connection.protocol, connection.layoutUuid);
+    const appConnection = new Connection(
+      connection.uuid,
+      connection.name,
+      connection.hardware,
+      connection.protocol,
+      connection.layoutUuid,
+    );
     this.connections.set(appConnection.id, appConnection);
+    return appConnection;
   }
 
   public async unloadConnection(id: string) {
-    const connection = this.connections.get(id);
-    if (!connection) throw new Error("Connection not found");
+    //Check in-memory map; if not found, try loading it from the DB
+    let connection = this.connections.get(id);
+    if (!connection) {
+      try {
+        connection = await this.loadConnection(id);
+      } catch {
+        // If it doesn't exist anywhere, consider it already unloaded/gone
+        if (!connection) throw new Error("Connection does not exit.");
+      }
+    }
 
     const result = await connection.disconnect();
     if (!result) throw new Error("Failed to disconnect connection");
@@ -27,12 +48,15 @@ class app {
 
   public async getConnection(id: string): Promise<Connection | undefined> {
     if (!this.connections.has(id)) {
-      await this.loadConnection(id);
+      try {
+        await this.loadConnection(id);
+      } catch {
+        return undefined;
+      }
     }
 
     return this.connections.get(id);
   }
-
 }
 
 export const App = new app();

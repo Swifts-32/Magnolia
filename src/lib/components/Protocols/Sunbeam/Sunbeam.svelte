@@ -10,7 +10,7 @@
 
   let { connectionId }: Props = $props();
 
-  const connectionQuery = $derived(getConnection(connectionId));
+  const connection =  $derived(await getConnection(connectionId));
 
   let blocks = $state<
     Array<{
@@ -22,9 +22,9 @@
       status: string;
     }>
   >([]);
+
   let loading = $state(false);
   let errorMessage = $state<string | null>(null);
-    let fetchedOnce = false;
 
   async function fetchBlocks(url: string) {
     loading = true;
@@ -63,12 +63,19 @@
       alert(`Error: ${e.message}`);
     }
   }
+
+  onMount(() => {
+    if (connection.hardware.type === "WebServer") {
+      fetchBlocks(connection.hardware.baseUrl);
+    }
+  })
 </script>
 
 <svelte:boundary>
   {#snippet pending()}
     <p class="text-neutral-500 animate-pulse">Loading Sunbeam widget...</p>
   {/snippet}
+
   {#snippet failed(error, reset)}
     <button
       onclick={reset}
@@ -79,19 +86,16 @@
   {/snippet}
 
   <div class="space-y-6 mx-auto">
-    {#await connectionQuery}
+    {#await connection}
       <p class="text-neutral-400">Loading connection parameters...</p>
     {:then connection}
       {#if connection && connection.hardware.type === "WebServer"}
         {const url = connection.hardware.baseUrl}
 
-        {#if !fetchedOnce}
-          {(fetchedOnce = true, fetchBlocks(url), "")}
-        {/if}
 
         <!-- Action Toolbar -->
         <div class="flex items-center gap-3">
-          <Button onclick={() => fetchBlocks(url)}>Fetch / Refresh Blocks</Button>
+          <Button onclick={() => fetchBlocks(url)}>Refresh Blocks</Button>
           <Button variant="secondary" onclick={() => calibrateAll(url)}
             >Calibrate All Blocks</Button
           >

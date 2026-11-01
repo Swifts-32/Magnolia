@@ -24,7 +24,7 @@ export class Sunbeam implements IProtocol {
   public processCommand(command: Buffer): void {
     const text = command.toString("utf8").trim();
 
-    console.log(`Proccessing command: ${text}`);
+    // console.log(`Proccessing command: ${text}`);
     this._onParsedOutput?.(text);
   }
 }
