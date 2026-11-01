@@ -12,7 +12,7 @@
     getConnection,
     getlayoutConnections,
   } from "#lib/client/Connections.remote.js";
-  import Checkbox from "../ui/checkbox/checkbox.svelte";
+  import { protocolSupports } from "#lib/types/protocolConstants.ts";
 
   interface Props {
     layoutId: string;
@@ -136,16 +136,53 @@
             }
           >
             <Select.Trigger class="col-span-3">
-              {connectionIdValue
-                ? (await getConnection(connectionIdValue)).name
-                : "Select a connection"}
+              {#snippet children()}
+                {#if connectionIdValue}
+                  {#await getConnection(connectionIdValue)}
+                    Loading connection...
+                  {:then conn}
+                    {conn.name}
+                  {:catch}
+                    Select a connection
+                  {/await}
+                {:else}
+                  Select a connection
+                {/if}
+              {/snippet}
             </Select.Trigger>
             <Select.Content>
-              {#each await getlayoutConnections(layoutId) as connection}
+              {#await getlayoutConnections(layoutId)}
+                <Select.Item value="" disabled
+                  >Loading connections...</Select.Item
+                >
+              {:then connections}
+                {@const supportedConnections = connections.filter((c) =>
+                  protocolSupports(c.protocol, "sensors"),
+                )}
+                {#if supportedConnections.length === 0}
+                  <Select.Item value="" disabled
+                    >No sensor-supported connections found</Select.Item
+                  >
+                {:else}
+                  {#each supportedConnections as connection}
+                    <Select.Item
+                      value={connection.uuid}
+                      label={connection.name}
+                    >
+                      {connection.name}
+                    </Select.Item>
+                  {/each}
+                {/if}
+              {:catch}
+                <Select.Item value="" disabled
+                  >Failed to load connections</Select.Item
+                >
+              {/await}
+              <!-- {#each (await getlayoutConnections(layoutId)).filter( (c) => protocolSupports(c.protocol, "sensors"), ) as connection}
                 <Select.Item value={connection.uuid}
                   >{connection.name}</Select.Item
                 >
-              {/each}
+              {/each} -->
             </Select.Content>
           </Select.Root>
           {@render issues(connectionId.issues())}
