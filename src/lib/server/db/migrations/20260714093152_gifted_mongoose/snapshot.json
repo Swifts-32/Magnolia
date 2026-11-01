@@ -1,0 +1,42 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "fd387c77-ad12-4c69-9f6e-13bf43dcd8b8",
+  "prevIds": [
+    "d50af93f-8370-4ad6-b2bc-ebc8adedb293"
+  ],
+  "footprints": [
+    {
+      "statementType": "recreate_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "connectionType"
+      ],
+      "writes": [
+        "s|enum|public.connectionType",
+        "n|enum|public.connectionType",
+        "e|enum|public.connectionType",
+        "n|type|public.connectionType"
+      ],
+      "reads": [
+        "n|sch|public"
+      ],
+      "sqlHash": "eb31e7cab651072e"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"connectionType\"]",
+      "set": {
+        "values": [
+          "Serial",
+          "Emulator",
+          "Undefined"
+        ]
+      }
+    }
+  ]
+}

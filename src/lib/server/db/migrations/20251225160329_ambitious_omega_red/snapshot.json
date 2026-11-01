@@ -1,0 +1,415 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "d50af93f-8370-4ad6-b2bc-ebc8adedb293",
+  "prevIds": [
+    "c3b3d1b9-ab65-42e5-bcf4-1696a568fe0d"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "sensorState"
+      ],
+      "writes": [
+        "s|enum|public.sensorState",
+        "n|enum|public.sensorState",
+        "e|enum|public.sensorState",
+        "n|type|public.sensorState"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "connectionType"
+      ],
+      "writes": [
+        "s|enum|public.connectionType"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "app",
+        "sensors"
+      ],
+      "writes": [
+        "s|tbl|app.sensors",
+        "n|tbl|app.sensors",
+        "e|tbl|app.sensors",
+        "n|rel|app.sensors",
+        "n|type|app.sensors",
+        "n|rel|app.sensors_pkey"
+      ],
+      "reads": [
+        "n|sch|app",
+        "n|enum|public.sensorState"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "app",
+        "connections",
+        "isConnected"
+      ],
+      "writes": [
+        "s|col|app.connections.isConnected",
+        "n|col|app.connections.isConnected",
+        "e|col|app.connections.isConnected"
+      ],
+      "reads": [
+        "n|tbl|app.connections",
+        "n|sch|app"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "app",
+        "connections",
+        "hardware"
+      ],
+      "writes": [
+        "s|col|app.connections.hardware",
+        "n|col|app.connections.hardware",
+        "e|col|app.connections.hardware"
+      ],
+      "reads": [
+        "n|tbl|app.connections",
+        "n|sch|app"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "app",
+        "connections",
+        "type"
+      ],
+      "writes": [
+        "s|col|app.connections.type",
+        "n|col|app.connections.type",
+        "e|col|app.connections.type"
+      ],
+      "reads": [
+        "n|tbl|app.connections",
+        "n|sch|app"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "app",
+        "sensors"
+      ],
+      "writes": [
+        "s|fk|app.sensors.sensors_layoutId_layouts_id_fk",
+        "n|fk|app.sensors.sensors_layoutId_layouts_id_fk",
+        "e|fk|app.sensors.sensors_layoutId_layouts_id_fk",
+        "n|con|app.sensors.sensors_layoutId_layouts_id_fk"
+      ],
+      "reads": [
+        "n|tbl|app.sensors",
+        "n|sch|app",
+        "n|tbl|app.layouts",
+        "n|sch|app",
+        "n|col|app.sensors.layoutId",
+        "n|col|app.layouts.id",
+        "e|uniqueness|app.layouts.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "app",
+        "sensors"
+      ],
+      "writes": [
+        "s|fk|app.sensors.sensors_connectionId_connections_id_fk",
+        "n|fk|app.sensors.sensors_connectionId_connections_id_fk",
+        "e|fk|app.sensors.sensors_connectionId_connections_id_fk",
+        "n|con|app.sensors.sensors_connectionId_connections_id_fk"
+      ],
+      "reads": [
+        "n|tbl|app.sensors",
+        "n|sch|app",
+        "n|tbl|app.connections",
+        "n|sch|app",
+        "n|col|app.sensors.connectionId",
+        "n|col|app.connections.id",
+        "e|uniqueness|app.connections.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "name": "sensors",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "sensorState",
+        "values": [
+          "Active",
+          "Inactive",
+          "Unknown"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "connections",
+        "name": "isConnected",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "connections",
+        "name": "hardware",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "layoutId",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "connectionId",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "name",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "comment",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "state",
+        "type": "sensorState",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "inverted",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "activationDelay",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "sensors_layoutId_layouts_id_fk",
+        "nameExplicit": false,
+        "columns": [
+          "layoutId"
+        ],
+        "schemaTo": "app",
+        "tableTo": "layouts",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "sensors_connectionId_connections_id_fk",
+        "nameExplicit": false,
+        "columns": [
+          "connectionId"
+        ],
+        "schemaTo": "app",
+        "tableTo": "connections",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "app",
+        "table": "sensors",
+        "name": "sensors_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"app\",\"connections\",\"type\"]"
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"connectionType\"]",
+      "set": {
+        "values": [
+          "Serial",
+          "Emulator",
+          "Wifi",
+          "Undefined"
+        ]
+      }
+    }
+  ]
+}

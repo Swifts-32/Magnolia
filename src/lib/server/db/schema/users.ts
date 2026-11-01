@@ -1,7 +1,8 @@
 import { uuid, varchar } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
-import { relations, type InferSelectModel } from "drizzle-orm";
+import { type InferSelectModel } from "drizzle-orm";
 import { TrainTable } from "./trains";
+import { relations } from "drizzle-orm/_relations";
 
 export const UserTable = AppSchema.table("users", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),

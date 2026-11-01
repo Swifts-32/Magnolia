@@ -1,7 +1,7 @@
 import { integer, uuid, varchar } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
-import { relations } from "drizzle-orm";
 import { TrainTable } from "./trains";
+import { relations } from "drizzle-orm/_relations";
 
 export const LayoutTable = AppSchema.table("layouts", {
   uuid: uuid("id").primaryKey().defaultRandom().notNull(),

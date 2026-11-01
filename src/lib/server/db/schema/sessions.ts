@@ -1,4 +1,4 @@
-import { timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { timestamp, uuid } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
 import type { InferSelectModel } from "drizzle-orm";
 
