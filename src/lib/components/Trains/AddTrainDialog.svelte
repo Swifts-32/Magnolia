@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { RemoteFormIssue } from '$app/server';
+  import type { RemoteFormIssue } from "$app/server";
   import { toast } from "svelte-sonner";
   import { Label } from "#lib/components/ui/label/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
@@ -7,8 +7,12 @@
   import type { Snippet } from "svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
-    import { createTrain } from "#lib/client/Trains.remote.js";
-    import { getConnection, getlayoutConnections } from "#lib/client/Connections.remote.js";
+  import { createTrain } from "#lib/client/Trains.remote.js";
+  import {
+    getConnection,
+    getlayoutConnections,
+  } from "#lib/client/Connections.remote.js";
+  import { protocolSupports } from "#lib/types/protocolConstants.ts";
 
   interface Props {
     layoutId: string;
@@ -97,19 +101,54 @@
           <Select.Root
             type="single"
             {...connectionId.as("text")}
-            bind:value={() => connectionIdValue ? String(connectionIdValue) : undefined, (value) => connectionId.set(value ?? "undefined")}
+            bind:value={
+              () => (connectionIdValue ? String(connectionIdValue) : undefined),
+              (value) => connectionId.set(value ?? "undefined")
+            }
           >
             <Select.Trigger class="col-span-3">
-              {connectionIdValue
-                ? (await getConnection(connectionIdValue)).name
-                : "Select a connection"}
+              {#snippet children()}
+                {#if connectionIdValue}
+                  {#await getConnection(connectionIdValue)}
+                    Loading connection...
+                  {:then conn}
+                    {conn.name}
+                  {:catch}
+                    Select a connection
+                  {/await}
+                {:else}
+                  Select a connection
+                {/if}
+              {/snippet}
             </Select.Trigger>
             <Select.Content>
-              {#each await getlayoutConnections(layoutId) as connection}
-                <Select.Item value={connection.uuid}
-                  >{connection.name}</Select.Item
+              {#await getlayoutConnections(layoutId)}
+                <Select.Item value="" disabled
+                  >Loading connections...</Select.Item
                 >
-              {/each}
+              {:then connections}
+                {@const supportedConnections = connections.filter((c) =>
+                  protocolSupports(c.protocol, "trains"),
+                )}
+                {#if supportedConnections.length === 0}
+                  <Select.Item value="" disabled
+                    >No train-supported connections found</Select.Item
+                  >
+                {:else}
+                  {#each supportedConnections as connection}
+                    <Select.Item
+                      value={connection.uuid}
+                      label={connection.name}
+                    >
+                      {connection.name}
+                    </Select.Item>
+                  {/each}
+                {/if}
+              {:catch}
+                <Select.Item value="" disabled
+                  >Failed to load connections</Select.Item
+                >
+              {/await}
             </Select.Content>
           </Select.Root>
           {@render issues(connectionId.issues())}
