@@ -12,7 +12,7 @@
     getConnection,
     getlayoutConnections,
   } from "#lib/client/Connections.remote.js";
-  import { protocolSupportedCapabilites } from "#lib/types/protocolConstants.ts";
+  import { protocolSupportedCapabilities } from "#lib/types/protocolConstants.ts";
 
   interface Props {
     layoutId: string;
@@ -128,7 +128,7 @@
                 >
               {:then connections}
                 {@const supportedConnections = connections.filter((c) =>
-                  protocolSupportedCapabilites(c.protocol, "trains"),
+                  protocolSupportedCapabilities(c.protocol, "trains"),
                 )}
                 {#if supportedConnections.length === 0}
                   <Select.Item value="" disabled
