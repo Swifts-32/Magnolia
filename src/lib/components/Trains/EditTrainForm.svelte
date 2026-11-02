@@ -11,7 +11,7 @@
   } from "#lib/client/Connections.remote.js";
   import { onMount } from "svelte";
   import type { Train } from "#lib/server/db/schema/trains.js";
-  import { protocolSupports } from "#lib/types/protocolConstants.ts";
+  import { protocolSupportedCapabilites } from "#lib/types/protocolConstants.ts";
 
   interface Props {
     train: Train;
@@ -105,7 +105,7 @@
           {/snippet}
         </Select.Trigger>
         <Select.Content>
-          {#each (await getlayoutConnections(train.layoutUuid)).filter( (c) => protocolSupports(c.protocol, "trains"), ) as connection}
+          {#each (await getlayoutConnections(train.layoutUuid)).filter( (c) => protocolSupportedCapabilites(c.protocol, "trains"), ) as connection}
             <Select.Item value={connection.uuid} label={connection.name}
               >{connection.name}</Select.Item
             >

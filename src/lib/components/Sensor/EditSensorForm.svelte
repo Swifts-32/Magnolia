@@ -11,7 +11,7 @@
   import { onMount } from "svelte";
   import type { Sensor } from "#lib/server/db/schema/sensors.js";
   import Checkbox from "../ui/checkbox/checkbox.svelte";
-  import { protocolSupports } from "#lib/types/protocolConstants.ts";
+  import { protocolSupportedCapabilites } from "#lib/types/protocolConstants.ts";
 
   interface Props {
     sensor: Sensor;
@@ -179,7 +179,7 @@
           {/snippet}
         </Select.Trigger>
         <Select.Content>
-          {#each (await getlayoutConnections(sensor.layoutId)).filter( (c) => protocolSupports(c.protocol, "sensors"), ) as connection}
+          {#each (await getlayoutConnections(sensor.layoutId)).filter( (c) => protocolSupportedCapabilites(c.protocol, "sensors"), ) as connection}
             <Select.Item value={connection.uuid} label={connection.name}>
               {connection.name}
             </Select.Item>

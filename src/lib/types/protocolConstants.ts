@@ -43,9 +43,16 @@ export const protocolCapabilities: Record<
   Sunbeam: ["sensors"],
 };
 
-export function protocolSupports(
+export function protocolSupportedCapabilities(
   protocol: ConnectionProtocol,
   capability: ProtocolCapability,
 ): boolean {
   return protocolCapabilities[protocol]?.includes(capability) ?? false;
+}
+
+export function protocolSupportedHardware(
+  protocol: ConnectionProtocol,
+  capability: ConnectionHardwareList,
+): boolean {
+  return protocolAllowedHardware[protocol]?.includes(capability) ?? false;
 }
