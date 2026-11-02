@@ -3,6 +3,10 @@
   import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
+  import Toggle from "#lib/components/ui/toggle/toggle.svelte";
+  import Switch from "#lib/components/ui/switch/switch.svelte";
+  import Label from "#lib/components/ui/label/label.svelte";
+  import { createSensor, createSensorCommand, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
 
   interface Props {
     connectionId: string;
@@ -25,6 +29,7 @@
 
   let loading = $state(false);
   let errorMessage = $state<string | null>(null);
+  let isRawFeed = $state(true);
 
   async function fetchBlocks(url: string) {
     loading = true;
@@ -107,18 +112,30 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Video Feed Card -->
           <Card.Root class="border-neutral-800 bg-neutral-900/40 shadow-sm">
-            <Card.Header class="pb-2">
-              <Card.Title class="text-lg">Live Detection Stream</Card.Title>
-              <Card.Description class="font-mono text-xs text-neutral-400">
-                MJPEG Video Feed
-              </Card.Description>
+            <Card.Header class="pb-2 flex justify-between flex-row">
+             
+              <div>
+                <Card.Title class="text-lg">Live Detection Stream</Card.Title>
+                <Card.Description class="font-mono text-xs text-neutral-400">
+                  {#if isRawFeed}
+                    MJPEG Raw Video Feed
+                  {:else}
+                    MJPEG Video Feed
+                  {/if}
+                </Card.Description>
+              </div>
+
+              <div class="items-center flex gap-2">
+                <Label for="switch_feed">Raw Feed</Label>
+                <Switch id="switch_feed" bind:checked={isRawFeed}/>
+              </div>
             </Card.Header>
             <Card.Content>
               <div
                 class="aspect-video bg-black rounded-lg overflow-hidden border border-neutral-800 flex items-center justify-center"
               >
                 <img
-                  src="{url}/video"
+                  src={isRawFeed ? `${url}/raw-video`: `${url}/video`}
                   alt="Sunbeam Video Feed"
                   class="w-full h-full object-contain"
                 />
@@ -132,9 +149,6 @@
           >
             <Card.Header class="pb-2">
               <Card.Title class="text-lg">Server Blocks</Card.Title>
-              <Card.Description class="font-mono text-xs text-neutral-400">
-                Active tracking zones and coordinates
-              </Card.Description>
             </Card.Header>
             <Card.Content class="flex-1 overflow-auto">
               {#if errorMessage}
@@ -188,14 +202,31 @@
                             {block.x}, {block.y} ({block.width}×{block.height})
                           </td>
                           <td class="py-3 text-right">
+
+                            {#if !(await getLayoutSensors(connection.layoutUuid)).some(a => a.address === block.uuid)}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onclick={() => {
+                                  createSensorCommand({
+                                    address: block.uuid,
+                                    layoutId: connection.layoutUuid,
+                                    connectionId: connection.uuid,
+                                    name: `Sunbeam Sensor (${block.uuid})`
+                                  });
+                                }}
+                              >
+                                Add
+                              </Button>
+                            {/if}
+
                             <Button
                               size="sm"
                               variant="outline"
-                              class="h-7 px-2 text-xs"
                               onclick={() => calibrateBlock(url, block.uuid)}
                             >
                               Calibrate
-                            </Button>
+                          </Button>
                           </td>
                         </tr>
                       {/each}

@@ -60,6 +60,24 @@ export const createSensor = form(
   },
 );
 
+export const createSensorCommand = command(
+  SensorInsertSchema.omit({
+    id: true,
+  }),
+  async (data) => {
+    await db.insert(SensorTable).values({
+      layoutId: data.layoutId,
+      name: data.name,
+      address: data.address,
+      comment: data.comment || null,
+      connectionId: data.connectionId ?? null,
+      inverted: data.inverted ?? false,
+      activationDelay: data.activationDelay ?? 0,
+      deactivationDelay: data.deactivationDelay ?? 0,
+    });
+  },
+);
+
 export const editSensor = form(
   SensorInsertSchema,
   async ({ layoutId, ...data }) => {
