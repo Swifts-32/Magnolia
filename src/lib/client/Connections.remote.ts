@@ -132,20 +132,15 @@ export const connectConnection = command(z.uuid(), async (connectionId) => {
   const result = await appConnection.connect();
   if (!result.success) error(500, "Connection failed to connect");
 
-  // await getConnection(connectionId).refresh();
+  await getConnection(connectionId).refresh();
   await getlayoutConnections(appConnection.layoutId).refresh();
-
-  await requested(getConnection, 1).refreshAll();
-  await requested(getlayoutConnections, 1).refreshAll();
 });
 
 export const disconnectConnection = command(z.uuid(), async (connectionId) => {
   const connection = await App.unloadConnection(connectionId);
 
-  // await getConnection(connectionId).refresh();
+  await getConnection(connectionId).refresh();
   await getlayoutConnections(connection.layoutId).refresh();
-  await requested(getConnection, 1).refreshAll();
-  await requested(getlayoutConnections, 1).refreshAll();
 });
 
 export const writeStringToConnection = command(
