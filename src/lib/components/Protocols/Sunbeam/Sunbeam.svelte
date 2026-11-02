@@ -6,7 +6,8 @@
   import Toggle from "#lib/components/ui/toggle/toggle.svelte";
   import Switch from "#lib/components/ui/switch/switch.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
-  import { createSensor, createSensorCommand, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
+  import { createSensor, createSensorCommand, deleteSensor, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
+  import BlockEditor from "./BlockEditor.svelte";
 
   interface Props {
     connectionId: string;
@@ -51,7 +52,6 @@
     try {
       const res = await fetch(`${url}/calibrate`, { method: "POST" });
       if (!res.ok) throw new Error("Calibration failed");
-      alert("All blocks calibrated successfully!");
       await fetchBlocks(url);
     } catch (e: any) {
       alert(`Error: ${e.message}`);
@@ -62,7 +62,21 @@
     try {
       const res = await fetch(`${url}/calibrate/${uuid}`, { method: "POST" });
       if (!res.ok) throw new Error(`Failed to calibrate block ${uuid}`);
-      alert(`Calibrated block ${uuid.slice(0, 8)}...`);
+      await fetchBlocks(url);
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    }
+  }
+
+  async function deleteBlock(url: string, uuid: string) {
+    /* TODO ADD a delete from sunbeam server
+    Possibly show dialog that finds all sensors with the correct connection id and address
+    and give teh option to select them to delete as well.
+    */
+    if (!confirm("Are you sure you want to delete this block?")) return;
+    try {
+      const res = await fetch(`${url}/blocks/${uuid}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete block");
       await fetchBlocks(url);
     } catch (e: any) {
       alert(`Error: ${e.message}`);
@@ -134,11 +148,16 @@
               <div
                 class="aspect-video bg-black rounded-lg overflow-hidden border border-neutral-800 flex items-center justify-center"
               >
+              {#if isRawFeed}
+              <BlockEditor baseUrl={url} {blocks} 
+    onBlocksUpdated={() => fetchBlocks(url)}/>
+              {:else}
                 <img
-                  src={isRawFeed ? `${url}/raw-video`: `${url}/video`}
+                  src="{url}/video"
                   alt="Sunbeam Video Feed"
                   class="w-full h-full object-contain"
                 />
+                {/if}
               </div>
             </Card.Content>
           </Card.Root>
@@ -226,6 +245,13 @@
                               onclick={() => calibrateBlock(url, block.uuid)}
                             >
                               Calibrate
+                          </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                             onclick={() => deleteBlock(url, block.uuid)}
+                            >
+                              Delete
                           </Button>
                           </td>
                         </tr>
