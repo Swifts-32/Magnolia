@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { createConnection } from "#lib/client/Connections.remote.js";
   import Label from "#lib/components/ui/label/label.svelte";
-  import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.ts";
-  import { protocolAllowedHardware } from "#lib/types/protocolConstants.ts";
+  import {  connectionTypeList, getConnectionHardwareName } from "#lib/types/hardwareConstants.ts";
+  import {  protocolSupportedHardware } from "#lib/types/protocolConstants.ts";
+  import * as Select from "#lib/components/ui/select/index.js";
 
   interface Props {
     protocol: typeof createConnection.fields.protocol;
@@ -11,68 +12,43 @@
 
   const { protocol, hardware }: Props = $props();
 
-  const selectedProtocolName = $derived(
-    protocol?.value
-      ? (protocol.value() as keyof typeof protocolAllowedHardware)
-      : undefined,
-  );
-
-  const allowedHardwareTypes = $derived(
-    selectedProtocolName && protocolAllowedHardware[selectedProtocolName]
-      ? protocolAllowedHardware[selectedProtocolName]
-      : [],
-  );
-
-  // Automatically update hardware selection when protocol or allowed types change
-  $effect(() => {
-    if (allowedHardwareTypes.length === 0) return;
-
-    const currentHardware = hardware?.type?.value
-      ? hardware.type.value()
-      : undefined;
-
-    // Helper to safely update the form field value
-    const setHardwareValue = (val?: ConnectionHardwareList) => {
-      if (!val) {
-        hardware.type.set(undefined);
-      }
-
-      hardware.type.set(val);
-    };
-
-    if (
-      !currentHardware ||
-      !allowedHardwareTypes.includes(currentHardware as any)
-    ) {
-      const defaultHardware = allowedHardwareTypes[0];
-
-      // Only update if it's different to prevent redundant state writes
-      if (currentHardware !== defaultHardware) {
-        hardware.type.set(defaultHardware);
-      }
-    }
+  const allowedHardwareTypes = $derived.by(() => {
+    const currentProtocol = protocol.value();
+    if (!currentProtocol) return [];
+    
+    return connectionTypeList.filter((type) => 
+      protocolSupportedHardware(currentProtocol, type)
+    );
   });
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">
   <Label for="hardware" class="text-right">Hardware</Label>
-  <div class="col-span-3">
-    <select
-      disabled={allowedHardwareTypes.length === 0}
-      {...hardware.type.as("select")}
-      class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-    >
-      {#each allowedHardwareTypes as connType}
-        <option
-          value={connType}
-          class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
-          >{connType}</option
-        >
-      {/each}
-    </select>
 
-    {#each hardware.type.issues() as issue}
-      <p class="text-s text-red-600">{issue.message}</p>
-    {/each}
-  </div>
+  <Select.Root
+    type="single"
+    allowDeselect={true}
+    {...hardware.type.as("text")}
+    bind:value={
+      () => hardware.type.value(), (value) => hardware.type.set(value)}
+  >
+    <Select.Trigger class="col-span-3">
+      {#snippet children()}
+      {const connType = $derived(hardware.type.value())}
+        {#if connType}
+        {const name = $derived(getConnectionHardwareName(connType))}
+            {name}
+            {:else}
+            No Hardware Selected
+       {/if}
+      {/snippet}
+    </Select.Trigger>
+    <Select.Content>
+      {#each allowedHardwareTypes as type}
+        <Select.Item value={type} label={getConnectionHardwareName(type)}>
+          {getConnectionHardwareName(type)}
+        </Select.Item>
+      {/each}
+      </Select.Content>
+  </Select.Root>
 </div>
