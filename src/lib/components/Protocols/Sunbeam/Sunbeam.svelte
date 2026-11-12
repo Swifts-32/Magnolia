@@ -6,9 +6,10 @@
   import Switch from "#lib/components/ui/switch/switch.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
   import { createSensorCommand, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
-  import BlockEditor from "./BlockEditor.svelte";
+  import BlockViewer from "./BlockViewer.svelte";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import { toast } from "svelte-sonner";
+  import type { SunbeamBlock, SunbeamBlockStatus } from "#lib/types/protocols/SunbeamTypes.ts";
 
   interface Props {
     connectionId: string;
@@ -18,16 +19,7 @@
 
   const connection =  $derived(await getConnection(connectionId));
 
-  let blocks = $state<
-    Array<{
-      uuid: string;
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      status: string;
-    }>
-  >([]);
+  let blocks = $state<SunbeamBlock[]>([]);
 
   let loading = $state(false);
   let errorMessage = $state<string | null>(null);
@@ -84,9 +76,43 @@
 
   onMount(() => {
     if (connection.hardware.type === "WebServer") {
-      fetchBlocks(connection.hardware.baseUrl);
+      const url = connection.hardware.baseUrl;
+      
+      // Initial fetch to populate blocks right away
+      fetchBlocks(url);
+
+      const eventSource = new EventSource(`${url}/events`);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data && data.address && data.state) {
+            const targetAddress = String(data.address);
+            const state = data.state as SunbeamBlockStatus;
+
+            blocks = blocks.map((b) =>
+              b.uuid === targetAddress ? { ...b, status: state } : b
+            );
+          } 
+          // Alternatively, if a full block list payload is sent
+          else if (data.type === "block_update" || data.blocks) {
+            blocks = data.blocks || blocks;
+          }
+        } catch (e) {
+          console.error("Failed to parse SSE event data", e);
+        }
+      };
+
+      eventSource.onerror = (err) => {
+        console.error("SSE connection error:", err);
+      };
+
+      return () => {
+        eventSource.close();
+      };
     }
-  })
+  });
 </script>
 
 <svelte:boundary>
@@ -135,7 +161,7 @@
               <div
                 class="aspect-video bg-black rounded-lg overflow-hidden border border-neutral-800 flex items-center justify-center"
               >
-              <BlockEditor baseUrl={url} {blocks} bind:hoveredBlockAddress={activeBlockAddress} {isEditing}
+              <BlockViewer baseUrl={url} {blocks} bind:hoveredBlockAddress={activeBlockAddress} {isEditing}
     onBlocksUpdated={() => fetchBlocks(url)}/>
     </div>
             </Card.Content>
@@ -257,11 +283,6 @@
                                   </AlertDialog.Description>
                                 </AlertDialog.Header>
 
-                                  <!-- /* TODO ADD a delete from sunbeam server
-                                  Possibly show dialog that finds all sensors with the correct connection id and address
-                                  and give teh option to select them to delete as well.
-                                  */ -->
-
                                 <AlertDialog.Footer>
                                   <AlertDialog.Cancel onclick={() =>{
                                     activeBlockAddress = null
@@ -269,7 +290,6 @@
                                   }}>Cancel</AlertDialog.Cancel>
                                   <AlertDialog.Action
                                     onclick={async () => {
-                                      // await deleteSensor(b.id);
                                       deleteBlock(url, block.uuid)
                                       activeBlockAddress = null;
                                       activeAlertAddress = null;

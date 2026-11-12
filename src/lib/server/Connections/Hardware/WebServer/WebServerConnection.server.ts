@@ -27,10 +27,6 @@ export class WebServerConnection implements IWebServerConnection {
     if (this.connected) return true;
 
     try {
-      console.log(
-        `Attempting to connect to Sunbeam server at: ${this.baseUrl}/blocks`,
-      );
-
       const response = await fetch(`${this.baseUrl}/blocks`, {
         method: "GET",
         headers: { ...this.headers },

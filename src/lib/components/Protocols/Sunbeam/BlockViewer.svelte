@@ -1,16 +1,9 @@
 <script lang="ts">
-  interface Block {
-    uuid: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    status: string;
-  }
+  import type { SunbeamBlock } from "#lib/types/protocols/SunbeamTypes.ts";
 
   interface Props {
     baseUrl: string;
-    blocks: Block[];
+    blocks: SunbeamBlock[];
     hoveredBlockAddress: string | null;
     isEditing: boolean;
     onBlocksUpdated?: () => void;
@@ -289,20 +282,42 @@
         }
       }
 
-      ctx.strokeStyle = isSelected
-        ? "#3b82f6"
-        : isHovered
-          ? "#60a5fa"
-          : "#00FF00";
+      // Determine border and fill colors based on status when not editing
+      let strokeColor = "#00FF00";
+      let fillColor = "rgba(0, 255, 0, 0.1)";
+
+      if (!isEditing) {
+        switch (b.status) {
+          case "active":
+            strokeColor = "#22c55e"; // Emerald/Green
+            fillColor = "rgba(34, 197, 94, 0.15)";
+            break;
+          case "inactive":
+            strokeColor = "#ef4444"; // Red
+            fillColor = "rgba(239, 68, 68, 0.15)";
+            break;
+          default: // unknown or empty
+            strokeColor = "#eab308"; // Yellow
+            fillColor = "rgba(234, 179, 8, 0.15)";
+            break;
+        }
+      }
+
+      // Override colors if selected or hovered
+      if (isSelected) {
+        strokeColor = "#3b82f6";
+        fillColor = "rgba(59, 130, 246, 0.2)";
+      } else if (isHovered) {
+        strokeColor = "#60a5fa";
+        fillColor = "rgba(96, 165, 250, 0.15)";
+      }
+
+      ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
       ctx.strokeRect(rx, ry, rw, rh);
 
-      ctx.fillStyle = isSelected
-        ? "rgba(59, 130, 246, 0.2)"
-        : isHovered
-          ? "rgba(96, 165, 250, 0.15)"
-          : "rgba(0, 255, 0, 0.1)";
+      ctx.fillStyle = fillColor;
       ctx.fillRect(rx, ry, rw, rh);
 
       // Only draw resize handle if editing mode is active

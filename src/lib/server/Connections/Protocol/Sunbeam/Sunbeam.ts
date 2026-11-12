@@ -5,6 +5,7 @@ import { getLayoutSensors } from "#lib/client/Sensors.remote.ts";
 import { SensorTable } from "#lib/server/db/schema/sensors.ts";
 import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
+import type { SunbeamBlockStatus } from "#lib/types/protocols/SunbeamTypes.ts";
 
 export class Sunbeam implements IProtocol {
   public protocolType: ConnectionProtocol = "Sunbeam";
@@ -37,7 +38,7 @@ export class Sunbeam implements IProtocol {
       // to match your Sunbeam hardware's exact JSON payload structure.
       if (data && data.address && data.state) {
         const address = String(data.address);
-        const state = data.state as "active" | "inactive" | "unknown";
+        const state = data.state as SunbeamBlockStatus;
 
         // Update the sensor in the database matching this connection and address
         await db
