@@ -5,11 +5,13 @@
   import Button, { buttonVariants } from "#lib/components/ui/button/button.svelte";
   import Switch from "#lib/components/ui/switch/switch.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
-  import { createSensorCommand, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
+  import { createSensorCommand, deleteSensor, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
   import BlockViewer from "./BlockViewer.svelte";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import { toast } from "svelte-sonner";
   import type { SunbeamBlock, SunbeamBlockStatus } from "#lib/types/protocols/SunbeamTypes.ts";
+  import { page } from "$app/state";
+  import Checkbox from "#lib/components/ui/checkbox/checkbox.svelte";
 
   interface Props {
     connectionId: string;
@@ -18,15 +20,16 @@
   let { connectionId }: Props = $props();
 
   const connection =  $derived(await getConnection(connectionId));
-
+  
   let blocks = $state<SunbeamBlock[]>([]);
-
+  
   let loading = $state(false);
   let errorMessage = $state<string | null>(null);
-  let isEditing = $state(false);
-
+    let isEditing = $state(false);
+    
   let activeBlockAddress = $state<string | null>(null);
   let activeAlertAddress = $state<string | null>(null);
+  let sensorIdsToDelete = $state<string[]>([]);
 
   async function fetchBlocks(url: string) {
     loading = true;
@@ -263,43 +266,85 @@
                               Calibrate
                           </Button>
 
-                            <AlertDialog.Root 
-                              open={activeAlertAddress === block.uuid} 
-                              onOpenChange={(open) => { if (!open) {
+                           <AlertDialog.Root 
+                            open={activeAlertAddress === block.uuid} 
+                            onOpenChange={async (open) => { 
+                              if (open) {
+                                activeAlertAddress = block.uuid;
+                                // Fetch layout sensors and pre-select all matching sensors by default
+                                const layoutSensors = await getLayoutSensors(page.params.id ?? "");
+                                const matching = layoutSensors.filter(s => s.connectionId === connectionId && s.address === block.uuid);
+                                sensorIdsToDelete = matching.map(s => s.id);
+                              } else {
                                 activeAlertAddress = null; 
                                 activeBlockAddress = null;
-                              }}}
-                            >
+                                sensorIdsToDelete = [];
+                              }
+                            }}
+                          >
 
-                              <AlertDialog.Trigger class={buttonVariants({ variant: "outline", size: "sm"})}>
-                                Delete
-                              </AlertDialog.Trigger>
+                            <AlertDialog.Trigger class={buttonVariants({ variant: "outline", size: "sm"})}>
+                              Delete
+                            </AlertDialog.Trigger>
 
-                              <AlertDialog.Content>
-                                <AlertDialog.Header>
-                                  <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-                                  <AlertDialog.Description>
-                                    This action cannot be undone. This will permanently delete the sensor.
-                                  </AlertDialog.Description>
-                                </AlertDialog.Header>
+                            <AlertDialog.Content>
+                              <AlertDialog.Header>
+                                <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                                <AlertDialog.Description>
+                                  This action cannot be undone. This will permanently delete the sensor.
+                                </AlertDialog.Description>
+                              </AlertDialog.Header>
 
-                                <AlertDialog.Footer>
-                                  <AlertDialog.Cancel onclick={() =>{
-                                    activeBlockAddress = null
-                                    activeAlertAddress = null
-                                  }}>Cancel</AlertDialog.Cancel>
-                                  <AlertDialog.Action
-                                    onclick={async () => {
-                                      deleteBlock(url, block.uuid)
-                                      activeBlockAddress = null;
-                                      activeAlertAddress = null;
-                                    }}
-                                  >
-                                    Delete
-                                  </AlertDialog.Action>
-                                </AlertDialog.Footer>
-                              </AlertDialog.Content>
-                            </AlertDialog.Root>
+                              {#await getLayoutSensors(page.params.id ?? "") then layoutSensors}
+                                {const sensors = layoutSensors.filter(s => s.connectionId === connectionId && s.address === block.uuid)}
+                                {#if sensors.length > 0}
+                                  {#if sensors.length > 1}
+                                    <p>These sensors are attached to this block. Choose which sensors to delete</p>
+                                  {:else}
+                                    <p>This sensor is attached to this block. Choose whether to delete it.</p>
+                                  {/if}
+
+                                  {#each sensors as sensor}
+                                    <div class="flex justify-between gap-2 items-center">
+                                      <Checkbox bind:checked={
+                                        () => sensorIdsToDelete.includes(sensor.id),
+                                        (v) => v ? sensorIdsToDelete.push(sensor.id) : (sensorIdsToDelete = sensorIdsToDelete.filter(id => id !== sensor.id))
+                                      } />
+
+                                      <div>
+                                        <p>{sensor.name}</p>
+                                        <p class="text-sm">{sensor.address}</p>
+                                      </div>
+                                    </div>
+                                  {/each}
+                                {/if}
+                              {/await}
+
+                              <AlertDialog.Footer>
+                                <AlertDialog.Cancel onclick={() => {
+                                  activeBlockAddress = null;
+                                  activeAlertAddress = null;
+                                  sensorIdsToDelete = [];
+                                }}>Cancel</AlertDialog.Cancel>
+                                
+                                <AlertDialog.Action
+                                  onclick={async () => {
+                                    deleteBlock(url, block.uuid);
+
+                                    sensorIdsToDelete.forEach(id => {
+                                      deleteSensor(id);
+                                    });
+                                    
+                                    activeBlockAddress = null;
+                                    activeAlertAddress = null;
+                                    sensorIdsToDelete = [];
+                                  }}
+                                >
+                                  Delete
+                                </AlertDialog.Action>
+                              </AlertDialog.Footer>
+                            </AlertDialog.Content>
+                          </AlertDialog.Root>
                           </td>
                         </tr>
                       {/each}
