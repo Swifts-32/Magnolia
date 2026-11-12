@@ -2,11 +2,13 @@
   import { getConnection } from "#lib/client/Connections.remote.js";
   import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
-  import Button from "#lib/components/ui/button/button.svelte";
+  import Button, { buttonVariants } from "#lib/components/ui/button/button.svelte";
   import Switch from "#lib/components/ui/switch/switch.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
-  import { createSensor, createSensorCommand, deleteSensor, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
+  import { createSensorCommand, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
   import BlockEditor from "./BlockEditor.svelte";
+  import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     connectionId: string;
@@ -32,6 +34,7 @@
   let isEditing = $state(false);
 
   let activeBlockAddress = $state<string | null>(null);
+  let activeAlertAddress = $state<string | null>(null);
 
   async function fetchBlocks(url: string) {
     loading = true;
@@ -55,7 +58,7 @@
       if (!res.ok) throw new Error("Calibration failed");
       await fetchBlocks(url);
     } catch (e: any) {
-      alert(`Error: ${e.message}`);
+      toast.error(`Error: ${e.message}`);
     }
   }
 
@@ -65,22 +68,17 @@
       if (!res.ok) throw new Error(`Failed to calibrate block ${uuid}`);
       await fetchBlocks(url);
     } catch (e: any) {
-      alert(`Error: ${e.message}`);
+      toast.error(`Error: ${e.message}`);
     }
   }
 
   async function deleteBlock(url: string, uuid: string) {
-    /* TODO ADD a delete from sunbeam server
-    Possibly show dialog that finds all sensors with the correct connection id and address
-    and give teh option to select them to delete as well.
-    */
-    if (!confirm("Are you sure you want to delete this block?")) return;
     try {
       const res = await fetch(`${url}/blocks/${uuid}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete block");
       await fetchBlocks(url);
     } catch (e: any) {
-      alert(`Error: ${e.message}`);
+      toast.error(`Error: ${e.message}`);
     }
   }
 
@@ -158,7 +156,7 @@
                 <Button onclick={() => calibrateAll(url)}>Calibrate All Blocks</Button>
               </div>
             </Card.Header>
-            
+
             <Card.Content class="flex-1 overflow-auto">
               {#if errorMessage}
                 <p class="text-red-500 text-sm mb-4">{errorMessage}</p>
@@ -189,7 +187,7 @@
                       class="divide-y divide-neutral-800/60 font-mono text-xs"
                     >
                       {#each blocks as block}
-                        <tr onmouseenter={() => activeBlockAddress = block.uuid} 
+                        <tr onmouseenter={() =>  activeBlockAddress = block.uuid} 
                             onmouseleave={() => activeBlockAddress = null} 
                         class={activeBlockAddress === block.uuid ? "bg-muted" : ""}>
                           <td
@@ -238,13 +236,50 @@
                             >
                               Calibrate
                           </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                             onclick={() => deleteBlock(url, block.uuid)}
+
+                            <AlertDialog.Root 
+                              open={activeAlertAddress === block.uuid} 
+                              onOpenChange={(open) => { if (!open) {
+                                activeAlertAddress = null; 
+                                activeBlockAddress = null;
+                              }}}
                             >
-                              Delete
-                          </Button>
+
+                              <AlertDialog.Trigger class={buttonVariants({ variant: "outline", size: "sm"})}>
+                                Delete
+                              </AlertDialog.Trigger>
+
+                              <AlertDialog.Content>
+                                <AlertDialog.Header>
+                                  <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                                  <AlertDialog.Description>
+                                    This action cannot be undone. This will permanently delete the sensor.
+                                  </AlertDialog.Description>
+                                </AlertDialog.Header>
+
+                                  <!-- /* TODO ADD a delete from sunbeam server
+                                  Possibly show dialog that finds all sensors with the correct connection id and address
+                                  and give teh option to select them to delete as well.
+                                  */ -->
+
+                                <AlertDialog.Footer>
+                                  <AlertDialog.Cancel onclick={() =>{
+                                    activeBlockAddress = null
+                                    activeAlertAddress = null
+                                  }}>Cancel</AlertDialog.Cancel>
+                                  <AlertDialog.Action
+                                    onclick={async () => {
+                                      // await deleteSensor(b.id);
+                                      deleteBlock(url, block.uuid)
+                                      activeBlockAddress = null;
+                                      activeAlertAddress = null;
+                                    }}
+                                  >
+                                    Delete
+                                  </AlertDialog.Action>
+                                </AlertDialog.Footer>
+                              </AlertDialog.Content>
+                            </AlertDialog.Root>
                           </td>
                         </tr>
                       {/each}
