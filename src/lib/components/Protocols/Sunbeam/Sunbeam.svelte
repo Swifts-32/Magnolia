@@ -32,6 +32,8 @@
   let errorMessage = $state<string | null>(null);
   let isRawFeed = $state(true);
 
+  let activeBlockAddress = $state<string | null>(null);
+
   async function fetchBlocks(url: string) {
     loading = true;
     errorMessage = null;
@@ -149,7 +151,7 @@
                 class="aspect-video bg-black rounded-lg overflow-hidden border border-neutral-800 flex items-center justify-center"
               >
               {#if isRawFeed}
-              <BlockEditor baseUrl={url} {blocks} 
+              <BlockEditor baseUrl={url} {blocks} bind:hoveredBlockAddress={activeBlockAddress}
     onBlocksUpdated={() => fetchBlocks(url)}/>
               {:else}
                 <img
@@ -199,7 +201,9 @@
                       class="divide-y divide-neutral-800/60 font-mono text-xs"
                     >
                       {#each blocks as block}
-                        <tr>
+                        <tr onmouseenter={() => activeBlockAddress = block.uuid} 
+                            onmouseleave={() => activeBlockAddress = null} 
+                        class={activeBlockAddress === block.uuid ? "bg-muted" : ""}>
                           <td
                             class="py-3 max-w-100"
                             title={block.uuid}

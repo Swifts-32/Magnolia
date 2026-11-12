@@ -11,10 +11,16 @@
   interface Props {
     baseUrl: string;
     blocks: Block[];
+    hoveredBlockAddress: string | null;
     onBlocksUpdated?: () => void;
   }
 
-  let { baseUrl, blocks, onBlocksUpdated }: Props = $props();
+  let {
+    baseUrl,
+    blocks,
+    hoveredBlockAddress = $bindable(null),
+    onBlocksUpdated,
+  }: Props = $props();
 
   // State
   let imageElement = $state<HTMLImageElement | null>(null);
@@ -45,10 +51,11 @@
     }
   }
 
-  // Redraw canvas whenever blocks or interaction state changes
+  // Redraw canvas whenever blocks, interaction state, or hover state changes
   $effect(() => {
     blocks;
     activeBlockUuid;
+    hoveredBlockAddress;
     currentX;
     currentY;
     drawCanvas();
@@ -106,10 +113,31 @@
   }
 
   function handleMouseMove(event: MouseEvent) {
-    if (activeAction === "none") return;
     const coords = getScaledCoordinates(event);
+
+    // Determine hover state across blocks (top-most block takes precedence)
+    let foundUuid: string | null = null;
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const b = blocks[i];
+      if (
+        coords.x >= b.x &&
+        coords.x <= b.x + b.width &&
+        coords.y >= b.y &&
+        coords.y <= b.y + b.height
+      ) {
+        foundUuid = b.uuid;
+        break;
+      }
+    }
+    hoveredBlockAddress = foundUuid;
+
+    if (activeAction === "none") return;
     currentX = coords.x;
     currentY = coords.y;
+  }
+
+  function handleMouseLeave() {
+    hoveredBlockAddress = null;
   }
 
   async function handleMouseUp() {
@@ -222,7 +250,6 @@
     const ctx = canvasElement.getContext("2d");
     if (!ctx) return;
 
-    // Ensure internal resolution matches image natural dimensions before drawing
     if (
       imageElement.naturalWidth &&
       imageElement.naturalHeight &&
@@ -237,6 +264,7 @@
 
     blocks.forEach((b) => {
       const isSelected = b.uuid === activeBlockUuid;
+      const isHovered = b.uuid === hoveredBlockAddress;
 
       let rx = b.x;
       let ry = b.y;
@@ -255,14 +283,21 @@
         }
       }
 
-      ctx.strokeStyle = isSelected ? "#3b82f6" : "#00FF00";
+      // Visual feedback for selected, hovered, or normal state
+      ctx.strokeStyle = isSelected
+        ? "#3b82f6"
+        : isHovered
+          ? "#60a5fa"
+          : "#00FF00";
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
       ctx.strokeRect(rx, ry, rw, rh);
 
       ctx.fillStyle = isSelected
         ? "rgba(59, 130, 246, 0.2)"
-        : "rgba(0, 255, 0, 0.1)";
+        : isHovered
+          ? "rgba(96, 165, 250, 0.15)"
+          : "rgba(0, 255, 0, 0.1)";
       ctx.fillRect(rx, ry, rw, rh);
 
       ctx.fillStyle = "#3b82f6";
@@ -300,6 +335,7 @@
     onmousedown={handleMouseDown}
     onmousemove={handleMouseMove}
     onmouseup={handleMouseUp}
+    onmouseleave={handleMouseLeave}
   ></canvas>
 </div>
 
