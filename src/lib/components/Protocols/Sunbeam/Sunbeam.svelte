@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
-  import Toggle from "#lib/components/ui/toggle/toggle.svelte";
   import Switch from "#lib/components/ui/switch/switch.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
   import { createSensor, createSensorCommand, deleteSensor, getLayoutSensors } from "#lib/client/Sensors.remote.ts";
@@ -30,7 +29,7 @@
 
   let loading = $state(false);
   let errorMessage = $state<string | null>(null);
-  let isRawFeed = $state(true);
+  let isEditing = $state(false);
 
   let activeBlockAddress = $state<string | null>(null);
 
@@ -113,18 +112,6 @@
       {#if connection && connection.hardware.type === "WebServer"}
         {const url = connection.hardware.baseUrl}
 
-
-        <!-- Action Toolbar -->
-        <div class="flex items-center gap-3">
-          <Button onclick={() => fetchBlocks(url)}>Refresh Blocks</Button>
-          <Button variant="secondary" onclick={() => calibrateAll(url)}
-            >Calibrate All Blocks</Button
-          >
-          <span class="text-xs font-mono text-neutral-400 ml-auto"
-            >Target: {url}</span
-          >
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Video Feed Card -->
           <Card.Root class="border-neutral-800 bg-neutral-900/40 shadow-sm">
@@ -133,8 +120,8 @@
               <div>
                 <Card.Title class="text-lg">Live Detection Stream</Card.Title>
                 <Card.Description class="font-mono text-xs text-neutral-400">
-                  {#if isRawFeed}
-                    MJPEG Raw Video Feed
+                  {#if isEditing}
+                    Editing Blocks
                   {:else}
                     MJPEG Video Feed
                   {/if}
@@ -142,25 +129,17 @@
               </div>
 
               <div class="items-center flex gap-2">
-                <Label for="switch_feed">Raw Feed</Label>
-                <Switch id="switch_feed" bind:checked={isRawFeed}/>
+                <Label for="switch_feed">Edit Blocks</Label>
+                <Switch id="switch_feed" bind:checked={isEditing}/>
               </div>
             </Card.Header>
             <Card.Content>
               <div
                 class="aspect-video bg-black rounded-lg overflow-hidden border border-neutral-800 flex items-center justify-center"
               >
-              {#if isRawFeed}
-              <BlockEditor baseUrl={url} {blocks} bind:hoveredBlockAddress={activeBlockAddress}
+              <BlockEditor baseUrl={url} {blocks} bind:hoveredBlockAddress={activeBlockAddress} {isEditing}
     onBlocksUpdated={() => fetchBlocks(url)}/>
-              {:else}
-                <img
-                  src="{url}/video"
-                  alt="Sunbeam Video Feed"
-                  class="w-full h-full object-contain"
-                />
-                {/if}
-              </div>
+    </div>
             </Card.Content>
           </Card.Root>
 
@@ -168,9 +147,18 @@
           <Card.Root
             class="border-neutral-800 bg-neutral-900/40 shadow-sm flex flex-col"
           >
-            <Card.Header class="pb-2">
-              <Card.Title class="text-lg">Server Blocks</Card.Title>
+            <Card.Header class="pb-2 flex flex-row justify-between">
+              <div>
+                <Card.Title class="text-lg">Server Blocks</Card.Title>
+                <Card.Description>URL: {url}</Card.Description>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <Button onclick={() => fetchBlocks(url)}>Refresh Blocks</Button>
+                <Button onclick={() => calibrateAll(url)}>Calibrate All Blocks</Button>
+              </div>
             </Card.Header>
+            
             <Card.Content class="flex-1 overflow-auto">
               {#if errorMessage}
                 <p class="text-red-500 text-sm mb-4">{errorMessage}</p>

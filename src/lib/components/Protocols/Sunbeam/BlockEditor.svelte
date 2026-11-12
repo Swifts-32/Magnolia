@@ -12,6 +12,7 @@
     baseUrl: string;
     blocks: Block[];
     hoveredBlockAddress: string | null;
+    isEditing: boolean;
     onBlocksUpdated?: () => void;
   }
 
@@ -19,6 +20,7 @@
     baseUrl,
     blocks,
     hoveredBlockAddress = $bindable(null),
+    isEditing,
     onBlocksUpdated,
   }: Props = $props();
 
@@ -51,11 +53,12 @@
     }
   }
 
-  // Redraw canvas whenever blocks, interaction state, or hover state changes
+  // Redraw canvas whenever blocks, interaction state, hover state, or edit mode changes
   $effect(() => {
     blocks;
     activeBlockUuid;
     hoveredBlockAddress;
+    isEditing;
     currentX;
     currentY;
     drawCanvas();
@@ -73,6 +76,9 @@
   }
 
   function handleMouseDown(event: MouseEvent) {
+    // If not in editing mode, block any modification or creation interaction
+    if (!isEditing) return;
+
     const coords = getScaledCoordinates(event);
     startX = coords.x;
     startY = coords.y;
@@ -115,7 +121,7 @@
   function handleMouseMove(event: MouseEvent) {
     const coords = getScaledCoordinates(event);
 
-    // Determine hover state across blocks (top-most block takes precedence)
+    // Hover detection always works regardless of editing mode
     let foundUuid: string | null = null;
     for (let i = blocks.length - 1; i >= 0; i--) {
       const b = blocks[i];
@@ -131,7 +137,7 @@
     }
     hoveredBlockAddress = foundUuid;
 
-    if (activeAction === "none") return;
+    if (!isEditing || activeAction === "none") return;
     currentX = coords.x;
     currentY = coords.y;
   }
@@ -141,7 +147,7 @@
   }
 
   async function handleMouseUp() {
-    if (activeAction === "none") return;
+    if (!isEditing || activeAction === "none") return;
 
     const dx = currentX - startX;
     const dy = currentY - startY;
@@ -263,7 +269,7 @@
     ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
     blocks.forEach((b) => {
-      const isSelected = b.uuid === activeBlockUuid;
+      const isSelected = isEditing && b.uuid === activeBlockUuid;
       const isHovered = b.uuid === hoveredBlockAddress;
 
       let rx = b.x;
@@ -283,7 +289,6 @@
         }
       }
 
-      // Visual feedback for selected, hovered, or normal state
       ctx.strokeStyle = isSelected
         ? "#3b82f6"
         : isHovered
@@ -300,11 +305,14 @@
           : "rgba(0, 255, 0, 0.1)";
       ctx.fillRect(rx, ry, rw, rh);
 
-      ctx.fillStyle = "#3b82f6";
-      ctx.fillRect(rx + rw - 5, ry + rh - 5, 10, 10);
+      // Only draw resize handle if editing mode is active
+      if (isEditing) {
+        ctx.fillStyle = "#3b82f6";
+        ctx.fillRect(rx + rw - 5, ry + rh - 5, 10, 10);
+      }
     });
 
-    if (activeAction === "create") {
+    if (isEditing && activeAction === "create") {
       const x = Math.min(startX, currentX);
       const y = Math.min(startY, currentY);
       const width = Math.abs(currentX - startX);
@@ -332,6 +340,7 @@
   <canvas
     bind:this={canvasElement}
     class="overlay-canvas"
+    style="cursor: {isEditing ? 'crosshair' : 'default'};"
     onmousedown={handleMouseDown}
     onmousemove={handleMouseMove}
     onmouseup={handleMouseUp}
@@ -359,6 +368,5 @@
     left: 0;
     width: 100%;
     height: 100%;
-    cursor: crosshair;
   }
 </style>
