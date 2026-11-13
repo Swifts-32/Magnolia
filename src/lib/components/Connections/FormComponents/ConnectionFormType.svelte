@@ -13,7 +13,6 @@
   const { protocol, hardware }: Props = $props();
 
   const allowedHardwareTypes = $derived.by(() => {
-    console.log("A");
     const proto = protocol.value();    
     if (!proto) return [];
 
@@ -23,7 +22,6 @@
   });
 
   $effect(() => {
-    console.log("Updated");
     const currentHardware = hardware.type.value();
     if (currentHardware && !allowedHardwareTypes.some(h => h === currentHardware)) {
       hardware.type.set(undefined);
