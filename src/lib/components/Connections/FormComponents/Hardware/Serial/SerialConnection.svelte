@@ -58,6 +58,8 @@
           <Select.Item value={port.path} label={port.path}>
             {@render pathItem(port)}
           </Select.Item>
+        {:else}
+          <p>No serial ports were found.</p>
         {/each}
       </Select.Content>
     </Select.Root>
