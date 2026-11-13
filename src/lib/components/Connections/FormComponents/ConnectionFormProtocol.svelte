@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { connectionProtocolList } from "#lib/types/protocolConstants.js";
+  import { connectionProtocolList, getProtocolName } from "#lib/types/protocolConstants.js";
   import Label from "#lib/components/ui/label/label.svelte";
   import type { createConnection } from "#lib/client/Connections.remote.js";
+  import * as Select from "#lib/components/ui/select/index.js";
 
   interface Props {
     protocol: typeof createConnection.fields.protocol;
@@ -12,21 +13,36 @@
 
 <div class="grid grid-cols-4 items-center gap-4">
   <Label for="protocol" class="text-right">Protocol</Label>
-  <div class="col-span-3">
-    <select
-      {...protocol.as("select")}
-      class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+
+  <div class="col-span-3 space-y-1">
+    <Select.Root
+      type="single"
+      allowDeselect={true}
+      {...protocol.as("text")}
+      bind:value={
+        () => protocol.value(), (value) => protocol.set(value)}
     >
-      {#each connectionProtocolList as protocolName}
-        <option
-          class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
-          >{protocolName}</option
-        >
-      {/each}
-    </select>
+      <Select.Trigger class="w-full">
+        {#snippet children()}
+          {const proto = $derived(protocol.value())}
+          {#if proto}
+            {getProtocolName(proto)}
+          {:else}
+            No Protocol Selected
+          {/if}
+        {/snippet}
+      </Select.Trigger>
+      <Select.Content>
+        {#each connectionProtocolList as protocolName}
+          <Select.Item value={protocolName} label={getProtocolName(protocolName)}>
+            {getProtocolName(protocolName)}
+          </Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
 
     {#each protocol.issues() as issue}
-      <p class="text-s text-red-600">{issue.message}</p>
+      <p class="text-xs text-red-600">{issue.message}</p>
     {/each}
   </div>
 </div>
