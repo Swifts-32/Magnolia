@@ -2,7 +2,7 @@
   import type { RemoteFormField } from "$app/server";
   import { Label } from "#lib/components/ui/label/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
-  import { tick } from "svelte";
+  import * as Select from "#lib/components/ui/select/index.js";
   import {
     getSerialPorts,
     type SerialPortInfo,
@@ -14,28 +14,11 @@
   }
 
   let { baudRate, path }: Props = $props();
-
-  const serialPorts = $derived(await getSerialPorts());
-  let serialPathSearch: string = $state("");
-
-  let serialPathOpen = $state(false);
-  let triggerRef = $state<HTMLButtonElement>(null!);
-  const selectedSerialPath = $derived(
-    serialPorts.find((port) => port.path === path.value()),
-  );
-
-  function closeAndFocusSerialPathTrigger() {
-    serialPathOpen = false;
-
-    tick().then(() => {
-      triggerRef?.focus();
-    });
-  }
 </script>
 
 {#snippet pathItem(port: SerialPortInfo)}
   <div class="flex flex-1 justify-start items-center gap-2">
-    <p>{port.path ?? "Undefined Path"}</p>
+    <p class="font-medium">{port.path ?? "Undefined Path"}</p>
     <div
       class="flex flex-col justify-center items-start leading-3 text-xs text-gray-400"
     >
@@ -52,134 +35,39 @@
 <!-- Serial Path -->
 <div class="grid grid-cols-4 items-center gap-4 w-full">
   <Label for="serialPath" class="text-right">Serial Path</Label>
-  <div class="col-span-3">
-    <select
-      id="serialPath"
-      {...path.as("select")}
-      class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+  <div class="col-span-3 space-y-1">
+    <Select.Root
+      type="single"
+      allowDeselect={true}
+      {...path.as("text")}
+      bind:value={
+        () => path.value(), (value) => path.set(value)}
     >
-      {#each serialPorts as port}
-        <option
-          value={port.path}
-          class="data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none data-disabled:pointer-events-none data-disabled:opacity-50"
-        >
-          {#if port.friendlyName || port.manufacturer}
-            {port.friendlyName ?? "Unknown Device"}
-            {#if port.manufacturer}({port.manufacturer}){/if}
-            — {port.path}
+      <Select.Trigger class="w-full">
+        {#snippet children()}
+          {const currentPath = $derived(path.value())}
+          {#if currentPath}
+            {currentPath}
           {:else}
-            {port.path} (Generic Port)
+            Select Serial Path...
           {/if}
-        </option>
-      {/each}
-    </select>
+        {/snippet}
+      </Select.Trigger>
+      <Select.Content>
+        {#each await getSerialPorts() as port}
+          <Select.Item value={port.path} label={port.path}>
+            {@render pathItem(port)}
+          </Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
 
     {#each path.issues() as issue}
-      <p class="text-s text-red-600">{issue.message}</p>
+      <p class="text-xs text-red-600">{issue.message}</p>
     {/each}
   </div>
-
-  <!-- <Popover.Root bind:open={serialPathOpen}>
-    <Popover.Trigger bind:ref={triggerRef} class="col-span-3">
-      {#snippet child({ props })}
-        <Button
-          variant="outline"
-          class="w-full"
-          {...props}
-          role="combobox"
-          aria-expanded={serialPathOpen}
-        >
-          {#if selectedSerialPath}
-            {@render pathItem(selectedSerialPath)}
-          {:else}
-            <p class="text-left flex-1">Select a serial port...</p>
-          {/if}
-
-          <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
-        </Button>
-      {/snippet}
-    </Popover.Trigger>
-    <Popover.Content class="p-0 w-full">
-      <Command.Root class="w-full" shouldFilter={false}>
-        <Command.Input
-          placeholder="Type to add a custom port"
-          bind:value={serialPathSearch}
-        />
-        <Command.List>
-          <Command.Group>
-            {#if serialPathSearch?.trim() && !serialPorts.some((port) => port.path === serialPathSearch)}
-              <Command.Item
-                value="CustomFilter"
-                onSelect={() => {
-                  serialPorts = [
-                    ...serialPorts,
-                    {
-                      path: serialPathSearch,
-                      friendlyName: "Custom Port",
-                      isCustom: true,
-                    },
-                  ];
-                  path.set(serialPathSearch);
-                  closeAndFocusSerialPathTrigger();
-                }}
-                class="w-80 h-10 flex justify-between {path.value() ==
-                serialPathSearch
-                  ? 'cursor-default'
-                  : 'cursor-pointer'}"
-              >
-                {@render pathItem({
-                  path: serialPathSearch,
-                  friendlyName: "Custom Port",
-                  isCustom: true,
-                })}
-                <Check
-                  class={cn(
-                    "mr-2 size-4",
-                    path.value() !== serialPathSearch && "text-transparent",
-                  )}
-                />
-              </Command.Item>
-            {/if}
-
-            {#each serialPorts as port (port.path)}
-              {#if port.path.includes(serialPathSearch)}
-                <Command.Item
-                  value={port.path}
-                  onSelect={() => {
-                    if (path.value() == port.path) {
-                      // If selecting the same port again (deselecting)
-                      if (port.isCustom) {
-                        serialPorts = serialPorts.filter(
-                          (p) => p.path !== port.path,
-                        );
-                        path.set("");
-                      }
-                    } else {
-                      // Selecting a different port
-                      path.set(port.path);
-                    }
-                    closeAndFocusSerialPathTrigger();
-                  }}
-                  class="h-10 flex justify-between {path.value() == port.path
-                    ? 'cursor-default'
-                    : 'cursor-pointer'}"
-                >
-                  {@render pathItem(port)}
-                  <Check
-                    class={cn(
-                      "mr-2 size-4",
-                      path.value() !== port.path && "text-transparent",
-                    )}
-                  />
-                </Command.Item>
-              {/if}
-            {/each}
-          </Command.Group>
-        </Command.List>
-      </Command.Root>
-    </Popover.Content>
-  </Popover.Root> -->
 </div>
+
 <!-- Serial Baud Rate -->
 <div class="grid grid-cols-4 items-center gap-4">
   <Label for="serialBaudRate" class="text-right">Baud Rate</Label>
