@@ -14,7 +14,7 @@
   <Label for="protocol" class="text-right">Protocol</Label>
   <div class="col-span-3">
     <select
-      {...protocol.as("select", "DccEx")}
+      {...protocol.as("select")}
       class="border-input bg-background ring-offset-background data-placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
     >
       {#each connectionProtocolList as protocolName}

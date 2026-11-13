@@ -13,12 +13,21 @@
   const { protocol, hardware }: Props = $props();
 
   const allowedHardwareTypes = $derived.by(() => {
-    const currentProtocol = protocol.value();
-    if (!currentProtocol) return [];
-    
+    console.log("A");
+    const proto = protocol.value();    
+    if (!proto) return [];
+
     return connectionTypeList.filter((type) => 
-      protocolSupportedHardware(currentProtocol, type)
-    );
+      protocolSupportedHardware(proto, type)
+    );   
+  });
+
+  $effect(() => {
+    console.log("Updated");
+    const currentHardware = hardware.type.value();
+    if (currentHardware && !allowedHardwareTypes.some(h => h === currentHardware)) {
+      hardware.type.set(undefined);
+    }
   });
 </script>
 
@@ -34,13 +43,12 @@
   >
     <Select.Trigger class="col-span-3">
       {#snippet children()}
-      {const connType = $derived(hardware.type.value())}
+        {const connType = $derived(hardware.type.value())}
         {#if connType}
-        {const name = $derived(getConnectionHardwareName(connType))}
-            {name}
-            {:else}
-            No Hardware Selected
-       {/if}
+          {getConnectionHardwareName(connType)}
+        {:else}
+          No Hardware Selected
+        {/if}
       {/snippet}
     </Select.Trigger>
     <Select.Content>

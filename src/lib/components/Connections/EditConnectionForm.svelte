@@ -6,6 +6,7 @@
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
   import { editConnection } from "#lib/client/Connections.remote.js";
   import InputField from "../Form/InputField.svelte";
+  import { onMount } from "svelte";
 
   interface Props {
     connection: Connection;
@@ -17,6 +18,11 @@
   const { name, hardware, protocol, layoutId, uuid } = $derived(
     editConnForm.fields,
   );
+
+  onMount(() => {
+    protocol.set(connection.protocol);
+    hardware.set(connection.hardware);
+  });
 </script>
 
 <form
@@ -43,7 +49,6 @@
   <ConnectionFormProtocol {protocol} />
 
   <!-- <FormSelect formElement={protocol} values={connectionProtocolList} /> -->
-
   <ConnectionFormType {protocol} {hardware} />
 
   <ConnectionFormHardware {hardware} />
