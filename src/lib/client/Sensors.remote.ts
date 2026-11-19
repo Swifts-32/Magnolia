@@ -102,8 +102,6 @@ export const deleteSensor = command(z.uuid(), async (sensorId) => {
     .delete(SensorTable)
     .where(eq(SensorTable.id, sensorId))
     .returning();
-
-  if (res.length === 0) error(404, "Sensor not found");
 });
 
 export const duplicateSensor = command(z.uuid(), async (sensorId) => {

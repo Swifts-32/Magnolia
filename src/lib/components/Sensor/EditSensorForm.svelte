@@ -8,9 +8,7 @@
     getConnection,
     getlayoutConnections,
   } from "#lib/client/Connections.remote.js";
-  import { onMount } from "svelte";
   import type { Sensor } from "#lib/server/db/schema/sensors.js";
-  import Checkbox from "../ui/checkbox/checkbox.svelte";
   import { protocolSupportedCapabilities } from "#lib/types/protocolConstants.ts";
 
   interface Props {
@@ -33,23 +31,57 @@
     deactivationDelay,
   } = $derived(editSensorForm.fields);
 
-  onMount(() => {
-    if (sensor.connectionId) {
+  // Initialize form values immediately using derived/state instead of onMount races
+  $effect(() => {
+    if (sensor.connectionId && !connectionId.value()) {
       connectionId.set(sensor.connectionId);
     }
-    if (sensor.inverted !== undefined) {
+    if (sensor.inverted !== undefined && inverted.value() === undefined) {
       inverted.set(sensor.inverted);
     }
-    if (sensor.activationDelay !== undefined) {
+    if (
+      sensor.activationDelay !== undefined &&
+      activationDelay.value() === undefined
+    ) {
       activationDelay.set(sensor.activationDelay);
     }
-    if (sensor.deactivationDelay !== undefined) {
+    if (
+      sensor.deactivationDelay !== undefined &&
+      deactivationDelay.value() === undefined
+    ) {
       deactivationDelay.set(sensor.deactivationDelay);
     }
   });
 
   const connectionIdValue: string = $derived(
     connectionId.as("text").value as string,
+  );
+
+  // Load connections into state to avoid async blocks inside templates
+  let connections = $state<any[]>([]);
+  let connectionNameCache = $state<Record<string, string>>({});
+
+  $effect(() => {
+    if (sensor.layoutId) {
+      getlayoutConnections(sensor.layoutId)
+        .then((res) => {
+          connections = res.filter((c) =>
+            protocolSupportedCapabilities(c.protocol, "sensors"),
+          );
+          for (const c of connections) {
+            connectionNameCache[c.uuid] = c.name;
+          }
+        })
+        .catch(() => {
+          connections = [];
+        });
+    }
+  });
+
+  const selectedConnectionDisplayName = $derived(
+    connectionIdValue && connectionNameCache[connectionIdValue]
+      ? connectionNameCache[connectionIdValue]
+      : "Select a Connection",
   );
 </script>
 
@@ -165,21 +197,11 @@
       >
         <Select.Trigger class="col-span-3">
           {#snippet children()}
-            {#if connectionIdValue}
-              {#await getConnection(connectionIdValue)}
-                Loading connection...
-              {:then conn}
-                {conn.name}
-              {:catch}
-                Select a Connection
-              {/await}
-            {:else}
-              Select a Connection
-            {/if}
+            {selectedConnectionDisplayName}
           {/snippet}
         </Select.Trigger>
         <Select.Content>
-          {#each (await getlayoutConnections(sensor.layoutId)).filter( (c) => protocolSupportedCapabilities(c.protocol, "sensors"), ) as connection}
+          {#each connections as connection}
             <Select.Item value={connection.uuid} label={connection.name}>
               {connection.name}
             </Select.Item>

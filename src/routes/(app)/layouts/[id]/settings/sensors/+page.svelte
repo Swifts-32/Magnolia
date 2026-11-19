@@ -20,6 +20,36 @@
   let selectedId = $state<string | null>(null);
   let activeEditId = $state<string | null>(null);
   let activeAlertId = $state<string | null>(null);
+  let dropdownStates = $state<Record<string, boolean>>({});
+
+  // Fetch sensors into a reactive state variable instead of using {#each await ...} in markup
+  let sensors = $state<any[]>([]);
+  let connectionsCache = $state<Record<string, any>>({});
+
+  // Load sensors when params.id changes or after mutations
+  async function loadSensors() {
+    try {
+      sensors = await getLayoutSensors(params.id);
+      // Pre-fetch connection details for sensors to avoid async blocks inside each loops
+      for (const sensor of sensors) {
+        if (sensor.connectionId && !connectionsCache[sensor.connectionId]) {
+          getConnection(sensor.connectionId)
+            .then((conn) => {
+              connectionsCache[sensor.connectionId] = conn;
+            })
+            .catch(() => {
+              connectionsCache[sensor.connectionId] = null;
+            });
+        }
+      }
+    } catch (e) {
+      sensors = [];
+    }
+  }
+
+  $effect(() => {
+    loadSensors();
+  });
 
   async function handleKeydown(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
@@ -35,10 +65,12 @@
     } else if (event.key === "d") {
       event.preventDefault();
       await duplicateSensor(selectedId);
+      await loadSensors();
     } else if (event.key === "Delete" && event.ctrlKey) {
       event.preventDefault();
       await deleteSensor(selectedId);
       activeAlertId = null;
+      await loadSensors();
     } else if (event.key === "Delete") {
       event.preventDefault();
       activeAlertId = selectedId;
@@ -62,41 +94,45 @@
       </Table.Row>
     </Table.Header>
     <Table.Body>
-      {#each await getLayoutSensors(params.id) as sensor (sensor.id)}
-        {let dropdownOpen = $state(false)}
-
-        <Table.Row 
-          class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedId === sensor.id ? 'bg-muted/30' : ''}"
+      {#each sensors as sensor (sensor.id)}
+        <Table.Row
+          class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedId ===
+          sensor.id
+            ? 'bg-muted/30'
+            : ''}"
           tabindex={0}
-          onmouseenter={() => selectedId = sensor.id}
-          onmouseleave={() => selectedId = null}
-          onfocus={() => selectedId = sensor.id}
+          onmouseenter={() => (selectedId = sensor.id)}
+          onmouseleave={() => (selectedId = null)}
+          onfocus={() => (selectedId = sensor.id)}
         >
           <Table.Cell class="font-medium truncate">{sensor.name}</Table.Cell>
-          <Table.Cell class="truncate font-mono text-xs">{sensor.address ?? "-"}</Table.Cell>
+          <Table.Cell class="truncate font-mono text-xs"
+            >{sensor.address ?? "-"}</Table.Cell
+          >
           <Table.Cell class="truncate">
-          {#if sensor.connectionId} 
-            {#await getConnection(sensor.connectionId)}
-              <p class="text-xs text-neutral-400">Loading...</p>
-            {:then connection}
-              <div class="flex items-center gap-1.5 truncate">
-                <span class="truncate">{connection.name}</span>
-                {#if !connection.isConnected}
-                  <span 
-                    class="inline-flex items-center gap-1 text-amber-500 text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded font-medium" 
-                    title="Warning: Assigned connection is currently disconnected"
-                  >
-                    <AlertTriangle class="size-3" />
-                    Offline
-                  </span>
-                {/if}
-              </div>
-            {:catch}
-              <p class="text-red-400 text-xs">Error loading connection</p>
-            {/await}
-          {:else}
-            <p class="text-amber-500 text-xs italic">Unassigned</p>
-          {/if}
+            {#if sensor.connectionId}
+              {@const connection = connectionsCache[sensor.connectionId]}
+              {#if connection === undefined}
+                <p class="text-xs text-neutral-400">Loading...</p>
+              {:else if connection === null}
+                <p class="text-red-400 text-xs">Error loading connection</p>
+              {:else}
+                <div class="flex items-center gap-1.5 truncate">
+                  <span class="truncate">{connection.name}</span>
+                  {#if !connection.isConnected}
+                    <span
+                      class="inline-flex items-center gap-1 text-amber-500 text-[10px] bg-amber-500/10 px-1.5 py-0.5 rounded font-medium"
+                      title="Warning: Assigned connection is currently disconnected"
+                    >
+                      <AlertTriangle class="size-3" />
+                      Offline
+                    </span>
+                  {/if}
+                </div>
+              {/if}
+            {:else}
+              <p class="text-amber-500 text-xs italic">Unassigned</p>
+            {/if}
           </Table.Cell>
           <Table.Cell class="truncate">
             <span
@@ -109,9 +145,14 @@
               {sensor.state}
             </span>
           </Table.Cell>
-          <Table.Cell class="hidden md:table-cell truncate text-neutral-400">{sensor.comment ?? ""}</Table.Cell>
+          <Table.Cell class="hidden md:table-cell truncate text-neutral-400"
+            >{sensor.comment ?? ""}</Table.Cell
+          >
           <Table.Cell class="text-right">
-            <DropdownMenu.Root bind:open={dropdownOpen}>
+            <DropdownMenu.Root
+              open={dropdownStates[sensor.id] ?? false}
+              onOpenChange={(open) => (dropdownStates[sensor.id] = open)}
+            >
               <DropdownMenu.Trigger>
                 {#snippet child({ props })}
                   <Button {...props} variant="ghost" size="icon" class="size-8">
@@ -121,11 +162,12 @@
                 {/snippet}
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="end">
-
-                <DropdownMenu.Item onclick={() => {
-                  dropdownOpen = false;
-                  activeEditId = sensor.id;
-                }}>
+                <DropdownMenu.Item
+                  onclick={() => {
+                    activeEditId = sensor.id;
+                    dropdownStates[sensor.id] = false;
+                  }}
+                >
                   Edit
                   <DropdownMenu.Shortcut>E</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
@@ -133,7 +175,8 @@
                 <DropdownMenu.Item
                   onclick={async () => {
                     await duplicateSensor(sensor.id);
-                    dropdownOpen = false;
+                    dropdownStates[sensor.id] = false;
+                    await loadSensors();
                   }}
                 >
                   Duplicate
@@ -143,10 +186,10 @@
                 <DropdownMenu.Separator />
 
                 <DropdownMenu.Item
-                  variant="destructive" 
+                  variant="destructive"
                   onclick={() => {
-                    dropdownOpen = false;
                     activeAlertId = sensor.id;
+                    dropdownStates[sensor.id] = false;
                   }}
                 >
                   Delete
@@ -155,48 +198,71 @@
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <Drawer.Root 
-              open={activeEditId === sensor.id} 
-              onOpenChange={(open) => { 
-                if (!open && activeEditId === sensor.id) activeEditId = null; 
-              }} 
-              direction="right" 
+            <Drawer.Root
+              open={activeEditId === sensor.id}
+              onOpenChange={(open) => {
+                if (!open && activeEditId === sensor.id) {
+                  activeEditId = null;
+                  loadSensors();
+                }
+              }}
+              direction="right"
               dismissible={true}
             >
-              <Drawer.Content class="bg-background w-screen! max-w-none! fixed inset-0 h-full border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md! sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
+              <Drawer.Content
+                class="bg-background w-screen! max-w-none! fixed inset-0 h-full border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md! sm:max-w-md! sm:rounded-none flex flex-col *:w-full"
+              >
                 <Drawer.Header>
                   <Drawer.Title>Edit Sensor</Drawer.Title>
                 </Drawer.Header>
 
                 <div class="overflow-y-auto px-4 flex-1 w-full">
-                  <EditSensorForm {sensor}/>
+                  <EditSensorForm {sensor} />
                 </div>
 
                 <Drawer.Footer>
-                  <Button form="edit-sensor-form" type="submit" onclick={() => activeEditId = null}>Save</Button>
-                  <Drawer.Close form="edit-sensor-form" type="reset" onclick={() => activeEditId = null}>Cancel</Drawer.Close>
+                  <Button
+                    form="edit-sensor-form"
+                    type="submit"
+                    onclick={() => {
+                      activeEditId = null;
+                      loadSensors();
+                    }}>Save</Button
+                  >
+                  <Drawer.Close
+                    form="edit-sensor-form"
+                    type="reset"
+                    onclick={() => (activeEditId = null)}>Cancel</Drawer.Close
+                  >
                 </Drawer.Footer>
               </Drawer.Content>
             </Drawer.Root>
 
-            <AlertDialog.Root 
-              open={activeAlertId === sensor.id} 
-              onOpenChange={(open) => { if (!open) activeAlertId = null; }}
+            <AlertDialog.Root
+              open={activeAlertId === sensor.id}
+              onOpenChange={(open) => {
+                if (!open) activeAlertId = null;
+              }}
             >
               <AlertDialog.Content>
                 <AlertDialog.Header>
-                  <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                  <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title
+                  >
                   <AlertDialog.Description>
-                    This action cannot be undone. This will permanently delete the sensor.
+                    This action cannot be undone. This will permanently delete
+                    the sensor.
                   </AlertDialog.Description>
                 </AlertDialog.Header>
                 <AlertDialog.Footer>
-                  <AlertDialog.Cancel onclick={() => activeAlertId = null}>Cancel</AlertDialog.Cancel>
+                  <AlertDialog.Cancel onclick={() => (activeAlertId = null)}
+                    >Cancel</AlertDialog.Cancel
+                  >
                   <AlertDialog.Action
                     onclick={async () => {
                       await deleteSensor(sensor.id);
                       activeAlertId = null;
-                      dropdownOpen = false;
+                      dropdownStates[sensor.id] = false;
+                      await loadSensors();
                     }}
                   >
                     Continue
@@ -211,7 +277,7 @@
   </Table.Root>
 </div>
 
-<!-- Add Sensor Button -->
+<!-- Add Sensor Dialog (make sure to call loadSensors on creation/close if needed) -->
 <AddSensorDialog layoutId={params.id}>
   <Fab label="Add Sensor">
     <Plus class="size-8" />

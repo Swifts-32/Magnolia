@@ -8,10 +8,7 @@
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
   import { createSensor } from "#lib/client/Sensors.remote.js";
-  import {
-    getConnection,
-    getlayoutConnections,
-  } from "#lib/client/Connections.remote.js";
+  import { getlayoutConnections } from "#lib/client/Connections.remote.js";
   import { protocolSupportedCapabilities } from "#lib/types/protocolConstants.ts";
 
   interface Props {
@@ -37,6 +34,30 @@
   );
 
   let open = $state(false);
+  let connections = $state<any[]>([]);
+
+  $effect(() => {
+    if (open) {
+      getlayoutConnections(layoutId)
+        .then((res) => {
+          if (open) {
+            connections = res.filter((c) =>
+              protocolSupportedCapabilities(c.protocol, "sensors"),
+            );
+          }
+        })
+        .catch(() => {
+          if (open) {
+            connections = [];
+          }
+        });
+    }
+  });
+
+  const selectedConnectionName = $derived(
+    connections.find((c) => c.uuid === connectionIdValue)?.name ??
+      "Select a connection",
+  );
 </script>
 
 {#snippet issues(i: RemoteFormIssue[] | undefined)}
@@ -47,8 +68,10 @@
 
 <Dialog.Root
   bind:open
-  onOpenChange={() => {
-    createSensor.element?.reset();
+  onOpenChange={(isOpen) => {
+    if (!isOpen) {
+      createSensor.element?.reset();
+    }
   }}
 >
   <Dialog.Trigger>
@@ -137,52 +160,21 @@
           >
             <Select.Trigger class="col-span-3">
               {#snippet children()}
-                {#if connectionIdValue}
-                  {#await getConnection(connectionIdValue)}
-                    Loading connection...
-                  {:then conn}
-                    {conn.name}
-                  {:catch}
-                    Select a connection
-                  {/await}
-                {:else}
-                  Select a connection
-                {/if}
+                {selectedConnectionName}
               {/snippet}
             </Select.Trigger>
             <Select.Content>
-              {#await getlayoutConnections(layoutId)}
+              {#if connections.length === 0}
                 <Select.Item value="" disabled
-                  >Loading connections...</Select.Item
+                  >No sensor-supported connections found</Select.Item
                 >
-              {:then connections}
-                {@const supportedConnections = connections.filter((c) =>
-                  protocolSupportedCapabilities(c.protocol, "sensors"),
-                )}
-                {#if supportedConnections.length === 0}
-                  <Select.Item value="" disabled
-                    >No sensor-supported connections found</Select.Item
-                  >
-                {:else}
-                  {#each supportedConnections as connection}
-                    <Select.Item
-                      value={connection.uuid}
-                      label={connection.name}
-                    >
-                      {connection.name}
-                    </Select.Item>
-                  {/each}
-                {/if}
-              {:catch}
-                <Select.Item value="" disabled
-                  >Failed to load connections</Select.Item
-                >
-              {/await}
-              <!-- {#each (await getlayoutConnections(layoutId)).filter( (c) => protocolSupports(c.protocol, "sensors"), ) as connection}
-                <Select.Item value={connection.uuid}
-                  >{connection.name}</Select.Item
-                >
-              {/each} -->
+              {:else}
+                {#each connections as connection}
+                  <Select.Item value={connection.uuid} label={connection.name}>
+                    {connection.name}
+                  </Select.Item>
+                {/each}
+              {/if}
             </Select.Content>
           </Select.Root>
           {@render issues(connectionId.issues())}
