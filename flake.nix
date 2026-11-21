@@ -54,7 +54,7 @@
         let
           pkgs = import nixpkgs { inherit system; };
 
-          # Filtered fileset for dependencies
+          # Minimal fileset required to pull down node packages securely
           depFileset = nixpkgs.lib.fileset.toSource {
             root = ./.;
             fileset = nixpkgs.lib.fileset.unions [
@@ -63,8 +63,8 @@
             ];
           };
 
-          # Filtered fileset for frontend build
-          frontendFileset = nixpkgs.lib.fileset.toSource {
+          # Full source fileset for building the application
+          appFileset = nixpkgs.lib.fileset.toSource {
             root = ./.;
             fileset = nixpkgs.lib.fileset.unions [
               ./package.json
@@ -74,6 +74,7 @@
               ./tsconfig.json
               ./tailwind.config.js
               ./postcss.config.js
+              ./drizzle.config.ts
             ];
           };
 
@@ -92,17 +93,18 @@
             '';
 
             outputHashMode = "recursive";
+            # outputHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # Temporary dummy hash
             outputHash =
               if system == "x86_64-linux" then
-                "sha256-450KQBzl2IzIUPVCvUgWvGO44y3rwoki662fD+tT8TI="
+                "sha256-dmbuky0NYJjOQIU2a1a/iZ0F0LkRwHtRVa8JA9suRx4="
               else
                 "sha256-6OHw996pFrVANwGzWWLJo0nG63qFd3BCTl+wnLRyGxg=";
           };
 
-          frontendBuild = pkgs.stdenv.mkDerivation {
-            pname = "magnolia-frontend";
+          appBuild = pkgs.stdenv.mkDerivation {
+            pname = "magnolia-app";
             version = "1.0.0";
-            src = frontendFileset;
+            src = appFileset;
 
             nativeBuildInputs = with pkgs; [
               bun
@@ -125,7 +127,7 @@
 
             installPhase = ''
               mkdir -p $out
-              cp -r build $out/build
+              cp -r build node_modules package.json drizzle.config.ts $out/
             '';
           };
         in
@@ -135,30 +137,9 @@
             version = "1.0.0";
             src = self;
 
-            nativeBuildInputs = with pkgs; [
-              bun
-              udev.dev
-            ];
-
-            buildPhase = ''
-              export HOME=$TMPDIR
-              export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.udev}/lib:$LD_LIBRARY_PATH"
-
-              mkdir -p $TMPDIR/bun-cache
-              cp -r ${bunDeps}/* $TMPDIR/bun-cache/
-              export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
-
-              bun install --offline --frozen-lockfile --ignore-scripts
-              find node_modules -type f -exec grep -q '#!/usr/bin/env' {} \; -exec sed -i '1s|.*|#!${pkgs.bun}/bin/bun|' {} + || true
-
-              # Inject the lightning-fast x86-built frontend assets
-              rm -rf build
-              cp -r ${frontendBuild}/build build
-            '';
-
             installPhase = ''
               mkdir -p $out/share/magnolia
-              cp -r build drizzle.config.ts src node_modules package.json $out/share/magnolia/
+              cp -r ${appBuild}/* $out/share/magnolia/
             '';
           };
         }
