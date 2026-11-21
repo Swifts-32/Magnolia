@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from "#lib/components/ui/button/index.js";
   import { toast } from "svelte-sonner";
-  import DccEx from "#lib/components/Protocols/DccEx.svelte";
+  import DccEx from "#lib/components/Protocols/DccEx/DccEx.svelte";
   import Lcc from "#lib/components/Protocols/Lcc/Lcc.svelte";
   import { ChevronLeft, Pen } from "@lucide/svelte";
   import {
@@ -10,7 +10,6 @@
     getConnection,
     getlayoutConnections,
   } from "#lib/client/Connections.remote.js";
-  import EditConnectionDialog from "#lib/components/Connections/EditConnectionDialog.svelte";
   import { Separator } from "#lib/components/ui/separator/index.js";
   import Sunbeam from "#lib/components/Protocols/Sunbeam/Sunbeam.svelte";
 

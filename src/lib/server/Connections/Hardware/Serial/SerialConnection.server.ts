@@ -1,10 +1,6 @@
-import { ReadlineParser, SerialPort } from "serialport";
 import type { ISerialConnection } from "../IHardware";
-import { createRequire } from "module";
 import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
-
-const require = createRequire(import.meta.url);
-const { autoDetect } = require("@serialport/bindings-cpp");
+import { SerialPort, readlineParser } from "bun-serialport";
 
 export class SerialConnection implements ISerialConnection {
   private serialPort: SerialPort | null = null;
@@ -29,60 +25,59 @@ export class SerialConnection implements ISerialConnection {
 
   public async connect(): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-      this.serialPort = new SerialPort({
-        binding: autoDetect(),
-        path: this.path,
-        baudRate: this.baudRate,
-        autoOpen: false,
-      });
-
       try {
-        const parser = this.serialPort.pipe(
-          new ReadlineParser({ delimiter: "\n" }),
-        );
+        this.serialPort = new SerialPort({
+          path: this.path,
+          baudRate: this.baudRate,
+          autoOpen: false,
+        });
 
-        parser.on("data", (line: string) => {
+        const lines = this.serialPort.pipe(readlineParser());
+
+        lines.on("data", (line: string) => {
           if (this.dataReceived) {
             this.dataReceived(Buffer.from(line.trim()));
           }
         });
+
+        this.serialPort
+          .open()
+          .then(() => {
+            resolve(true);
+          })
+          .catch((err) => {
+            reject(`Failed to open port on ${this.path}: ${err.message}`);
+          });
       } catch (e) {
-        reject("Error creating pipe");
+        reject(`Error creating serial connection: ${e}`);
       }
-
-      this.serialPort.open((err) => {
-        if (err) {
-          reject(`Failed to open port on ${this.path}: ${err.message}`);
-        }
-
-        resolve(true);
-      });
     });
   }
 
   public disconnect(): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
-      if (this.serialPort) {
-        this.serialPort.close((err) => {
-          if (err) {
+      if (this.serialPort && this.serialPort.isOpen) {
+        this.serialPort
+          .close()
+          .then(() => {
+            resolve(true);
+          })
+          .catch((err) => {
             reject(err.message);
-          }
-
-          resolve(true);
-        });
+          });
       } else {
-        reject("Serial port does not exist");
+        reject("Serial port does not exist or is already closed");
       }
     });
   }
 
-  write(data: Buffer) {
+  public async write(data: Buffer) {
     if (this.serialPort?.isOpen) {
-      this.serialPort.write(data, (err) => {
-        if (err) {
-          console.log("Write error: ", err.message);
-        }
-      });
+      try {
+        await this.serialPort.write(data);
+      } catch (err: any) {
+        console.log("Write error: ", err?.message);
+      }
     } else {
       console.log("Port is not open.");
     }

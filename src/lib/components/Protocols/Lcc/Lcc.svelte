@@ -5,10 +5,10 @@
     getLccLog,
     getLccNodes,
     sendLccCommand,
-  } from "#lib/client/Protocols/Lcc.remote.js";
+  } from "#lib/components/Protocols/Lcc/Lcc.remote.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Separator } from "#lib/components/ui/separator/index.js";
-    import { writeStringToConnection } from "#lib/client/Connections.remote.js";
+  import { writeStringToConnection } from "#lib/client/Connections.remote.js";
 
   interface Props {
     connectionId: string;

@@ -2,15 +2,15 @@ import { query } from "$app/server";
 import { App } from "#lib/server/App.server.js";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
-import { DccEx } from "../../server/Connections/Protocol/DccEx/DccEx";
+import { DccEx } from "../../../server/Connections/Protocol/DccEx/DccEx";
 import { protocolEvents } from "#lib/server/events.js";
 
-protocolEvents.on('dccEx_trackManager', (connectionId: string) => {
+protocolEvents.on("dccEx_trackManager", (connectionId: string) => {
   getTracksStatus(connectionId).refresh();
 });
 
 export const getTracksStatus = query(z.uuid(), async (connectionId) => {
-  console.log("UPdate")
+  console.log("UPdate");
   const connection = await App.getConnection(connectionId);
   if (!connection) error(500, "Connection not found");
 
@@ -19,8 +19,6 @@ export const getTracksStatus = query(z.uuid(), async (connectionId) => {
 
   return connection.protocol.trackStatus;
 });
-
-
 
 // export const getTrainUpdate = query(z.object({
 //   id: z.uuid(),
@@ -34,4 +32,3 @@ export const getTracksStatus = query(z.uuid(), async (connectionId) => {
 
 //   return connection.protocol.trackStatus;
 // });
-

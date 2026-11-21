@@ -26,9 +26,6 @@
               bun
               postgresql_16
               python3
-              gnumake
-              gcc
-              pkg-config
               udev.dev
             ];
 
@@ -109,11 +106,6 @@
 
             nativeBuildInputs = with pkgs; [
               bun
-              nodejs
-              python3
-              gnumake
-              gcc
-              pkg-config
               udev.dev
             ];
 
@@ -145,11 +137,6 @@
 
             nativeBuildInputs = with pkgs; [
               bun
-              nodejs
-              python3
-              gnumake
-              gcc
-              pkg-config
               udev.dev
             ];
 
@@ -167,15 +154,6 @@
               # Inject the lightning-fast x86-built frontend assets
               rm -rf build
               cp -r ${frontendBuild}/build build
-
-              # Compile native serialport bindings for the target architecture
-              if [ -d "node_modules/@serialport/bindings-cpp" ]; then
-                (
-                  cd node_modules/@serialport/bindings-cpp
-                  export PATH="${pkgs.bun}/bin:${pkgs.nodejs}/bin:${pkgs.python3}/bin:${pkgs.gnumake}/bin:${pkgs.gcc}/bin:$PATH"
-                  npm_config_nodedir="${pkgs.nodejs}" bun x node-gyp rebuild || true
-                )
-              fi
             '';
 
             installPhase = ''

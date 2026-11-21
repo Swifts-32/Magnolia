@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Button } from "../ui/button";
-  import { getTracksStatus } from "#lib/client/Protocols/DccEx.remote.js";
+  import { Button } from "../../ui/button";
+  import { getTracksStatus } from "#lib/components/Protocols/DccEx/DccEx.remote.js";
   import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
   import {
     streamConnectionLogs,
     writeStringToConnection,
   } from "#lib/client/Connections.remote.js";
-  import Terminal from "../Terminal/Terminal.svelte";
+  import Terminal from "../../Terminal/Terminal.svelte";
 
   interface Props {
     connectionId: string;
@@ -142,7 +142,9 @@
     </div>
 
     <!-- Active Tracks -->
-     <Button onclick={() => getTracksStatus(connectionId).refresh()}>Refresh</Button>
+    <Button onclick={() => getTracksStatus(connectionId).refresh()}
+      >Refresh</Button
+    >
     <div class="space-y-3">
       <h2 class="text-lg font-semibold tracking-tight">Active Tracks Status</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
