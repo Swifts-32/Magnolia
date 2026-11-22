@@ -55,7 +55,6 @@ export class Connection {
     }
 
     if (this.protocol) {
-      this.protocol.setEventEmitter(protocolEvents);
       this.protocol.onParsedOutput((parsedData) => {
         this.hardwareQueue.push(parsedData);
       });

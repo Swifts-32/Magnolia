@@ -1,7 +1,5 @@
 import type { ConnectionProtocol } from "#lib/types/protocolConstants.ts";
-import type EventEmitter from "events";
 import type { IProtocol } from "../IProtocol";
-import { getLayoutSensors } from "#lib/client/Sensors.remote.ts";
 import { SensorTable } from "#lib/server/db/schema/sensors.ts";
 import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
@@ -11,14 +9,25 @@ export class Sunbeam implements IProtocol {
   public protocolType: ConnectionProtocol = "Sunbeam";
   public connectionId: string;
 
-  private events: EventEmitter | null = null;
+  private updateListeners: (() => void)[] = [];
 
   constructor(connectionId: string) {
     this.connectionId = connectionId;
   }
 
-  public setEventEmitter(emitter: EventEmitter): void {
-    this.events = emitter;
+  public onUpdate(callback: () => void): () => void {
+    this.updateListeners.push(callback);
+    return () => {
+      this.updateListeners = this.updateListeners.filter(
+        (cb) => cb !== callback,
+      );
+    };
+  }
+
+  private notifyListeners() {
+    for (const cb of this.updateListeners) {
+      cb();
+    }
   }
 
   private _onParsedOutput: ((data: string) => void) | null = null;
@@ -33,9 +42,6 @@ export class Sunbeam implements IProtocol {
     try {
       const data = JSON.parse(text);
 
-      // Check if the incoming SSE event is a sensor state update
-      // Adjust the condition keys (e.g., data.type, data.address, data.state)
-      // to match your Sunbeam hardware's exact JSON payload structure.
       if (data && data.address && data.state) {
         const address = String(data.address);
         const state = data.state as SunbeamBlockStatus;
@@ -50,6 +56,9 @@ export class Sunbeam implements IProtocol {
               eq(SensorTable.address, address),
             ),
           );
+
+        // Notify registered live listeners that a sensor update occurred
+        this.notifyListeners();
       }
     } catch (err) {
       console.error("Error processing Sunbeam command: ", err);

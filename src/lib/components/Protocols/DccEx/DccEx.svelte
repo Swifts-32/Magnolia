@@ -3,6 +3,7 @@
   import { getTracksStatus } from "#lib/components/Protocols/DccEx/DccEx.remote.js";
   import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
+  import * as Table from "#lib/components/ui/table/index.js";
   import {
     streamConnectionLogs,
     writeStringToConnection,
@@ -15,14 +16,18 @@
 
   let { connectionId }: Props = $props();
 
-  let terminal: Terminal | null = $state(null);
+  const statusQuery = $derived(getTracksStatus(connectionId));
   const connectionLogs = $derived(streamConnectionLogs(connectionId));
+
+  let terminal: Terminal | null = $state(null);
   const statusText = $derived(
     connectionLogs.connected ? "Connected" : "Disconnected",
   );
 
   onMount(() => {
     let active = true;
+    statusQuery.reconnect();
+    connectionLogs.reconnect();
 
     terminal?.addLog(
       "System initialized. Listening for DCC-EX events...",
@@ -65,21 +70,6 @@
       active = false;
     };
   });
-
-  //   es.onmessage = async (event) => {
-  //     const data = JSON.parse(event.data);
-  //     if (data.connectionId !== connectionId) return;
-
-  //     if (
-  //       data.type === "tracks" ||
-  //       data.type === "power" ||
-  //       data.type === "currents"
-  //     ) {
-  //       getTracksStatus(connectionId).refresh();
-  //     } //else if (data.type === "locos") {
-  //     //   console.warn("Update Dcc Ex Locos");
-  //     // }
-  //   };
 </script>
 
 <svelte:boundary>
@@ -105,6 +95,59 @@
         writeStringToConnection({ command: data, id: connectionId })}
     />
 
+    <!-- Use the persistent tracksStream reference here -->
+    {statusQuery.connected}
+    {#await statusQuery then status}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Track Manager</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head class="w-[80px]">Track</Table.Head>
+                <Table.Head>State</Table.Head>
+                <Table.Head>Power</Table.Head>
+                <Table.Head>Cab</Table.Head>
+                <Table.Head>Current</Table.Head>
+                <Table.Head>Max Current</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each status as track (track.trackletter)}
+                <Table.Row>
+                  <Table.Cell class="font-bold">{track.trackletter}</Table.Cell>
+                  <Table.Cell>{track.state}</Table.Cell>
+                  <Table.Cell>
+                    <span
+                      class={track.power === "ON"
+                        ? "text-green-600 font-semibold"
+                        : "text-muted-foreground"}
+                    >
+                      {track.power}
+                    </span>
+                  </Table.Cell>
+                  <Table.Cell>{track.cab ?? "—"}</Table.Cell>
+                  <Table.Cell>{track.current ?? 0} mA</Table.Cell>
+                  <Table.Cell>{track.maxCurrent ?? 0} mA</Table.Cell>
+                </Table.Row>
+              {:else}
+                <Table.Row>
+                  <Table.Cell
+                    colspan={6}
+                    class="text-center text-muted-foreground py-4"
+                  >
+                    No track configurations found.
+                  </Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        </Card.Content>
+      </Card.Root>
+    {/await}
+
     <!-- Pre-configured buttons -->
     <div>
       <Button
@@ -115,11 +158,19 @@
           });
         }}>Set Dc Mode</Button
       >
+      <Button
+        onclick={async () => {
+          await writeStringToConnection({
+            command: "<= B MAIN>",
+            id: connectionId,
+          });
+        }}>Set DCC</Button
+      >
 
       <Button
         onclick={() => {
           writeStringToConnection({
-            command: "<1 B>",
+            command: "<1 A>",
             id: connectionId,
           });
         }}>Power ON (A)</Button
@@ -127,76 +178,16 @@
       <Button
         onclick={() => {
           writeStringToConnection({
-            command: "<0 B>",
+            command: "<0 A>",
             id: connectionId,
           });
         }}>Power OFF (A)</Button
       >
-    </div>
-
-    <!-- Active Tracks -->
-    <Button onclick={() => getTracksStatus(connectionId).refresh()}
-      >Refresh</Button
-    >
-    <div class="space-y-3">
-      <h2 class="text-lg font-semibold tracking-tight">Active Tracks Status</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {#await getTracksStatus(connectionId)}
-          <p>Loading track status...</p>
-        {:then tracks}
-          {#each await getTracksStatus(connectionId) as track}
-            <Card.Root
-              class="border-neutral-800 bg-neutral-900/40 shadow-sm hover:shadow-md transition"
-            >
-              <Card.Header class="pb-2">
-                <Card.Title class="text-lg"
-                  >Track {track.trackletter}</Card.Title
-                >
-                <Card.Description class="font-mono text-xs text-neutral-400">
-                  Mode: <span
-                    class="px-1.5 py-0.5 rounded-md bg-neutral-800 text-neutral-200"
-                    >{track.state}</span
-                  >
-                </Card.Description>
-              </Card.Header>
-              <Card.Content class="text-sm space-y-1.5 text-neutral-300">
-                <div
-                  class="flex justify-between border-b border-neutral-800/60 pb-1"
-                >
-                  <span>Current Draw</span>
-                  <span class="font-mono font-medium">{track.current} mA</span>
-                </div>
-                <div
-                  class="flex justify-between border-b border-neutral-800/60 pb-1"
-                >
-                  <span>Max Capacity</span>
-                  <span class="font-mono font-medium"
-                    >{track.maxCurrent} mA</span
-                  >
-                </div>
-                <div
-                  class="flex justify-between border-b border-neutral-800/60 pb-1"
-                >
-                  <span>Power State</span>
-                  <span
-                    class="font-semibold"
-                    class:text-emerald-500={track.power}
-                    class:text-red-500={!track.power}
-                  >
-                    {track.power ? "ACTIVE" : "OFF"}
-                  </span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Active Cab ID</span>
-                  <span class="font-mono font-medium">{track.cab}</span>
-                </div>
-              </Card.Content>
-            </Card.Root>
-          {/each}
-        {:catch error}
-          <p>Failed to load tracks: {error}</p>
-        {/await}
-      </div>
+      <Button
+        onclick={() => {
+          statusQuery.reconnect();
+        }}>Reconnecting / Refresh</Button
+      >
     </div>
   </div>
 </svelte:boundary>
