@@ -129,9 +129,9 @@ export class Connection {
     }
   }
 
-  public write(data: Buffer) {
+  public async write(data: Buffer) {
     if (!this.hardware)
       return console.error("Failed to write as hardware undefined");
-    this.hardware.write(data);
+    await this.hardware.write(data);
   }
 }

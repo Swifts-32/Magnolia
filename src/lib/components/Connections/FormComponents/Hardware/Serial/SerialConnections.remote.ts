@@ -1,36 +1,38 @@
-import { query } from "$app/server";
-import { error } from "@sveltejs/kit";
-import { list } from "bun-serialport";
+import { readdir, realpath } from "node:fs/promises";
+import { join } from "node:path";
 
 export interface SerialPortInfo {
   path: string;
-  manufacturer?: string;
-  serialNumber?: string;
-  pnpId?: string;
-  locationId?: string;
-  vendorId?: string;
-  productId?: string;
   friendlyName?: string;
-  isCustom?: boolean; // Track custom ports
+  isCustom: boolean;
 }
 
+import { query } from "$app/server";
+
 export const getSerialPorts = query(async () => {
+  const ports: SerialPortInfo[] = [];
+
   try {
-    const ports = await list();
+    const byIdEntries = await readdir("/dev/serial/by-id");
 
-    const formattedPorts: SerialPortInfo[] = ports.map((p) => ({
-      path: p.path,
-      manufacturer: p.manufacturer,
-      serialNumber: p.serialNumber,
-      pnpId: p.pnpId,
-      locationId: p.locationId,
-      vendorId: p.vendorId,
-      productId: p.productId,
-      friendlyName: p.friendlyName,
-    }));
+    for (const entry of byIdEntries) {
+      const symlinkPath = join("/dev/serial/by-id", entry);
 
-    return formattedPorts;
-  } catch (e) {
-    error(500, `Failed to list serial ports: ${e}`);
+      try {
+        const resolved = await realpath(symlinkPath);
+
+        ports.push({
+          path: symlinkPath,
+          friendlyName: entry,
+          isCustom: false,
+        });
+      } catch {
+        // Ignore broken links
+      }
+    }
+  } catch {
+    // /dev/serial/by-id may not exist
   }
+
+  return ports;
 });

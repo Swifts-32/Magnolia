@@ -26,7 +26,7 @@
         <p>Custom Port</p>
       {:else}
         <p>{port.friendlyName ?? "Undefined Name"}</p>
-        <p>{port.manufacturer ?? "Undefined Manufacturer"}</p>
+        <!-- <p>{port.manufacturer ?? "Undefined Manufacturer"}</p> -->
       {/if}
     </div>
   </div>
@@ -40,8 +40,7 @@
       type="single"
       allowDeselect={true}
       {...path.as("text")}
-      bind:value={
-        () => path.value(), (value) => path.set(value)}
+      bind:value={() => path.value(), (value) => path.set(value)}
     >
       <Select.Trigger class="w-full">
         {#snippet children()}

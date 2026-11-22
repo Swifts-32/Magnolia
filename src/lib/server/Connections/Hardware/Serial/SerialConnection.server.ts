@@ -1,13 +1,14 @@
 import type { ISerialConnection } from "../IHardware";
 import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
-import { SerialPort, readlineParser } from "bun-serialport";
+import { spawn } from "node:child_process";
 
 export class SerialConnection implements ISerialConnection {
-  private serialPort: SerialPort | null = null;
-
   public path: string;
   public baudRate: number;
   public connType: ConnectionHardwareList = "Serial";
+
+  private reader: ReturnType<typeof spawn> | null = null;
+  private connected = false;
 
   private dataReceived: ((data: Buffer) => void) | null = null;
   public onDataReceived(callback: (data: Buffer) => void) {
@@ -15,7 +16,7 @@ export class SerialConnection implements ISerialConnection {
   }
 
   public get isConnected(): boolean {
-    return this.serialPort?.isOpen ?? false;
+    return this.connected;
   }
 
   constructor(path: string, baudRate: number) {
@@ -24,62 +25,93 @@ export class SerialConnection implements ISerialConnection {
   }
 
   public async connect(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      try {
-        this.serialPort = new SerialPort({
-          path: this.path,
-          baudRate: this.baudRate,
-          autoOpen: false,
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const stty = spawn("stty", [
+          "-F",
+          this.path,
+          this.baudRate.toString(),
+          "raw",
+          "-echo",
+        ]);
+
+        stty.on("close", (code) => {
+          if (code === 0) resolve();
+          else reject(new Error(`stty exited ${code}`));
         });
+      });
 
-        const lines = this.serialPort.pipe(readlineParser());
+      this.reader = spawn("cat", [this.path]);
+      this.connected = true;
+      const reader = this.reader;
 
-        lines.on("data", (line: string) => {
-          if (this.dataReceived) {
-            this.dataReceived(Buffer.from(line.trim()));
-          }
-        });
+      reader.on("close", () => {
+        console.log("Serial connection closed");
+        this.connected = false;
+        this.reader = null;
+      });
+      reader.on("error", (err) => {
+        console.error("Serial connection error:", err);
+        this.connected = false;
+        this.reader = null;
+      });
 
-        this.serialPort
-          .open()
-          .then(() => {
-            resolve(true);
-          })
-          .catch((err) => {
-            reject(`Failed to open port on ${this.path}: ${err.message}`);
-          });
-      } catch (e) {
-        reject(`Error creating serial connection: ${e}`);
+      if (!reader.stdout) {
+        throw new Error("Failed to create stdout stream");
       }
-    });
+
+      let buffer = "";
+
+      reader.stdout.on("data", (chunk: Buffer) => {
+        buffer += chunk.toString("utf8");
+
+        const lines = buffer.split(/\r?\n/);
+
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          const cleaned = line.trim();
+
+          if (!cleaned) continue;
+          this.dataReceived?.(Buffer.from(cleaned, "utf8"));
+        }
+      });
+
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
   }
 
-  public disconnect(): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
-      if (this.serialPort && this.serialPort.isOpen) {
-        this.serialPort
-          .close()
-          .then(() => {
-            resolve(true);
-          })
-          .catch((err) => {
-            reject(err.message);
-          });
-      } else {
-        reject("Serial port does not exist or is already closed");
-      }
-    });
+  public async disconnect(): Promise<boolean> {
+    if (this.reader) {
+      this.reader.kill();
+      this.reader = null;
+    }
+
+    this.connected = false;
+    return true;
   }
 
   public async write(data: Buffer) {
-    if (this.serialPort?.isOpen) {
-      try {
-        await this.serialPort.write(data);
-      } catch (err: any) {
-        console.log("Write error: ", err?.message);
-      }
-    } else {
-      console.log("Port is not open.");
+    if (!this.connected) {
+      throw new Error("Serial port is not connected");
     }
+
+    let text = data.toString("utf8");
+
+    if (!text.endsWith("\r\n")) {
+      text += "\r\n";
+    }
+
+    const proc = spawn("sh", [
+      "-c",
+      `printf '${text.replace(/'/g, "'\\''")}' > ${this.path}`,
+    ]);
+
+    await new Promise((resolve) => {
+      proc.on("close", resolve);
+    });
   }
 }

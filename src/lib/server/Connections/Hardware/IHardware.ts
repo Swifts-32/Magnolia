@@ -8,7 +8,7 @@ export interface IHardware {
   disconnect: () => Promise<boolean>;
 
   onDataReceived: (callback: (data: Buffer) => void) => void;
-  write: (data: Buffer) => void;
+  write: (data: Buffer) => Promise<void>;
 }
 
 export interface ISerialConnection extends IHardware {

@@ -149,7 +149,7 @@ export const writeStringToConnection = command(
 
     const buffer = Buffer.from(command, "utf8");
 
-    connection.write(buffer);
+    await connection.write(buffer);
   },
 );
 

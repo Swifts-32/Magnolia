@@ -20,7 +20,7 @@ export class EmulatorConnection implements IEmulatorConnection {
     return Promise.resolve(true);
   }
 
-  public write(data: Buffer) {
+  public async write(data: Buffer) {
     const command = data.toString().trim();
 
     if (!this.dataReceived) return;

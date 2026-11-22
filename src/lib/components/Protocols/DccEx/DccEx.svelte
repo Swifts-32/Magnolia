@@ -30,15 +30,8 @@
     );
 
     async function startStreaming() {
-      try {
-        await connectionLogs.reconnect();
-      } catch (e) {
-        console.error("Initial reconnect failed", e);
-      }
-
       while (active) {
         try {
-          // Check the state outside Svelte's transient effect compiler loop
           if (!connectionLogs.connected) {
             terminal?.addLog("Attempting to connect to stream...", "info");
             await connectionLogs.reconnect();
