@@ -1,12 +1,4 @@
-export type DccExTrackStates =
-  | "PROG"
-  | "MAIN"
-  | "MAIN_INV"
-  | "MAIN_AUTO"
-  | "DC"
-  | "DCX"
-  | "DC_INV"
-  | "NONE";
+import type { DccExTrackStates } from "#lib/types/protocols/DccExTypes.ts";
 
 export type DccExTrackPower = "ON" | "OFF" | "UNKNOWN";
 
