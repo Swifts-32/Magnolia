@@ -5,7 +5,7 @@
   import * as Card from "#lib/components/ui/card/index.js";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
-  import { Input } from "../../ui/input"; // Assuming you have an Input component, or use standard input
+  import { Input } from "../../ui/input";
   import {
     streamConnectionLogs,
     writeStringToConnection,
@@ -34,32 +34,39 @@
   );
 
   // Local state to track pending mode changes and cab numbers per track letter
-  let trackEdits = $state<Record<string, { mode: string; cab: string }>>({});
+  let trackEdits = $state<
+    Record<string, { mode: string; cab: string; isDirty: boolean }>
+  >({});
 
   function getEditState(
     trackletter: string,
     currentTrackState: string,
     currentCab?: number | null,
   ) {
+    const serverCabStr = currentCab?.toString() ?? "";
+
     if (!trackEdits[trackletter]) {
       trackEdits[trackletter] = {
         mode: currentTrackState,
-        cab: currentCab?.toString() ?? "",
+        cab: serverCabStr,
+        isDirty: false,
       };
+    } else if (!trackEdits[trackletter].isDirty) {
+      // Two-way sync: Update local state if the server changed it and user isn't actively editing
+      trackEdits[trackletter].mode = currentTrackState;
+      trackEdits[trackletter].cab = serverCabStr;
     }
+
     return trackEdits[trackletter];
   }
 
   async function handleUpdateTrack(trackletter: string) {
     const edit = trackEdits[trackletter];
+    if (!edit || !edit.mode) return;
 
     const mode = edit.mode;
-    const cab = edit.cab ? edit.cab.trim() : "";
-
-    // Check if the selected mode requires a DC loco/cab number based on the spec
+    const cab = edit.cab != null ? String(edit.cab).trim() : "";
     const isDcMode = mode === "DC" || mode === "DC_INV" || mode === "DCX";
-
-    if (!edit || !edit.mode) return;
 
     let command = "";
 
@@ -71,10 +78,8 @@
         );
         return;
       }
-      // Format: <= track MODE loco> (e.g. <= B DC 3>)
       command = `<= ${trackletter} ${mode} ${cab}>`;
     } else {
-      // Format: <= track MODE> (e.g. <= B MAIN>)
       command = `<= ${trackletter} ${mode}>`;
     }
 
@@ -83,6 +88,9 @@
       command,
       id: connectionId,
     });
+
+    // Reset dirty flag once successfully sent/triggered
+    edit.isDirty = false;
   }
 
   onMount(() => {
@@ -257,6 +265,7 @@
                         onValueChange={(val) => {
                           if (val) {
                             edit.mode = val;
+                            edit.isDirty = true;
                             handleUpdateTrack(track.trackletter);
                           }
                         }}
@@ -279,6 +288,12 @@
                           placeholder="3"
                           class="w-20"
                           bind:value={edit.cab}
+                          oninput={() => {
+                            edit.isDirty = true;
+                          }}
+                          onchange={() => {
+                            handleUpdateTrack(track.trackletter);
+                          }}
                         />
                       {/if}
                     </div>
