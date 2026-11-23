@@ -24,7 +24,7 @@
   import { goto } from "$app/navigation";
   import EditConnectionForm from "#lib/components/Connections/EditConnectionForm.svelte";
   import { toast } from "svelte-sonner";
-  import { getConnectionHardwareName } from "#lib/types/hardwareConstants.ts";
+  import { getConnectionHardwareName } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
   import { getProtocolName } from "#lib/components/Protocols/protocolConstants.ts";
 
   let selectedUuid = $state<string | null>(null);

@@ -1,4 +1,4 @@
-import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.js";
 
 export interface IHardware {
   connType: ConnectionHardwareList;

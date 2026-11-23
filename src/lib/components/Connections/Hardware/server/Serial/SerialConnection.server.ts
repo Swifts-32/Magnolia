@@ -1,5 +1,5 @@
 import type { ISerialConnection } from "../IHardware";
-import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.js";
 import { spawn } from "node:child_process";
 import { open, writeFile, type FileHandle } from "node:fs/promises";
 import { createReadStream, type ReadStream } from "node:fs";

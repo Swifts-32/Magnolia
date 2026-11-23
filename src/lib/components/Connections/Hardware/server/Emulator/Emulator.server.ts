@@ -1,4 +1,4 @@
-import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.js";
 import { type IEmulatorConnection } from "../IHardware";
 
 export class EmulatorConnection implements IEmulatorConnection {

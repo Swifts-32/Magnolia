@@ -6,7 +6,7 @@ import { ConnectionTable } from "#lib/server/db/schema/connection.js";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { uuid, z } from "zod/v4";
-import { HardwareSchema } from "#lib/types/hardwareConstants.ts";
+import { HardwareSchema } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 
 // Get a connection using the connection Id
 export const getConnection = query(

@@ -4,7 +4,7 @@
   import {
     connectionTypeList,
     getConnectionHardwareName,
-  } from "#lib/types/hardwareConstants.ts";
+  } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
   import { protocolSupportedHardware } from "#lib/components/Protocols/protocolConstants.ts";
   import * as Select from "#lib/components/ui/select/index.js";
 

@@ -1,4 +1,4 @@
-import type { ConnectionHardwareList } from "#lib/types/hardwareConstants.js";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.js";
 import type { IWebServerConnection } from "../IHardware";
 
 export class WebServerConnection implements IWebServerConnection {

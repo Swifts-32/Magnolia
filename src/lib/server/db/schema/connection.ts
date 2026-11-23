@@ -6,7 +6,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import {
   connectionTypeList,
   type ConnectionHardware,
-} from "#lib/types/hardwareConstants.js";
+} from "#lib/components/Connections/Hardware/hardwareConstants.js";
 
 export const ConnectionProtocolEnum = pgEnum(
   "connectionProtocol",
