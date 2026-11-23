@@ -3,10 +3,12 @@
   import { Button } from "../ui/button";
   import { Input } from "../ui/input";
 
+  export type LogType = "in" | "out" | "info";
+
   interface LogEntry {
     timestamp: string;
     text: string;
-    type: "in" | "out" | "info";
+    type: LogType;
   }
 
   interface Props {
@@ -28,7 +30,7 @@
   let value: string = $state("");
   let div: HTMLDivElement | null = $state(null);
 
-  export function addLog(text: string, type: "in" | "out" | "info" = "info") {
+  export function addLog(text: string, type: LogType = "info") {
     const timestamp = new Date().toLocaleTimeString();
     logs.push({ timestamp, text, type });
 

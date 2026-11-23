@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { Lcc } from "./Protocol/Lcc/Lcc";
-import { DccEx } from "./Protocol/DccEx/DccEx";
+import { DccEx } from "../../components/Protocols/DccEx/server/DccEx";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import type { IHardware } from "./Hardware/IHardware";

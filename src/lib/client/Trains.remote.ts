@@ -1,6 +1,6 @@
 import { command, form, query } from "$app/server";
 import { App } from "#lib/server/App.server.js";
-import { DccEx } from "#lib/server/Connections/Protocol/DccEx/DccEx.js";
+import { DccEx } from "#lib/components/Protocols/DccEx/server/DccEx.js";
 import { db } from "#lib/server/db/index.js";
 import { TrainTable, type Train } from "#lib/server/db/schema/trains.js";
 import { error } from "@sveltejs/kit";

@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
 
 import { App } from "#lib/server/App.server.js";
-import { DccEx } from "../../../server/Connections/Protocol/DccEx/DccEx";
+import { DccEx } from "./server/DccEx";
 
 export const getTracksStatus = query.live(
   z.uuid(),
