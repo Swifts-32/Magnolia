@@ -6,7 +6,7 @@
     duplicateTrain,
     getLayoutTrains,
   } from "#lib/client/Trains.remote.js";
-  import { getConnection } from "#lib/client/Connections.remote.js";
+  import { getConnection } from "#lib/components/Connections/Connections.remote.js";
   import AddTrainDialog from "#lib/components/Trains/AddTrainDialog.svelte";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
@@ -56,7 +56,9 @@
         <Table.Head class="w-[30%] md:w-30">Name</Table.Head>
         <Table.Head class="w-[20%] md:w-20">Address</Table.Head>
         <Table.Head class="w-[30%] md:w-30 truncate">Connection</Table.Head>
-        <Table.Head class="hidden md:table-cell md:w-auto">Description</Table.Head>
+        <Table.Head class="hidden md:table-cell md:w-auto"
+          >Description</Table.Head
+        >
         <Table.Head class="w-[20%] truncate text-end">Actions</Table.Head>
       </Table.Row>
     </Table.Header>
@@ -64,32 +66,36 @@
       {#each await getLayoutTrains(params.id) as train}
         {let dropdownOpen = $state(false)}
 
-        <Table.Row 
-          class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedUuid === train.uuid ? 'bg-muted/30' : ''}"
+        <Table.Row
+          class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedUuid ===
+          train.uuid
+            ? 'bg-muted/30'
+            : ''}"
           tabindex={0}
-          onmouseenter={() => selectedUuid = train.uuid}
-          onmouseleave={() => selectedUuid = null}
-          onfocus={() => selectedUuid = train.uuid}
+          onmouseenter={() => (selectedUuid = train.uuid)}
+          onmouseleave={() => (selectedUuid = null)}
+          onfocus={() => (selectedUuid = train.uuid)}
         >
           <Table.Cell class="font-medium truncate">{train.name}</Table.Cell>
           <Table.Cell class="truncate">{train.address}</Table.Cell>
           <Table.Cell class="truncate">
-          {#if train.connectionUuid} 
-          {#await getConnection(train.connectionUuid)}
-              <p>Loading Connection Info</p>
-            {:then connection}
-              <p>
-                {connection.name}
-              </p>
-            {:catch}
+            {#if train.connectionUuid}
+              {#await getConnection(train.connectionUuid)}
+                <p>Loading Connection Info</p>
+              {:then connection}
+                <p>
+                  {connection.name}
+                </p>
+              {:catch}
+                <p class="text-red-400">No Connection</p>
+              {/await}
+            {:else}
               <p class="text-red-400">No Connection</p>
-            {/await}
-          {:else}
-            <p class="text-red-400">No Connection</p>
-          {/if}
-           
+            {/if}
           </Table.Cell>
-          <Table.Cell class="hidden md:table-cell truncate">{train.comment}</Table.Cell>
+          <Table.Cell class="hidden md:table-cell truncate"
+            >{train.comment}</Table.Cell
+          >
           <Table.Cell class="text-right">
             <DropdownMenu.Root bind:open={dropdownOpen}>
               <DropdownMenu.Trigger>
@@ -101,11 +107,12 @@
                 {/snippet}
               </DropdownMenu.Trigger>
               <DropdownMenu.Content align="end">
-
-                <DropdownMenu.Item onclick={() => {
-                  dropdownOpen = false;
-                  activeEditUuid = train.uuid;
-                }}>
+                <DropdownMenu.Item
+                  onclick={() => {
+                    dropdownOpen = false;
+                    activeEditUuid = train.uuid;
+                  }}
+                >
                   Edit
                   <DropdownMenu.Shortcut>E</DropdownMenu.Shortcut>
                 </DropdownMenu.Item>
@@ -123,7 +130,7 @@
                 <DropdownMenu.Separator />
 
                 <DropdownMenu.Item
-                  variant="destructive" 
+                  variant="destructive"
                   onclick={() => {
                     dropdownOpen = false;
                     activeAlertUuid = train.uuid;
@@ -135,43 +142,60 @@
               </DropdownMenu.Content>
             </DropdownMenu.Root>
 
-            <Drawer.Root 
-              open={activeEditUuid === train.uuid} 
-              onOpenChange={(open) => { 
-                if (!open && activeEditUuid === train.uuid) activeEditUuid = null; 
-              }} 
-              direction="right" 
+            <Drawer.Root
+              open={activeEditUuid === train.uuid}
+              onOpenChange={(open) => {
+                if (!open && activeEditUuid === train.uuid)
+                  activeEditUuid = null;
+              }}
+              direction="right"
               dismissible={true}
             >
-              <Drawer.Content class="bg-background w-screen! max-w-none! fixed inset-0 h-full border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md! sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
+              <Drawer.Content
+                class="bg-background w-screen! max-w-none! fixed inset-0 h-full border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md! sm:max-w-md! sm:rounded-none flex flex-col *:w-full"
+              >
                 <Drawer.Header>
                   <Drawer.Title>Edit Train</Drawer.Title>
                 </Drawer.Header>
 
                 <div class="overflow-y-auto px-4 flex-1 w-full">
-                  <EditTrainForm {train}/>
+                  <EditTrainForm {train} />
                 </div>
 
                 <Drawer.Footer>
-                  <Button form="edit-train-form" type="submit" onclick={() => activeEditUuid = null}>Save</Button>
-                  <Drawer.Close form="edit-train-form" type="reset" onclick={() => activeEditUuid = null}>Cancel</Drawer.Close>
+                  <Button
+                    form="edit-train-form"
+                    type="submit"
+                    onclick={() => (activeEditUuid = null)}>Save</Button
+                  >
+                  <Drawer.Close
+                    form="edit-train-form"
+                    type="reset"
+                    onclick={() => (activeEditUuid = null)}>Cancel</Drawer.Close
+                  >
                 </Drawer.Footer>
               </Drawer.Content>
             </Drawer.Root>
 
-            <AlertDialog.Root 
-              open={activeAlertUuid === train.uuid} 
-              onOpenChange={(open) => { if (!open) activeAlertUuid = null; }}
+            <AlertDialog.Root
+              open={activeAlertUuid === train.uuid}
+              onOpenChange={(open) => {
+                if (!open) activeAlertUuid = null;
+              }}
             >
               <AlertDialog.Content>
                 <AlertDialog.Header>
-                  <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                  <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title
+                  >
                   <AlertDialog.Description>
-                    This action cannot be undone. This will permanently delete the train.
+                    This action cannot be undone. This will permanently delete
+                    the train.
                   </AlertDialog.Description>
                 </AlertDialog.Header>
                 <AlertDialog.Footer>
-                  <AlertDialog.Cancel onclick={() => activeAlertUuid = null}>Cancel</AlertDialog.Cancel>
+                  <AlertDialog.Cancel onclick={() => (activeAlertUuid = null)}
+                    >Cancel</AlertDialog.Cancel
+                  >
                   <AlertDialog.Action
                     onclick={async () => {
                       await deleteTrain(train.uuid);

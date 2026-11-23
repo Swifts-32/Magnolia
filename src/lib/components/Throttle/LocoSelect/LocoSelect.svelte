@@ -6,7 +6,7 @@
   import * as Command from "#lib/components/ui/command/index.js";
   import * as Popover from "#lib/components/ui/popover/index.js";
   import { getLayoutTrains } from "#lib/client/Trains.remote.js";
-  import { getConnection } from "#lib/client/Connections.remote.js";
+  import { getConnection } from "#lib/components/Connections/Connections.remote.js";
   import AddTrainDialog from "#lib/components/Trains/AddTrainDialog.svelte";
 
   interface Props {

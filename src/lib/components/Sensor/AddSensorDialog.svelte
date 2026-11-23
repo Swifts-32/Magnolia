@@ -8,8 +8,8 @@
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
   import { createSensor } from "#lib/client/Sensors.remote.js";
-  import { getlayoutConnections } from "#lib/client/Connections.remote.js";
-  import { protocolSupportedCapabilities } from "#lib/components/Protocols/protocolConstants.ts";
+  import { getlayoutConnections } from "#lib/components/Connections/Connections.remote.js";
+  import { protocolSupportedCapabilities } from "../Connections/Protocols/protocolConstants";
 
   interface Props {
     layoutId: string;

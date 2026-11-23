@@ -1,14 +1,10 @@
 <script lang="ts">
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
-  import {
-    getLccLog,
-    getLccNodes,
-    sendLccCommand,
-  } from "#lib/components/Protocols/Lcc/Lcc.remote.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Separator } from "#lib/components/ui/separator/index.js";
-  import { writeStringToConnection } from "#lib/client/Connections.remote.js";
+  import { writeStringToConnection } from "#lib/components/Connections/Connections.remote.js";
+  import { getLccLog, getLccNodes, sendLccCommand } from "./Lcc.remote";
 
   interface Props {
     connectionId: string;

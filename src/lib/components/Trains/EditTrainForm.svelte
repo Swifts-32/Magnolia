@@ -8,10 +8,10 @@
   import {
     getConnection,
     getlayoutConnections,
-  } from "#lib/client/Connections.remote.js";
+  } from "#lib/components/Connections/Connections.remote.js";
   import { onMount } from "svelte";
   import type { Train } from "#lib/server/db/schema/trains.js";
-  import { protocolSupportedCapabilities } from "#lib/components/Protocols/protocolConstants.ts";
+  import { protocolSupportedCapabilities } from "../Connections/Protocols/protocolConstants";
 
   interface Props {
     train: Train;

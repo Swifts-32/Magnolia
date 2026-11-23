@@ -6,7 +6,7 @@
     duplicateSensor,
     getLayoutSensors,
   } from "#lib/client/Sensors.remote.js";
-  import { getConnection } from "#lib/client/Connections.remote.js";
+  import { getConnection } from "#lib/components/Connections/Connections.remote.js";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
   import Button from "#lib/components/ui/button/button.svelte";

@@ -4,9 +4,9 @@
   import {
     streamConnectionLogs,
     writeStringToConnection,
-  } from "#lib/client/Connections.remote.js";
-  import Terminal from "../../Terminal/Terminal.svelte";
+  } from "#lib/components/Connections/Connections.remote.js";
   import TrackManager from "./TrackManager.svelte";
+  import Terminal from "#lib/components/Terminal/Terminal.svelte";
 
   interface Props {
     connectionId: string;

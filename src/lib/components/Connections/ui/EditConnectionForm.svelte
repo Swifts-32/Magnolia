@@ -4,7 +4,7 @@
   import ConnectionFormProtocol from "./FormComponents/ConnectionFormProtocol.svelte";
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
-  import { editConnection } from "#lib/client/Connections.remote.js";
+  import { editConnection } from "#lib/components/Connections/Connections.remote.js";
   import InputField from "../../Form/InputField.svelte";
   import { onMount } from "svelte";
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getConnection } from "#lib/client/Connections.remote.js";
+  import { getConnection } from "#lib/components/Connections/Connections.remote.js";
   import { onMount } from "svelte";
   import * as Card from "#lib/components/ui/card/index.js";
   import Button, {
@@ -15,12 +15,9 @@
   import BlockViewer from "./BlockViewer.svelte";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import { toast } from "svelte-sonner";
-  import type {
-    SunbeamBlock,
-    SunbeamBlockStatus,
-  } from "#lib/components/Protocols/Sunbeam/SunbeamTypes.ts";
   import { page } from "$app/state";
   import Checkbox from "#lib/components/ui/checkbox/checkbox.svelte";
+  import type { SunbeamBlock, SunbeamBlockStatus } from "./SunbeamTypes";
 
   interface Props {
     connectionId: string;

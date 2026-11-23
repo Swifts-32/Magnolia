@@ -18,7 +18,7 @@
     disconnectConnection,
     duplicateConnection,
     getlayoutConnections,
-  } from "#lib/client/Connections.remote.js";
+  } from "#lib/components/Connections/Connections.remote.js";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "#lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";

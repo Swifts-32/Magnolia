@@ -7,7 +7,7 @@
   import ConnectionFormType from "../ui/FormComponents/ConnectionFormType.svelte";
   import ConnectionFormProtocol from "../ui/FormComponents/ConnectionFormProtocol.svelte";
   import ConnectionFormHardware from "../ui/FormComponents/ConnectionFormHardware.svelte";
-  import { createConnection } from "#lib/client/Connections.remote.js";
+  import { createConnection } from "#lib/components/Connections/Connections.remote.js";
 
   interface Props {
     layoutId: string;

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type { createConnection } from "#lib/client/Connections.remote.js";
+  import type { createConnection } from "#lib/components/Connections/Connections.remote.js";
   import Label from "#lib/components/ui/label/label.svelte";
   import {
     connectionTypeList,
     getConnectionHardwareName,
   } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
-  import { protocolSupportedHardware } from "#lib/components/Protocols/protocolConstants.ts";
   import * as Select from "#lib/components/ui/select/index.js";
+  import { protocolSupportedHardware } from "../../Protocols/protocolConstants";
 
   interface Props {
     protocol: typeof createConnection.fields.protocol;

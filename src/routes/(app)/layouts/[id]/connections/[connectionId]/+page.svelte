@@ -1,17 +1,15 @@
 <script lang="ts">
   import { Button } from "#lib/components/ui/button/index.js";
-  import { toast } from "svelte-sonner";
-  import DccEx from "#lib/components/Protocols/DccEx/DccEx.svelte";
-  import Lcc from "#lib/components/Protocols/Lcc/Lcc.svelte";
-  import { ChevronLeft, Pen } from "@lucide/svelte";
+  import { ChevronLeft } from "@lucide/svelte";
   import {
     connectConnection,
     disconnectConnection,
     getConnection,
-    getlayoutConnections,
-  } from "#lib/client/Connections.remote.js";
+  } from "#lib/components/Connections/Connections.remote.js";
   import { Separator } from "#lib/components/ui/separator/index.js";
-  import Sunbeam from "#lib/components/Protocols/Sunbeam/Sunbeam.svelte";
+  import DccEx from "#lib/components/Connections/Protocols/DccEx/DccEx.svelte";
+  import Lcc from "#lib/components/Connections/Protocols/Lcc/Lcc.svelte";
+  import Sunbeam from "#lib/components/Connections/Protocols/Sunbeam/Sunbeam.svelte";
 
   let { params } = $props();
 

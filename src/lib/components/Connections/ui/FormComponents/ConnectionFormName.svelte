@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { createConnection } from "#lib/client/Connections.remote.js";
+  import type { createConnection } from "#lib/components/Connections/Connections.remote.js";
   import Input from "#lib/components/ui/input/input.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
 

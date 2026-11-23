@@ -10,11 +10,11 @@
     RefreshCcw,
     SquareExclamationPoint,
   } from "@lucide/svelte";
-  import { writeStringToConnection } from "#lib/client/Connections.remote.ts";
-  import { DccExTrackStatesList } from "#lib/components/Protocols/DccEx/DccExTypes.ts";
+  import { writeStringToConnection } from "#lib/components/Connections/Connections.remote.ts";
   import Input from "#lib/components/ui/input/input.svelte";
   import type { LogType } from "#lib/components/Terminal/Terminal.svelte";
   import { onMount } from "svelte";
+  import { DccExTrackStatesList } from "./DccExTypes";
 
   interface Props {
     connectionId: string;

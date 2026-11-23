@@ -7,9 +7,9 @@
   import {
     getConnection,
     getlayoutConnections,
-  } from "#lib/client/Connections.remote.js";
+  } from "#lib/components/Connections/Connections.remote.js";
   import type { Sensor } from "#lib/server/db/schema/sensors.js";
-  import { protocolSupportedCapabilities } from "#lib/components/Protocols/protocolConstants.ts";
+  import { protocolSupportedCapabilities } from "../Connections/Protocols/protocolConstants";
 
   interface Props {
     sensor: Sensor;
