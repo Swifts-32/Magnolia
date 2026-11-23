@@ -12,7 +12,7 @@
     getConnection,
     getlayoutConnections,
   } from "#lib/client/Connections.remote.js";
-  import { protocolSupportedCapabilities } from "#lib/types/protocolConstants.ts";
+  import { protocolSupportedCapabilities } from "#lib/components/Protocols/protocolConstants.ts";
 
   interface Props {
     layoutId: string;

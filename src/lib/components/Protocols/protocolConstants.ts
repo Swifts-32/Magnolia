@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import type { ConnectionHardwareList } from "./hardwareConstants";
+import type { ConnectionHardwareList } from "../../types/hardwareConstants";
 
 export const connectionProtocolList = ["DccEx", "Lcc", "Sunbeam"] as const;
 export const ConnectionProtocol = z.enum(connectionProtocolList);

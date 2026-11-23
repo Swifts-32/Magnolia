@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getTracksStatus } from "#lib/components/Protocols/DccEx/DccEx.remote.js";
   import { onMount } from "svelte";
 
   import {

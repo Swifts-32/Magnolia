@@ -11,7 +11,7 @@
   } from "#lib/client/Connections.remote.js";
   import { onMount } from "svelte";
   import type { Train } from "#lib/server/db/schema/trains.js";
-  import { protocolSupportedCapabilities } from "#lib/types/protocolConstants.ts";
+  import { protocolSupportedCapabilities } from "#lib/components/Protocols/protocolConstants.ts";
 
   interface Props {
     train: Train;

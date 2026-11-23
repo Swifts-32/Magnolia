@@ -2,18 +2,30 @@
   import { page } from "$app/state";
   import AddConnectionDialog from "#lib/components/Connections/AddConnectionDialog.svelte";
   import Fab from "#lib/components/FAB/Fab.svelte";
-  import { EllipsisIcon, Plus, PowerIcon, PowerOff, SquareArrowOutUpRight } from "@lucide/svelte";
+  import {
+    EllipsisIcon,
+    Plus,
+    PowerIcon,
+    PowerOff,
+    SquareArrowOutUpRight,
+  } from "@lucide/svelte";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
-  import { connectConnection, deleteConnection, disconnectConnection, duplicateConnection, getlayoutConnections } from "#lib/client/Connections.remote.js";
+  import {
+    connectConnection,
+    deleteConnection,
+    disconnectConnection,
+    duplicateConnection,
+    getlayoutConnections,
+  } from "#lib/client/Connections.remote.js";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "#lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
   import EditConnectionForm from "#lib/components/Connections/EditConnectionForm.svelte";
   import { toast } from "svelte-sonner";
   import { getConnectionHardwareName } from "#lib/types/hardwareConstants.ts";
-  import { getProtocolName } from "#lib/types/protocolConstants.ts";
+  import { getProtocolName } from "#lib/components/Protocols/protocolConstants.ts";
 
   let selectedUuid = $state<string | null>(null);
   let activeEditUuid = $state<string | null>(null);
@@ -33,8 +45,7 @@
     } else if (event.key === "d") {
       event.preventDefault();
       await duplicateConnection(selectedUuid);
-    } 
-    else if (event.key === "o") {
+    } else if (event.key === "o") {
       event.preventDefault();
       gotoConnection(selectedUuid);
     } else if (event.key === "Delete" && event.ctrlKey) {
@@ -48,168 +59,204 @@
   }
 
   function gotoConnection(connId: string) {
-    goto(`${page.url.pathname}/${connId}`)
+    goto(`${page.url.pathname}/${connId}`);
   }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 {#if page.params.id}
-<div class="flex">
+  <div class="flex">
+    <Table.Root>
+      <Table.Caption>A list of your connections.</Table.Caption>
+      <Table.Header class="select-none">
+        <Table.Row>
+          <Table.Head class="w-2"></Table.Head>
+          <Table.Head class="w-25">Name</Table.Head>
+          <Table.Head class="w-20">Protocol</Table.Head>
+          <Table.Head class="w-20">Hardware</Table.Head>
+          <Table.Head class="text-end">Actions</Table.Head>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {#each await getlayoutConnections(page.params.id) as conn}
+          {let dropdownOpen = $state(false)}
 
-      <Table.Root>
-    <Table.Caption>A list of your connections.</Table.Caption>
-    <Table.Header class="select-none">
-      <Table.Row>
-        <Table.Head class="w-2"></Table.Head>
-        <Table.Head class="w-25">Name</Table.Head>
-        <Table.Head class="w-20">Protocol</Table.Head>
-        <Table.Head class="w-20">Hardware</Table.Head>
-        <Table.Head class="text-end">Actions</Table.Head>
-      </Table.Row>
-    </Table.Header>
-    <Table.Body>
-      {#each await getlayoutConnections(page.params.id) as conn}
-        {let dropdownOpen = $state(false)}
-
-        <Table.Row 
-          class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedUuid === conn.uuid ? 'bg-muted/30' : ''}"
-          tabindex={0}
-          onmouseenter={() => selectedUuid = conn.uuid}
-          onmouseleave={() => selectedUuid = null}
-          onfocus={() => selectedUuid = conn.uuid}
-        >
+          <Table.Row
+            class="cursor-pointer outline-none focus-visible:bg-muted/50 {selectedUuid ===
+            conn.uuid
+              ? 'bg-muted/30'
+              : ''}"
+            tabindex={0}
+            onmouseenter={() => (selectedUuid = conn.uuid)}
+            onmouseleave={() => (selectedUuid = null)}
+            onfocus={() => (selectedUuid = conn.uuid)}
+          >
             <Table.Cell class="flex gap-2">
               {#if conn.isConnected}
-                <Button size="icon" variant="destructive" onclick={async () => {
-                  await disconnectConnection(conn.uuid);
-                  toast.success("Disconnected");
-                }}>
-                <PowerOff/>
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onclick={async () => {
+                    await disconnectConnection(conn.uuid);
+                    toast.success("Disconnected");
+                  }}
+                >
+                  <PowerOff />
                 </Button>
               {:else}
-                <Button size="icon" onclick={async () => {
-                  await connectConnection(conn.uuid)
-                  toast.success("Connected");
-                }}>
-                <PowerIcon/>
-  
-                </Button>
-              {/if}              
-            </Table.Cell>
-          <Table.Cell class="font-medium">{conn.name}</Table.Cell>
-          <Table.Cell>{getProtocolName(conn.protocol)}</Table.Cell>
-          <Table.Cell>{getConnectionHardwareName(conn.hardware.type)}</Table.Cell>
-          <Table.Cell class="text-right">
-            <DropdownMenu.Root bind:open={dropdownOpen}>
-              <DropdownMenu.Trigger>
-                {#snippet child({ props })}
-                  <Button {...props} variant="ghost" size="icon" class="size-8">
-                    <EllipsisIcon />
-                    <span class="sr-only">Open menu</span>
-                  </Button>
-                {/snippet}
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content align="end">
-                <DropdownMenu.Item onclick={() => {
-                  dropdownOpen = false;
-                  activeEditUuid = conn.uuid;
-                }}>
-                  Edit
-                   <DropdownMenu.Shortcut>E</DropdownMenu.Shortcut>
-                </DropdownMenu.Item>
-
-                <DropdownMenu.Item onclick={() => gotoConnection(conn.uuid)}>
-                  Open
-                   <DropdownMenu.Shortcut>O</DropdownMenu.Shortcut>
-                </DropdownMenu.Item>
-
-                <DropdownMenu.Item
+                <Button
+                  size="icon"
                   onclick={async () => {
-                    await duplicateConnection(conn.uuid);
-                    dropdownOpen = false;
+                    await connectConnection(conn.uuid);
+                    toast.success("Connected");
                   }}
                 >
+                  <PowerIcon />
+                </Button>
+              {/if}
+            </Table.Cell>
+            <Table.Cell class="font-medium">{conn.name}</Table.Cell>
+            <Table.Cell>{getProtocolName(conn.protocol)}</Table.Cell>
+            <Table.Cell
+              >{getConnectionHardwareName(conn.hardware.type)}</Table.Cell
+            >
+            <Table.Cell class="text-right">
+              <DropdownMenu.Root bind:open={dropdownOpen}>
+                <DropdownMenu.Trigger>
+                  {#snippet child({ props })}
+                    <Button
+                      {...props}
+                      variant="ghost"
+                      size="icon"
+                      class="size-8"
+                    >
+                      <EllipsisIcon />
+                      <span class="sr-only">Open menu</span>
+                    </Button>
+                  {/snippet}
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end">
+                  <DropdownMenu.Item
+                    onclick={() => {
+                      dropdownOpen = false;
+                      activeEditUuid = conn.uuid;
+                    }}
+                  >
+                    Edit
+                    <DropdownMenu.Shortcut>E</DropdownMenu.Shortcut>
+                  </DropdownMenu.Item>
+
+                  <DropdownMenu.Item onclick={() => gotoConnection(conn.uuid)}>
+                    Open
+                    <DropdownMenu.Shortcut>O</DropdownMenu.Shortcut>
+                  </DropdownMenu.Item>
+
+                  <DropdownMenu.Item
+                    onclick={async () => {
+                      await duplicateConnection(conn.uuid);
+                      dropdownOpen = false;
+                    }}
+                  >
                     Duplicate
                     <DropdownMenu.Shortcut>D</DropdownMenu.Shortcut>
-                </DropdownMenu.Item>
+                  </DropdownMenu.Item>
 
-                <DropdownMenu.Separator />
+                  <DropdownMenu.Separator />
 
-                <DropdownMenu.Item 
-                  variant="destructive" 
-                  onclick={() => {
-                    dropdownOpen = false;
-                    activeAlertUuid = conn.uuid;
-                  }}
-                >
-                  Delete
-                  <DropdownMenu.Shortcut>Del</DropdownMenu.Shortcut>
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
+                  <DropdownMenu.Item
+                    variant="destructive"
+                    onclick={() => {
+                      dropdownOpen = false;
+                      activeAlertUuid = conn.uuid;
+                    }}
+                  >
+                    Delete
+                    <DropdownMenu.Shortcut>Del</DropdownMenu.Shortcut>
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
 
-            <Drawer.Root open={activeEditUuid === conn.uuid} 
-              onOpenChange={(open) => { 
-                if (!open && activeEditUuid === conn.uuid) activeEditUuid = null; 
-              }} direction="right">
-              <Drawer.Content class="bg-background w-screen!
+              <Drawer.Root
+                open={activeEditUuid === conn.uuid}
+                onOpenChange={(open) => {
+                  if (!open && activeEditUuid === conn.uuid)
+                    activeEditUuid = null;
+                }}
+                direction="right"
+              >
+                <Drawer.Content
+                  class="bg-background w-screen!
                   max-w-none! fixed inset-0 h-full  border-none rounded-none sm:inset-y-0 sm:right-0 sm:left-auto sm:w-md!
-                  sm:max-w-md! sm:rounded-none flex flex-col *:w-full">
+                  sm:max-w-md! sm:rounded-none flex flex-col *:w-full"
+                >
                   <Drawer.Header>
                     <Drawer.Title>Edit Connection</Drawer.Title>
                   </Drawer.Header>
 
                   <div class="overflow-y-auto px-4 flex-1 w-full">
-                  <EditConnectionForm connection={conn}/>
-                </div>
-                
+                    <EditConnectionForm connection={conn} />
+                  </div>
+
                   <Drawer.Footer>
-                    <Button form="edit-connection-form"  type="submit"  onclick={() => activeEditUuid=null}>Save</Button>
-                    <Drawer.Close form="edit-connection-form" type="reset" onclick={() => activeEditUuid=null}>Cancel</Drawer.Close>
+                    <Button
+                      form="edit-connection-form"
+                      type="submit"
+                      onclick={() => (activeEditUuid = null)}>Save</Button
+                    >
+                    <Drawer.Close
+                      form="edit-connection-form"
+                      type="reset"
+                      onclick={() => (activeEditUuid = null)}
+                      >Cancel</Drawer.Close
+                    >
                   </Drawer.Footer>
-              </Drawer.Content>
-            </Drawer.Root>
+                </Drawer.Content>
+              </Drawer.Root>
 
-            <AlertDialog.Root open={activeAlertUuid === conn.uuid} 
-              onOpenChange={(open) => { if (!open) activeAlertUuid = null; }}
+              <AlertDialog.Root
+                open={activeAlertUuid === conn.uuid}
+                onOpenChange={(open) => {
+                  if (!open) activeAlertUuid = null;
+                }}
               >
+                <AlertDialog.Content>
+                  <AlertDialog.Header>
+                    <AlertDialog.Title
+                      >Are you absolutely sure?</AlertDialog.Title
+                    >
+                    <AlertDialog.Description>
+                      This action cannot be undone. This will permanently delete
+                      the connection.
+                    </AlertDialog.Description>
+                  </AlertDialog.Header>
+                  <AlertDialog.Footer>
+                    <AlertDialog.Cancel onclick={() => (activeAlertUuid = null)}
+                      >Cancel</AlertDialog.Cancel
+                    >
+                    <AlertDialog.Action
+                      onclick={async () => {
+                        await deleteConnection(conn.uuid);
+                        activeAlertUuid = null;
+                        dropdownOpen = false;
+                      }}
+                    >
+                      Continue
+                    </AlertDialog.Action>
+                  </AlertDialog.Footer>
+                </AlertDialog.Content>
+              </AlertDialog.Root>
+            </Table.Cell>
+          </Table.Row>
+        {/each}
+      </Table.Body>
+    </Table.Root>
 
-                  <AlertDialog.Content>
-                    <AlertDialog.Header>
-                      <AlertDialog.Title
-                        >Are you absolutely sure?</AlertDialog.Title
-                      >
-                      <AlertDialog.Description>
-                        This action cannot be undone. This will permanently
-                        delete the connection.
-                      </AlertDialog.Description>
-                    </AlertDialog.Header>
-                    <AlertDialog.Footer>
-                      <AlertDialog.Cancel onclick={() => activeAlertUuid = null}>Cancel</AlertDialog.Cancel>                   
-                      <AlertDialog.Action
-                        onclick={async () => {
-                          await deleteConnection(conn.uuid);
-                          activeAlertUuid = null;
-                          dropdownOpen = false;
-                        }}
-                      >
-                        Continue
-                      </AlertDialog.Action>
-                    </AlertDialog.Footer>
-                  </AlertDialog.Content>
-                </AlertDialog.Root>
-          </Table.Cell>
-        </Table.Row>
-      {/each}
-    </Table.Body>
-  </Table.Root>
-
-  <!-- Add Connection Button -->
-  <AddConnectionDialog layoutId={page.params.id}>
-    <Fab label="Add Connection">
-      <Plus class="size-8" />
-    </Fab>
-  </AddConnectionDialog>
-</div>
+    <!-- Add Connection Button -->
+    <AddConnectionDialog layoutId={page.params.id}>
+      <Fab label="Add Connection">
+        <Plus class="size-8" />
+      </Fab>
+    </AddConnectionDialog>
+  </div>
 {/if}

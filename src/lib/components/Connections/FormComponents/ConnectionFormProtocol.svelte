@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { connectionProtocolList, getProtocolName } from "#lib/types/protocolConstants.js";
+  import {
+    connectionProtocolList,
+    getProtocolName,
+  } from "#lib/components/Protocols/protocolConstants.js";
   import Label from "#lib/components/ui/label/label.svelte";
   import type { createConnection } from "#lib/client/Connections.remote.js";
   import * as Select from "#lib/components/ui/select/index.js";
@@ -19,8 +22,7 @@
       type="single"
       allowDeselect={true}
       {...protocol.as("text")}
-      bind:value={
-        () => protocol.value(), (value) => protocol.set(value)}
+      bind:value={() => protocol.value(), (value) => protocol.set(value)}
     >
       <Select.Trigger class="w-full">
         {#snippet children()}
@@ -34,7 +36,10 @@
       </Select.Trigger>
       <Select.Content>
         {#each connectionProtocolList as protocolName}
-          <Select.Item value={protocolName} label={getProtocolName(protocolName)}>
+          <Select.Item
+            value={protocolName}
+            label={getProtocolName(protocolName)}
+          >
             {getProtocolName(protocolName)}
           </Select.Item>
         {/each}

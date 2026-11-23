@@ -1,9 +1,9 @@
-import type { ConnectionProtocol } from "#lib/types/protocolConstants.ts";
-import type { IProtocol } from "../IProtocol";
+import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.ts";
+import type { IProtocol } from "../../IProtocol";
 import { SensorTable } from "#lib/server/db/schema/sensors.ts";
 import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
-import type { SunbeamBlockStatus } from "#lib/types/protocols/SunbeamTypes.ts";
+import type { SunbeamBlockStatus } from "#lib/components/Protocols/Sunbeam/SunbeamTypes.ts";
 
 export class Sunbeam implements IProtocol {
   public protocolType: ConnectionProtocol = "Sunbeam";

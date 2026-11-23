@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SunbeamBlock } from "#lib/types/protocols/SunbeamTypes.ts";
+  import type { SunbeamBlock } from "#lib/components/Protocols/Sunbeam/SunbeamTypes.ts";
 
   interface Props {
     baseUrl: string;

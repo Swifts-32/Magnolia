@@ -2,8 +2,7 @@ import { command, query } from "$app/server";
 import { App } from "#lib/server/App.server.js";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
-import { Lcc } from "#lib/server/Connections/Protocol/Lcc/Lcc.js";
-
+import { Lcc } from "#lib/components/Protocols/Lcc/server/Lcc.js";
 
 export const getLccNodes = query(z.uuid(), async (connectionId) => {
   const connection = await App.getConnection(connectionId);
@@ -25,20 +24,19 @@ export const getLccLog = query(z.uuid(), async (connectionId) => {
   return connection.protocol.logBuffer;
 });
 
-
 // -----------------------------
 // TYPE-SAFE LCC COMMANDS
 // -----------------------------
 const LccCommandSchema = z.discriminatedUnion("action", [
   z.object({
-    action: z.literal("requestInfo")
+    action: z.literal("requestInfo"),
   }),
   z.object({
-    action: z.literal("requestSnipAll")
+    action: z.literal("requestSnipAll"),
   }),
   z.object({
     action: z.literal("requestSnip"),
-    nodeId: z.string().regex(/^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/)
+    nodeId: z.string().regex(/^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/),
   }),
   z.object({ action: z.literal("discoverNodes") }),
   z.object({
@@ -53,7 +51,7 @@ const LccCommandSchema = z.discriminatedUnion("action", [
 export const sendLccCommand = command(
   z.object({
     id: z.uuid(),
-    command: LccCommandSchema
+    command: LccCommandSchema,
   }),
   async ({ id, command }) => {
     const connection = await App.getConnection(id);
@@ -72,7 +70,12 @@ export const sendLccCommand = command(
 
     switch (command.action) {
       case "requestInfo": {
-        const frame = lcc["buildFrame"](0x0490, lcc["MY_NODE_ID"], undefined, Buffer.alloc(0));
+        const frame = lcc["buildFrame"](
+          0x0490,
+          lcc["MY_NODE_ID"],
+          undefined,
+          Buffer.alloc(0),
+        );
         sendFrame(frame);
         break;
       }
@@ -80,7 +83,12 @@ export const sendLccCommand = command(
       case "requestSnipAll": {
         for (const node of lcc.nodes.values()) {
           const dest = Buffer.from(node.id.replace(/:/g, ""), "hex");
-          const frame = lcc["buildFrame"](0x0de8, lcc["MY_NODE_ID"], dest, Buffer.alloc(0));
+          const frame = lcc["buildFrame"](
+            0x0de8,
+            lcc["MY_NODE_ID"],
+            dest,
+            Buffer.alloc(0),
+          );
           sendFrame(frame);
         }
         break;
@@ -88,13 +96,23 @@ export const sendLccCommand = command(
 
       case "requestSnip": {
         const dest = Buffer.from(command.nodeId.replace(/:/g, ""), "hex");
-        const frame = lcc["buildFrame"](0x0de8, lcc["MY_NODE_ID"], dest, Buffer.alloc(0));
+        const frame = lcc["buildFrame"](
+          0x0de8,
+          lcc["MY_NODE_ID"],
+          dest,
+          Buffer.alloc(0),
+        );
         sendFrame(frame);
         break;
       }
 
       case "discoverNodes": {
-        const frame = lcc["buildFrame"](0x0170, lcc["MY_NODE_ID"], undefined, Buffer.alloc(0));
+        const frame = lcc["buildFrame"](
+          0x0170,
+          lcc["MY_NODE_ID"],
+          undefined,
+          Buffer.alloc(0),
+        );
         sendFrame(frame);
         // const slip = encodeSlipFrame(frame);
         // connection.write(slip);
@@ -110,7 +128,7 @@ export const sendLccCommand = command(
     }
 
     return { ok: true };
-  }
+  },
 );
 
 // -----------------------------

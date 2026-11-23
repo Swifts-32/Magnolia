@@ -1,5 +1,5 @@
 import { command, form, query, requested } from "$app/server";
-import { ConnectionProtocol } from "#lib/types/protocolConstants.js";
+import { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
 import { App } from "#lib/server/App.server.js";
 import { db } from "#lib/server/db/index.js";
 import { ConnectionTable } from "#lib/server/db/schema/connection.js";

@@ -1,6 +1,6 @@
-import type { ConnectionProtocol } from "#lib/types/protocolConstants.js";
+import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
 import type EventEmitter from "events";
-import type { IProtocol } from "../IProtocol";
+import type { IProtocol } from "../../IProtocol";
 import { App } from "#lib/server/App.server.js";
 
 export interface LccNode {

@@ -1,8 +1,11 @@
 <script lang="ts">
   import type { createConnection } from "#lib/client/Connections.remote.js";
   import Label from "#lib/components/ui/label/label.svelte";
-  import {  connectionTypeList, getConnectionHardwareName } from "#lib/types/hardwareConstants.ts";
-  import {  protocolSupportedHardware } from "#lib/types/protocolConstants.ts";
+  import {
+    connectionTypeList,
+    getConnectionHardwareName,
+  } from "#lib/types/hardwareConstants.ts";
+  import { protocolSupportedHardware } from "#lib/components/Protocols/protocolConstants.ts";
   import * as Select from "#lib/components/ui/select/index.js";
 
   interface Props {
@@ -13,17 +16,20 @@
   const { protocol, hardware }: Props = $props();
 
   const allowedHardwareTypes = $derived.by(() => {
-    const proto = protocol.value();    
+    const proto = protocol.value();
     if (!proto) return [];
 
-    return connectionTypeList.filter((type) => 
-      protocolSupportedHardware(proto, type)
-    );   
+    return connectionTypeList.filter((type) =>
+      protocolSupportedHardware(proto, type),
+    );
   });
 
   $effect(() => {
     const currentHardware = hardware.type.value();
-    if (currentHardware && !allowedHardwareTypes.some(h => h === currentHardware)) {
+    if (
+      currentHardware &&
+      !allowedHardwareTypes.some((h) => h === currentHardware)
+    ) {
       hardware.type.set(undefined);
     }
   });
@@ -37,7 +43,8 @@
     allowDeselect={true}
     {...hardware.type.as("text")}
     bind:value={
-      () => hardware.type.value(), (value) => hardware.type.set(value)}
+      () => hardware.type.value(), (value) => hardware.type.set(value)
+    }
   >
     <Select.Trigger class="col-span-3">
       {#snippet children()}
@@ -55,6 +62,6 @@
           {getConnectionHardwareName(type)}
         </Select.Item>
       {/each}
-      </Select.Content>
+    </Select.Content>
   </Select.Root>
 </div>

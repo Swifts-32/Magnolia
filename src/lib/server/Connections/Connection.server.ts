@@ -1,16 +1,16 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { Lcc } from "./Protocol/Lcc/Lcc";
+import { Lcc } from "../../components/Protocols/Lcc/server/Lcc";
 import { DccEx } from "../../components/Protocols/DccEx/server/DccEx";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "./Hardware/Serial/SerialConnection.server";
 import type { IHardware } from "./Hardware/IHardware";
-import type { IProtocol } from "./Protocol/IProtocol";
-import type { ConnectionProtocol } from "#lib/types/protocolConstants.js";
+import type { IProtocol } from "../../components/Protocols/IProtocol";
+import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
 import { protocolEvents } from "#lib/server/events.js";
 import { EmulatorConnection } from "./Hardware/Emulator/Emulator.server";
 import { AsyncEventQueue } from "../eventQueue";
-import { Sunbeam } from "./Protocol/Sunbeam/Sunbeam";
+import { Sunbeam } from "../../components/Protocols/Sunbeam/server/Sunbeam";
 import type { ConnectionHardware } from "#lib/types/hardwareConstants.ts";
 import { WebServerConnection } from "./Hardware/WebServer/WebServerConnection.server";
 

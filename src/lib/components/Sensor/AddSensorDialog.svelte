@@ -9,7 +9,7 @@
   import * as Select from "#lib/components/ui/select/index.js";
   import { createSensor } from "#lib/client/Sensors.remote.js";
   import { getlayoutConnections } from "#lib/client/Connections.remote.js";
-  import { protocolSupportedCapabilities } from "#lib/types/protocolConstants.ts";
+  import { protocolSupportedCapabilities } from "#lib/components/Protocols/protocolConstants.ts";
 
   interface Props {
     layoutId: string;
