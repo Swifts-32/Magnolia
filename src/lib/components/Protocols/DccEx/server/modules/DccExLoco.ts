@@ -45,7 +45,7 @@ export class DccExLocoManager {
       speedByte,
       speed,
       direction,
-      functMap
+      functMap,
     };
 
     this.locos.set(cab, loco);
@@ -55,7 +55,6 @@ export class DccExLocoManager {
   // public async requestCabUpdate(cab: number) {
   //   await this.sendCommand(`<t ${cab}>`);
   // }
-
 
   // <F cab funct state> - functions on/off
   // public async setFunction(
@@ -146,4 +145,3 @@ export class DccExLocoManager {
     return { speed: 0, direction: "forward" };
   }
 }
-

@@ -11,7 +11,7 @@
     SquareExclamationPoint,
   } from "@lucide/svelte";
   import { writeStringToConnection } from "#lib/client/Connections.remote.ts";
-  import { DccExTrackStatesList } from "#lib/types/protocols/DccExTypes.ts";
+  import { DccExTrackStatesList } from "#lib/components/Protocols/DccEx/DccExTypes.ts";
   import Input from "#lib/components/ui/input/input.svelte";
   import type { LogType } from "#lib/components/Terminal/Terminal.svelte";
   import { onMount } from "svelte";
