@@ -118,7 +118,38 @@
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.Head class="w-10"></Table.Head>
+            <Table.Head class="w-10">
+              {#if status.some((t) => t.power === "ON")}
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onclick={() => {
+                    status.forEach((t) => {
+                      writeStringToConnection({
+                        command: `<0 ${t.trackletter}>`,
+                        id: connectionId,
+                      });
+                    });
+                  }}
+                >
+                  <PowerOff />
+                </Button>
+              {:else}
+                <Button
+                  size="icon"
+                  onclick={() => {
+                    status.forEach((t) => {
+                      writeStringToConnection({
+                        command: `<1 ${t.trackletter}>`,
+                        id: connectionId,
+                      });
+                    });
+                  }}
+                >
+                  <Power />
+                </Button>
+              {/if}</Table.Head
+            >
             <Table.Head class="w-20">Track</Table.Head>
             <Table.Head>Power</Table.Head>
             <Table.Head>Current</Table.Head>
