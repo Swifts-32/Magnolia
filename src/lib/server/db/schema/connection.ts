@@ -1,7 +1,7 @@
 import { boolean, jsonb, pgEnum, uuid, varchar } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
 import { LayoutTable } from "./layouts";
-import { connectionProtocolList } from "#lib/components/Protocols/protocolConstants.js";
+import { connectionProtocolList } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import type { InferSelectModel } from "drizzle-orm";
 import {
   connectionTypeList,

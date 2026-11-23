@@ -1,16 +1,16 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { Lcc } from "../../components/Protocols/Lcc/server/Lcc";
-import { DccEx } from "../../components/Protocols/DccEx/server/DccEx";
+import { Lcc } from "../../components/Connections/Protocols/Lcc/server/Lcc";
+import { DccEx } from "../../components/Connections/Protocols/DccEx/server/DccEx";
 import { ConnectionTable } from "../db/schema/connection";
 import { SerialConnection } from "../../components/Connections/Hardware/server/Serial/SerialConnection.server";
 import type { IHardware } from "../../components/Connections/Hardware/server/IHardware";
-import type { IProtocol } from "../../components/Protocols/IProtocol";
-import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
+import type { IProtocol } from "../../components/Connections/Protocols/IProtocol";
+import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import { protocolEvents } from "#lib/server/events.js";
 import { EmulatorConnection } from "../../components/Connections/Hardware/server/Emulator/Emulator.server";
 import { AsyncEventQueue } from "../eventQueue";
-import { Sunbeam } from "../../components/Protocols/Sunbeam/server/Sunbeam";
+import { Sunbeam } from "../../components/Connections/Protocols/Sunbeam/server/Sunbeam";
 import type { ConnectionHardware } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 import { WebServerConnection } from "../../components/Connections/Hardware/server/WebServer/WebServerConnection.server";
 

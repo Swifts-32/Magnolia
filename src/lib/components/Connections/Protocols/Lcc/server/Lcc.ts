@@ -1,4 +1,4 @@
-import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
+import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import type EventEmitter from "events";
 import type { IProtocol } from "../../IProtocol";
 import { App } from "#lib/server/App.server.js";

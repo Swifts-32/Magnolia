@@ -2,7 +2,7 @@ import type {
   DccExTrackPower,
   DccExTrackStates,
   TrackStatusEntry,
-} from "#lib/components/Protocols/DccEx/DccExTypes.ts";
+} from "#lib/components/Connections/Protocols/DccEx/DccExTypes.ts";
 
 export class TrackManager {
   public static processCommand(

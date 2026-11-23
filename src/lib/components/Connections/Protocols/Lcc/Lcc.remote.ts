@@ -2,7 +2,7 @@ import { command, query } from "$app/server";
 import { App } from "#lib/server/App.server.js";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
-import { Lcc } from "#lib/components/Protocols/Lcc/server/Lcc.js";
+import { Lcc } from "#lib/components/Connections/Protocols/Lcc/server/Lcc.js";
 
 export const getLccNodes = query(z.uuid(), async (connectionId) => {
   const connection = await App.getConnection(connectionId);

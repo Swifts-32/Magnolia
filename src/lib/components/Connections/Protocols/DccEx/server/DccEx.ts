@@ -1,5 +1,5 @@
 import { DccExLocoManager } from "./modules/DccExLoco";
-import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
+import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import type { IProtocol } from "../../IProtocol";
 import type { TrackStatusEntry } from "../DccExTypes";
 import { TrackManager } from "./modules/DccExTrackManager";

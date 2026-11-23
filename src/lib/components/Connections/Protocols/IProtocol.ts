@@ -1,4 +1,4 @@
-import type { ConnectionProtocol } from "#lib/components/Protocols/protocolConstants.js";
+import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
 
 export interface IProtocol {
   protocolType: ConnectionProtocol;
