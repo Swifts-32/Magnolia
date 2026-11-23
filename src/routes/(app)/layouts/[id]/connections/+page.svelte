@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import AddConnectionDialog from "#lib/components/Connections/AddConnectionDialog.svelte";
+  import AddConnectionDialog from "#lib/components/Connections/Protocols/AddConnectionDialog.svelte";
   import Fab from "#lib/components/FAB/Fab.svelte";
   import {
     EllipsisIcon,
@@ -22,10 +22,10 @@
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "#lib/components/ui/drawer/index.js";
   import { goto } from "$app/navigation";
-  import EditConnectionForm from "#lib/components/Connections/EditConnectionForm.svelte";
+  import EditConnectionForm from "#lib/components/Connections/ui/EditConnectionForm.svelte";
   import { toast } from "svelte-sonner";
   import { getConnectionHardwareName } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
-  import { getProtocolName } from "#lib/components/Protocols/protocolConstants.ts";
+  import { getProtocolName } from "#lib/components/Connections/Protocols/protocolConstants.ts";
 
   let selectedUuid = $state<string | null>(null);
   let activeEditUuid = $state<string | null>(null);

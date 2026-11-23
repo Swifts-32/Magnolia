@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { Connection } from "./Connections/Connection.server";
+import { Connection } from "../components/Connections/Connection.server";
 import { db } from "./db";
 import { ConnectionTable } from "./db/schema/connection";
 

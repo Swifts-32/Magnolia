@@ -5,7 +5,7 @@
   import ConnectionFormType from "./FormComponents/ConnectionFormType.svelte";
   import ConnectionFormHardware from "./FormComponents/ConnectionFormHardware.svelte";
   import { editConnection } from "#lib/client/Connections.remote.js";
-  import InputField from "../Form/InputField.svelte";
+  import InputField from "../../Form/InputField.svelte";
   import { onMount } from "svelte";
 
   interface Props {
