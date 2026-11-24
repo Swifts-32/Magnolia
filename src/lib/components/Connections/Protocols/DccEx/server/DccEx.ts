@@ -6,10 +6,19 @@ import { TrackManager } from "./modules/DccExTrackManager";
 import type { TrainUuid, TrainMotion } from "#lib/components/Trains/Trains.ts";
 import type { Train } from "#lib/server/db/schema/trains.ts";
 import type { Connection } from "#lib/components/Connections/Connection.server.ts";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 
 export class DccEx implements IProtocol, ITrainProtocol {
-  public protocolType: ConnectionProtocol = "DccEx";
+  public static readonly protocolType: ConnectionProtocol = "DccEx";
+  public static readonly protocolName = "DCC EX";
+  public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
+    "Serial",
+    "Emulator",
+  ];
+
+  public protocolType: ConnectionProtocol = DccEx.protocolType;
   public connectionId: string;
+  public readonly supportsTrains = true;
 
   public locoManager: DccExLocoManager = new DccExLocoManager();
   public trackStatus: TrackStatusEntry[] = [];

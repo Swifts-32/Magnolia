@@ -2,6 +2,7 @@ import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/p
 import type EventEmitter from "events";
 import type { IProtocol } from "../../IProtocol";
 import { App } from "#lib/server/App.server.js";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 
 export interface LccNode {
   id: string;
@@ -20,6 +21,12 @@ export interface LccNode {
 export class Lcc implements IProtocol {
   public protocolType: ConnectionProtocol = "Lcc";
   public connectionId: string;
+
+  public static readonly protocolType: ConnectionProtocol = "Lcc";
+  public static readonly protocolName = "LCC";
+  public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
+    "Serial",
+  ];
 
   private events: EventEmitter | null = null;
 
@@ -41,6 +48,9 @@ export class Lcc implements IProtocol {
 
   constructor(connectionId: string) {
     this.connectionId = connectionId;
+  }
+  onUpdate(callback: () => void): () => void {
+    throw new Error("Method not implemented.");
   }
 
   public setEventEmitter(emitter: EventEmitter): void {

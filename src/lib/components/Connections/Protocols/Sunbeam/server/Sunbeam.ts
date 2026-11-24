@@ -4,10 +4,17 @@ import { SensorTable } from "#lib/server/db/schema/sensors.ts";
 import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
 import type { SunbeamBlockStatus } from "#lib/components/Connections/Protocols/Sunbeam/SunbeamTypes.ts";
+import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 
 export class Sunbeam implements IProtocol {
   public protocolType: ConnectionProtocol = "Sunbeam";
   public connectionId: string;
+
+  public static readonly protocolType: ConnectionProtocol = "Sunbeam";
+  public static readonly protocolName = "Sunbeam";
+  public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
+    "WebServer",
+  ];
 
   private updateListeners: (() => void)[] = [];
 
