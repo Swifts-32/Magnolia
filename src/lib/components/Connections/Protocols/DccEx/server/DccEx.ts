@@ -1,10 +1,13 @@
 import { DccExLocoManager } from "./modules/DccExLoco";
 import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
-import type { IProtocol } from "../../IProtocol";
+import type { IProtocol, ITrainProtocol } from "../../IProtocol";
 import type { TrackStatusEntry } from "../DccExTypes";
 import { TrackManager } from "./modules/DccExTrackManager";
+import type { TrainUuid, TrainMotion } from "#lib/components/Trains/Trains.ts";
+import type { Train } from "#lib/server/db/schema/trains.ts";
+import type { Connection } from "#lib/components/Connections/Connection.server.ts";
 
-export class DccEx implements IProtocol {
+export class DccEx implements IProtocol, ITrainProtocol {
   public protocolType: ConnectionProtocol = "DccEx";
   public connectionId: string;
 
@@ -16,6 +19,17 @@ export class DccEx implements IProtocol {
 
   constructor(connectionId: string) {
     this.connectionId = connectionId;
+  }
+
+  public eStop(connection: Connection): void {
+    connection.write(Buffer.from(`<!>`));
+  }
+
+  public setMotion(train: Train, connection: Connection, motion: TrainMotion) {
+    const dirBit = motion.direction === "Forward" ? 1 : 0;
+    connection.write(
+      Buffer.from(`<t ${train.address} ${train.speed} ${dirBit}>`),
+    );
   }
 
   public onUpdate(callback: () => void): () => void {

@@ -11,7 +11,7 @@
   import {
     getTrain,
     setTrainMotion,
-    trainEmergencyStop,
+    layoutEmergencyStop,
   } from "../Trains/Trains.remote";
 
   interface Props {
@@ -99,7 +99,7 @@
         class="size-[54px] m-0 p-0"
         variant="destructive"
         size="icon-lg"
-        onclick={() => curTrain && trainEmergencyStop(curTrain.uuid)}
+        onclick={() => curTrain && layoutEmergencyStop(curTrain.uuid)}
       >
         <CircleAlert size={100} />
       </Button>

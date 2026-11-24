@@ -7,6 +7,7 @@ import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 import { TrainMotion } from "./Trains";
+import { isTrainCapableProtocol } from "../Connections/Protocols/protocolConstants";
 
 async function getTrainFromDb(trainId: string) {
   const trains: Train[] = await db
@@ -107,7 +108,15 @@ export const duplicateTrain = command(z.uuid(), async (trainId) => {
 });
 
 export const setTrainMotion = command(TrainMotion, async (data) => {
-  // TODO Validate user is allowed to control
+  const train = await getTrainFromDb(data.trainId);
+  const connection = await App.getConnection(train.connectionUuid ?? "");
+  if (!connection || !connection.protocol)
+    error(500, "Set train motion failed: Connection not found");
+
+  if (!isTrainCapableProtocol(connection.protocol)) {
+    error(500, "Set train motion failed: Connection does not support trains");
+  }
+
   await db
     .update(TrainTable)
     .set({
@@ -116,30 +125,23 @@ export const setTrainMotion = command(TrainMotion, async (data) => {
     })
     .where(eq(TrainTable.uuid, data.trainId));
 
-  const train = await getTrainFromDb(data.trainId);
-
-  const connection = await App.getConnection(train.connectionUuid ?? "");
-  if (!connection) error(500, "Set train motion failed: Connection not found");
-
-  if (connection.protocol instanceof DccEx) {
-    const dirBit = train.direction === "Forward" ? 1 : 0;
-    connection.write(
-      Buffer.from(`<t ${train.address} ${train.speed} ${dirBit}>`),
-    );
-  } else {
-    error(
-      500,
-      `Set train motion failed: Protocol no yet implemented: ${connection.protocol?.protocolType}`,
-    );
-  }
+  connection.protocol.setMotion(train, connection, data);
 
   await getTrain(data.trainId).refresh();
 });
 
 export const trainEmergencyStop = command(z.uuid(), async (trainId) => {
   const train = await getTrainFromDb(trainId);
+  const connection = await App.getConnection(train.connectionUuid ?? "");
+  if (!connection || !connection.protocol)
+    error(500, "Emergency train stop failed: Connection not found");
 
-  // TODO Validate user is allowed to control
+  if (!isTrainCapableProtocol(connection.protocol)) {
+    error(
+      500,
+      "Emergency train stop failed: Connection does not support trains",
+    );
+  }
 
   await db
     .update(TrainTable)
@@ -149,17 +151,31 @@ export const trainEmergencyStop = command(z.uuid(), async (trainId) => {
     })
     .where(eq(TrainTable.uuid, trainId));
 
-  const connection = await App.getConnection(train.connectionUuid ?? "");
-  if (!connection) error(500, "Emergency stop failed: Connection not found");
-
-  if (connection.protocol instanceof DccEx) {
-    connection.write(Buffer.from(`<!>`));
-  } else {
-    error(
-      500,
-      `Emergency stop failed: Protocol no yet implemented: ${connection.protocol?.protocolType}`,
-    );
-  }
+  connection.protocol.setMotion(train, connection, {
+    trainId,
+    direction: "Forward",
+    speed: 0,
+  });
 
   await getTrain(trainId).refresh();
+});
+
+export const layoutEmergencyStop = command(z.uuid(), async (connId) => {
+  const connection = await App.getConnection(connId);
+  if (!connection || !connection.protocol)
+    error(500, "Emergency stop failed: Connection not found");
+
+  if (!isTrainCapableProtocol(connection.protocol)) {
+    error(500, "Emergency stop failed: Connection does not support trains");
+  }
+
+  await db
+    .update(TrainTable)
+    .set({
+      speed: 0,
+      direction: "Forward",
+    })
+    .where(eq(TrainTable.connectionUuid, connId));
+
+  connection.protocol.eStop(connection);
 });
