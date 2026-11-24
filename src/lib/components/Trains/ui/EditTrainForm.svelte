@@ -4,14 +4,14 @@
   import InputField from "#lib/components/Form/InputField.svelte";
   import Label from "#lib/components/ui/label/label.svelte";
   import * as Select from "#lib/components/ui/select/index.js";
-  import { editTrain } from "#lib/client/Trains.remote.js";
   import {
     getConnection,
     getlayoutConnections,
   } from "#lib/components/Connections/Connections.remote.js";
   import { onMount } from "svelte";
   import type { Train } from "#lib/server/db/schema/trains.js";
-  import { protocolSupportedCapabilities } from "../Connections/Protocols/protocolConstants";
+  import { editTrain } from "../Trains.remote";
+  import { protocolSupportedCapabilities } from "#lib/components/Connections/Protocols/protocolConstants.ts";
 
   interface Props {
     train: Train;

@@ -4,16 +4,16 @@
   import { dragHandle, dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { Button } from "#lib/components/ui/button/index.js";
   import * as Drawer from "#lib/components/ui/drawer/index.js";
+  import type { TrainFunction } from "#lib/server/db/schema/trains.js";
+  import FunctionIcons from "./FunctionIcons.svelte";
+  import FunctionForm from "./FunctionForm.svelte";
   import {
     addTrainFunction,
     deleteTrainFunction,
     editTrainFunction,
-    getTrainFunctions,
     setTrainFunctionPosition,
-  } from "#lib/client/TrainFunctions.remote.js";
-  import type { TrainFunction } from "#lib/server/db/schema/trains.js";
-  import FunctionIcons from "./FunctionIcons.svelte";
-  import FunctionForm from "./FunctionForm.svelte";
+    getTrainFunctions,
+  } from "../../TrainFunctions.remote";
 
   interface Props {
     trainId: string;

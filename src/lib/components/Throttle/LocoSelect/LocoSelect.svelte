@@ -5,9 +5,9 @@
   import { Button } from "#lib/components/ui/button/index.js";
   import * as Command from "#lib/components/ui/command/index.js";
   import * as Popover from "#lib/components/ui/popover/index.js";
-  import { getLayoutTrains } from "#lib/client/Trains.remote.js";
   import { getConnection } from "#lib/components/Connections/Connections.remote.js";
-  import AddTrainDialog from "#lib/components/Trains/AddTrainDialog.svelte";
+  import AddTrainDialog from "#lib/components/Trains/ui/AddTrainDialog.svelte";
+  import { getLayoutTrains } from "#lib/components/Trains/Trains.remote.ts";
 
   interface Props {
     selTrainId: string | undefined;

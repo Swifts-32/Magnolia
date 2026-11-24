@@ -11,12 +11,12 @@ import { AppSchema } from "./app";
 import { type InferSelectModel } from "drizzle-orm";
 import { UserTable } from "./users";
 import { ConnectionTable } from "./connection";
+import { relations } from "drizzle-orm/_relations";
 import {
   TrainFunctionIconsList,
   TrainFunctionModesList,
-} from "#lib/types/TrainFunctions.js";
-import { TrainDirectionsList } from "#lib/types/Trains.js";
-import { relations } from "drizzle-orm/_relations";
+} from "#lib/components/Trains/TrainFunctions.ts";
+import { TrainDirectionsList } from "#lib/components/Trains/Trains.ts";
 
 export const TrainDirection = pgEnum("trainDirection", TrainDirectionsList);
 export const TrainFunctionIcon = pgEnum(

@@ -7,11 +7,10 @@
   import type { TrainFunction } from "#lib/server/db/schema/trains.js";
   import Label from "#lib/components/ui/label/label.svelte";
   import Input from "#lib/components/ui/input/input.svelte";
-  import * as Select from "#lib/components/ui/select/index.js";
   import type { Snippet } from "svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
-  import { deleteTrainFunction } from "#lib/client/TrainFunctions.remote.js";
+  import { deleteTrainFunction } from "../../TrainFunctions.remote";
 
   interface Props {
     trainId: string;
@@ -132,11 +131,8 @@
             <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
             <Dialog.Close>
               <AlertDialog.Action
-                onclick={async () =>
-                  await deleteTrainFunction({
-                    trainId,
-                    value: funct.value,
-                  })}>Delete Function</AlertDialog.Action
+                onclick={async () => await deleteTrainFunction(funct.id)}
+                >Delete Function</AlertDialog.Action
               >
             </Dialog.Close>
           </AlertDialog.Footer>

@@ -4,8 +4,8 @@
   import Button from "#lib/components/ui/button/button.svelte";
   import FunctionIcons from "./FunctionIcons.svelte";
   import type { TrainFunction } from "#lib/server/db/schema/trains.js";
-  import { getTrainFunctions } from "#lib/client/TrainFunctions.remote.js";
   import { ChevronsUpDown, Check } from "@lucide/svelte";
+  import { getTrainFunctions } from "../../TrainFunctions.remote";
 
   interface Props {
     trainId: string;

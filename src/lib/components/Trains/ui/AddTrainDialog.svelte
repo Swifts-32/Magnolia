@@ -7,12 +7,12 @@
   import type { Snippet } from "svelte";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
-  import { createTrain } from "#lib/client/Trains.remote.js";
   import {
     getConnection,
     getlayoutConnections,
   } from "#lib/components/Connections/Connections.remote.js";
-  import { protocolSupportedCapabilities } from "../Connections/Protocols/protocolConstants";
+  import { protocolSupportedCapabilities } from "#lib/components/Connections/Protocols/protocolConstants.ts";
+  import { createTrain } from "../Trains.remote";
 
   interface Props {
     layoutId: string;

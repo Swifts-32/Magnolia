@@ -9,10 +9,10 @@
   } from "@lucide/svelte";
   import { Checkbox } from "#lib/components/ui/checkbox/index.js";
   import * as ToggleGroup from "#lib/components/ui/toggle-group/index.js";
-  import type { TrainFunction } from "#lib/types/TrainFunctions.ts";
   import Label from "#lib/components/ui/label/label.svelte";
   import Input from "#lib/components/ui/input/input.svelte";
   import Button from "#lib/components/ui/button/button.svelte";
+  import type { TrainFunction } from "#lib/server/db/schema/trains.ts";
 
   interface Props {
     funct: TrainFunction;

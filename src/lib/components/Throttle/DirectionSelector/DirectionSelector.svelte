@@ -1,8 +1,7 @@
 <script lang="ts">
   import { ChevronDown, ChevronUp } from "@lucide/svelte";
-  
-  import { TrainDirection } from "#lib/types/Trains.js";
   import { cn } from "#lib/utils.js";
+  import type { TrainDirection } from "#lib/components/Trains/Trains.ts";
 
   interface Props {
     direction: TrainDirection;

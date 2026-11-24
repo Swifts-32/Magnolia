@@ -4,7 +4,7 @@
   import FunctionButton from "./FunctionButton.svelte";
   import type { TrainFunction } from "#lib/server/db/schema/trains.js";
   import EmptyFunctionCarousel from "./EmptyFunctionCarousel.svelte";
-  import { getTrainFunctions } from "#lib/client/TrainFunctions.remote.js";
+  import { getTrainFunctions } from "#lib/components/Trains/TrainFunctions.remote.ts";
 
   interface Props {
     disabled?: boolean;

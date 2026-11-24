@@ -6,7 +6,7 @@ import { TrainTable, type Train } from "#lib/server/db/schema/trains.js";
 import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
-import { TrainMotion } from "#lib/types/Trains.js";
+import { TrainMotion } from "./Trains";
 
 async function getTrainFromDb(trainId: string) {
   const trains: Train[] = await db

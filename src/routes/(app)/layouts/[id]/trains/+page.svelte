@@ -1,19 +1,19 @@
 <script lang="ts">
   import Fab from "#lib/components/FAB/Fab.svelte";
   import { EllipsisIcon, Plus } from "@lucide/svelte";
-  import {
-    deleteTrain,
-    duplicateTrain,
-    getLayoutTrains,
-  } from "#lib/client/Trains.remote.js";
   import { getConnection } from "#lib/components/Connections/Connections.remote.js";
-  import AddTrainDialog from "#lib/components/Trains/AddTrainDialog.svelte";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import * as Drawer from "#lib/components/ui/drawer/index.js";
-  import EditTrainForm from "#lib/components/Trains/EditTrainForm.svelte";
+  import {
+    deleteTrain,
+    duplicateTrain,
+    getLayoutTrains,
+  } from "#lib/components/Trains/Trains.remote.js";
+  import AddTrainDialog from "#lib/components/Trains/ui/AddTrainDialog.svelte";
+  import EditTrainForm from "#lib/components/Trains/ui/EditTrainForm.svelte";
 
   let { params } = $props();
 

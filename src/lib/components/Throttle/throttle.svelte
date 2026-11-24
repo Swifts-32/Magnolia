@@ -6,13 +6,13 @@
   import FunctionCarousel from "./FunctionButton/FunctionCarousel.svelte";
   import LocoSelect from "#lib/components/Throttle/LocoSelect/LocoSelect.svelte";
   import Button from "../ui/button/button.svelte";
-  import type { TrainUuid } from "#lib/types/Trains.js";
   import EmptyFunctionCarousel from "./FunctionButton/EmptyFunctionCarousel.svelte";
+  import type { TrainUuid } from "../Trains/Trains";
   import {
     getTrain,
     setTrainMotion,
     trainEmergencyStop,
-  } from "#lib/client/Trains.remote.js";
+  } from "../Trains/Trains.remote";
 
   interface Props {
     layoutId: string;
