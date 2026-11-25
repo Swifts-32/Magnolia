@@ -2,10 +2,8 @@
   import Label from "#lib/components/ui/label/label.svelte";
   import type { createConnection } from "#lib/components/Connections/Connections.remote.js";
   import * as Select from "#lib/components/ui/select/index.js";
-  import {
-    connectionProtocolList,
-    getProtocolName,
-  } from "../../Protocols/protocolConstants";
+  import { getProtocolName } from "../../Protocols/protocolConstants";
+  import { connectionProtocolList } from "../../Protocols/protocolTypes";
 
   interface Props {
     protocol: typeof createConnection.fields.protocol;

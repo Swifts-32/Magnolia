@@ -1,26 +1,19 @@
-import { z } from "zod/v4";
 import type { ConnectionHardwareList } from "../Hardware/hardwareConstants";
-import type { IProtocolClassStatic, ITrainProtocol } from "./IProtocol";
-import { DccEx } from "./DccEx/server/DccEx";
-import { Lcc } from "./Lcc/server/Lcc";
-import { Sunbeam } from "./Sunbeam/server/Sunbeam";
+import type { ITrainProtocol } from "./IProtocol";
 import type { BaseProtocol } from "./BaseProtocol";
-
-export const connectionProtocolList = ["DccEx", "Lcc", "Sunbeam"] as const;
-export const ConnectionProtocol = z.enum(connectionProtocolList);
-export type ConnectionProtocol = z.infer<typeof ConnectionProtocol>;
-
-export type ProtocolCapability = "trains" | "sensors";
-
-const protocolRegistry = {
-  DccEx,
-  Lcc,
-  Sunbeam,
-} as const satisfies Record<string, IProtocolClassStatic>;
+import type { ConnectionProtocol, ProtocolCapability } from "./protocolTypes";
+import { protocolMetadataMap } from "./protocolMetadata";
 
 export function getProtocolName(protocol: ConnectionProtocol): string {
-  const ProtocolClass = protocolRegistry[protocol];
-  return ProtocolClass.protocolName ?? protocol;
+  return protocolMetadataMap[protocol]?.protocolName ?? protocol;
+}
+
+export function protocolSupportedHardware(
+  protocol: ConnectionProtocol,
+  hardware: ConnectionHardwareList,
+): boolean {
+  const metadata = protocolMetadataMap[protocol];
+  return metadata.allowedHardware.some((x) => x === hardware);
 }
 
 export function protocolSupportedCapabilities(
@@ -36,14 +29,6 @@ export function protocolSupportedCapabilities(
       console.error("Unsupported protocol capability");
       return false;
   }
-}
-
-export function protocolSupportedHardware(
-  protocol: ConnectionProtocol,
-  hardware: ConnectionHardwareList,
-): boolean {
-  const ProtocolClass = protocolRegistry[protocol];
-  return ProtocolClass.allowedHardware?.includes(hardware) ?? false;
 }
 
 /**

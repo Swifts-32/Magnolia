@@ -1,7 +1,5 @@
-import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import type EventEmitter from "events";
 import { App } from "#lib/server/App.server.js";
-import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 import { BaseProtocol } from "../../BaseProtocol";
 
 export interface LccNode {
@@ -19,13 +17,6 @@ export interface LccNode {
 }
 
 export class Lcc extends BaseProtocol {
-  public static readonly protocolType: ConnectionProtocol = "Lcc";
-  public static readonly protocolName = "LCC";
-  public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
-    "Serial",
-  ];
-  public protocolType: ConnectionProtocol = "Lcc";
-
   private events: EventEmitter | null = null;
 
   // SLIP state

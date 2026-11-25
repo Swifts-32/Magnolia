@@ -1,12 +1,12 @@
 import { boolean, jsonb, pgEnum, uuid, varchar } from "drizzle-orm/pg-core";
 import { AppSchema } from "./app";
 import { LayoutTable } from "./layouts";
-import { connectionProtocolList } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import type { InferSelectModel } from "drizzle-orm";
 import {
   connectionTypeList,
   type ConnectionHardware,
 } from "#lib/components/Connections/Hardware/hardwareConstants.js";
+import { connectionProtocolList } from "#lib/components/Connections/Protocols/protocolTypes.ts";
 
 export const ConnectionProtocolEnum = pgEnum(
   "connectionProtocol",

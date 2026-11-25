@@ -1,10 +1,5 @@
-import type { ConnectionProtocol } from "./protocolConstants";
-
 export abstract class BaseProtocol {
   public connectionId: string;
-
-  // Every subclass must define its own protocolType
-  public abstract readonly protocolType: ConnectionProtocol;
 
   private updateListeners: (() => void)[] = [];
   private _onParsedOutput: ((data: string) => void) | null = null;

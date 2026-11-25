@@ -5,21 +5,20 @@ import { DccEx } from "./Protocols/DccEx/server/DccEx";
 import { ConnectionTable } from "../../server/db/schema/connection";
 import { SerialConnection } from "./Hardware/server/Serial/SerialConnection.server";
 import type { IHardware } from "./Hardware/server/IHardware";
-import type { IProtocol } from "./Protocols/IProtocol";
-import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
-import { protocolEvents } from "#lib/server/events.js";
 import { EmulatorConnection } from "./Hardware/server/Emulator/Emulator.server";
 import { AsyncEventQueue } from "../../server/eventQueue";
 import { Sunbeam } from "./Protocols/Sunbeam/server/Sunbeam";
 import type { ConnectionHardware } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 import { WebServerConnection } from "./Hardware/server/WebServer/WebServerConnection.server";
+import type { BaseProtocol } from "./Protocols/BaseProtocol";
+import type { ConnectionProtocol } from "./Protocols/protocolTypes";
 
 export class Connection {
   public id: string;
   public layoutId: string;
   public name: string;
 
-  public protocol: IProtocol | undefined;
+  public protocol: BaseProtocol | undefined;
   public hardware: IHardware | undefined;
   public hardwareQueue = new AsyncEventQueue<string>();
 

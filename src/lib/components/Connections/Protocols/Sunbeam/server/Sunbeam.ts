@@ -1,20 +1,10 @@
-import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.ts";
 import { SensorTable } from "#lib/server/db/schema/sensors.ts";
 import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
 import type { SunbeamBlockStatus } from "#lib/components/Connections/Protocols/Sunbeam/SunbeamTypes.ts";
-import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
 import { BaseProtocol } from "../../BaseProtocol";
 
 export class Sunbeam extends BaseProtocol {
-  public static readonly protocolType: ConnectionProtocol = "Sunbeam";
-  public static readonly protocolName = "Sunbeam";
-  public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
-    "WebServer",
-  ];
-
-  public protocolType: ConnectionProtocol = "Sunbeam";
-
   constructor(connectionId: string) {
     super(connectionId);
   }
