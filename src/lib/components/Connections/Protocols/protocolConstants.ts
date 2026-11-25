@@ -1,23 +1,22 @@
 import { z } from "zod/v4";
 import type { ConnectionHardwareList } from "../Hardware/hardwareConstants";
-import type { IProtocol, ITrainProtocol } from "./IProtocol";
+import type { IProtocolClassStatic, ITrainProtocol } from "./IProtocol";
 import { DccEx } from "./DccEx/server/DccEx";
 import { Lcc } from "./Lcc/server/Lcc";
 import { Sunbeam } from "./Sunbeam/server/Sunbeam";
+import type { BaseProtocol } from "./BaseProtocol";
+
+export const connectionProtocolList = ["DccEx", "Lcc", "Sunbeam"] as const;
+export const ConnectionProtocol = z.enum(connectionProtocolList);
+export type ConnectionProtocol = z.infer<typeof ConnectionProtocol>;
+
+export type ProtocolCapability = "trains" | "sensors";
 
 const protocolRegistry = {
   DccEx,
   Lcc,
   Sunbeam,
-} as const;
-
-export const connectionProtocolList = Object.keys(
-  protocolRegistry,
-) as (keyof typeof protocolRegistry)[];
-export const ConnectionProtocol = z.enum(connectionProtocolList);
-export type ConnectionProtocol = z.infer<typeof ConnectionProtocol>;
-
-export type ProtocolCapability = "trains" | "sensors";
+} as const satisfies Record<string, IProtocolClassStatic>;
 
 export function getProtocolName(protocol: ConnectionProtocol): string {
   const ProtocolClass = protocolRegistry[protocol];
@@ -25,7 +24,7 @@ export function getProtocolName(protocol: ConnectionProtocol): string {
 }
 
 export function protocolSupportedCapabilities(
-  protocol: IProtocol,
+  protocol: BaseProtocol,
   capability: ProtocolCapability,
 ): boolean {
   switch (capability) {
@@ -52,7 +51,7 @@ export function protocolSupportedHardware(
  * the protocol object actually implements ITrainProtocol.
  */
 export function isTrainCapableProtocol(
-  protocol: IProtocol,
-): protocol is IProtocol & ITrainProtocol {
+  protocol: BaseProtocol,
+): protocol is BaseProtocol & ITrainProtocol {
   return (protocol as any).supportsTrains === true;
 }

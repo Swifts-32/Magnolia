@@ -1,50 +1,27 @@
 import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.ts";
-import type { IProtocol } from "../../IProtocol";
 import { SensorTable } from "#lib/server/db/schema/sensors.ts";
 import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
 import type { SunbeamBlockStatus } from "#lib/components/Connections/Protocols/Sunbeam/SunbeamTypes.ts";
 import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
+import { BaseProtocol } from "../../BaseProtocol";
 
-export class Sunbeam implements IProtocol {
-  public protocolType: ConnectionProtocol = "Sunbeam";
-  public connectionId: string;
-
+export class Sunbeam extends BaseProtocol {
   public static readonly protocolType: ConnectionProtocol = "Sunbeam";
   public static readonly protocolName = "Sunbeam";
   public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
     "WebServer",
   ];
 
-  private updateListeners: (() => void)[] = [];
+  public protocolType: ConnectionProtocol = "Sunbeam";
 
   constructor(connectionId: string) {
-    this.connectionId = connectionId;
-  }
-
-  public onUpdate(callback: () => void): () => void {
-    this.updateListeners.push(callback);
-    return () => {
-      this.updateListeners = this.updateListeners.filter(
-        (cb) => cb !== callback,
-      );
-    };
-  }
-
-  private notifyListeners() {
-    for (const cb of this.updateListeners) {
-      cb();
-    }
-  }
-
-  private _onParsedOutput: ((data: string) => void) | null = null;
-  public onParsedOutput(callback: (data: string) => void) {
-    this._onParsedOutput = callback;
+    super(connectionId);
   }
 
   public async processCommand(command: Buffer): Promise<void> {
     const text = command.toString("utf8").trim();
-    this._onParsedOutput?.(text);
+    this.triggerParsedOutput(text);
 
     try {
       const data = JSON.parse(text);

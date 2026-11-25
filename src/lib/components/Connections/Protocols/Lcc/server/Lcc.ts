@@ -1,8 +1,8 @@
 import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
 import type EventEmitter from "events";
-import type { IProtocol } from "../../IProtocol";
 import { App } from "#lib/server/App.server.js";
 import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
+import { BaseProtocol } from "../../BaseProtocol";
 
 export interface LccNode {
   id: string;
@@ -18,15 +18,13 @@ export interface LccNode {
   cdiLoaded?: boolean;
 }
 
-export class Lcc implements IProtocol {
-  public protocolType: ConnectionProtocol = "Lcc";
-  public connectionId: string;
-
+export class Lcc extends BaseProtocol {
   public static readonly protocolType: ConnectionProtocol = "Lcc";
   public static readonly protocolName = "LCC";
   public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
     "Serial",
   ];
+  public protocolType: ConnectionProtocol = "Lcc";
 
   private events: EventEmitter | null = null;
 
@@ -47,7 +45,7 @@ export class Lcc implements IProtocol {
   ]);
 
   constructor(connectionId: string) {
-    this.connectionId = connectionId;
+    super(connectionId);
   }
   onUpdate(callback: () => void): () => void {
     throw new Error("Method not implemented.");

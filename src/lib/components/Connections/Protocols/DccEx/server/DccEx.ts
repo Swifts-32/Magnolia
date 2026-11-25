@@ -1,14 +1,15 @@
 import { DccExLocoManager } from "./modules/DccExLoco";
 import type { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
-import type { IProtocol, ITrainProtocol } from "../../IProtocol";
+import type { ITrainProtocol } from "../../IProtocol";
 import type { TrackStatusEntry } from "../DccExTypes";
 import { TrackManager } from "./modules/DccExTrackManager";
-import type { TrainUuid, TrainMotion } from "#lib/components/Trains/Trains.ts";
+import type { TrainMotion } from "#lib/components/Trains/Trains.ts";
 import type { Train } from "#lib/server/db/schema/trains.ts";
 import type { Connection } from "#lib/components/Connections/Connection.server.ts";
 import type { ConnectionHardwareList } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
+import { BaseProtocol } from "../../BaseProtocol";
 
-export class DccEx implements IProtocol, ITrainProtocol {
+export class DccEx extends BaseProtocol implements ITrainProtocol {
   public static readonly protocolType: ConnectionProtocol = "DccEx";
   public static readonly protocolName = "DCC EX";
   public static readonly allowedHardware: readonly ConnectionHardwareList[] = [
@@ -17,17 +18,13 @@ export class DccEx implements IProtocol, ITrainProtocol {
   ];
 
   public protocolType: ConnectionProtocol = DccEx.protocolType;
-  public connectionId: string;
   public readonly supportsTrains = true;
 
   public locoManager: DccExLocoManager = new DccExLocoManager();
   public trackStatus: TrackStatusEntry[] = [];
 
-  private updateListeners: (() => void)[] = [];
-  private _onParsedOutput: ((data: string) => void) | null = null;
-
   constructor(connectionId: string) {
-    this.connectionId = connectionId;
+    super(connectionId);
   }
 
   public eStop(connection: Connection): void {
@@ -41,28 +38,9 @@ export class DccEx implements IProtocol, ITrainProtocol {
     );
   }
 
-  public onUpdate(callback: () => void): () => void {
-    this.updateListeners.push(callback);
-    return () => {
-      this.updateListeners = this.updateListeners.filter(
-        (cb) => cb !== callback,
-      );
-    };
-  }
-
-  private notifyListeners() {
-    for (const cb of this.updateListeners) {
-      cb();
-    }
-  }
-
-  public onParsedOutput(callback: (data: string) => void) {
-    this._onParsedOutput = callback;
-  }
-
   public processCommand(command: Buffer) {
     const text = command.toString("utf8").trim();
-    this._onParsedOutput?.(text);
+    this.triggerParsedOutput(text);
 
     let updated = false;
 
