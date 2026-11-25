@@ -9,7 +9,6 @@ export interface IProtocolClassStatic {
 }
 
 export interface ITrainProtocol {
-  readonly supportsTrains: true;
   eStop(connection: Connection): void;
   setMotion(train: Train, connection: Connection, motion: TrainMotion): void;
   setFunction(

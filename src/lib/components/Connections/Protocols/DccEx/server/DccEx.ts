@@ -8,8 +8,6 @@ import type { Connection } from "#lib/components/Connections/Connection.server.t
 import { BaseProtocol } from "../../BaseProtocol";
 
 export class DccEx extends BaseProtocol implements ITrainProtocol {
-  public readonly supportsTrains = true;
-
   public locoManager: DccExLocoManager = new DccExLocoManager();
   public trackStatus: TrackStatusEntry[] = [];
 

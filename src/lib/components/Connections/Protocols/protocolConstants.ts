@@ -1,6 +1,5 @@
 import type { ConnectionHardwareList } from "../Hardware/hardwareConstants";
 import type { ITrainProtocol } from "./IProtocol";
-import type { BaseProtocol } from "./BaseProtocol";
 import type { ConnectionProtocol, ProtocolCapability } from "./protocolTypes";
 import { protocolMetadataMap } from "./protocolMetadata";
 
@@ -17,18 +16,11 @@ export function protocolSupportedHardware(
 }
 
 export function protocolSupportedCapabilities(
-  protocol: BaseProtocol,
+  protocol: ConnectionProtocol,
   capability: ProtocolCapability,
 ): boolean {
-  switch (capability) {
-    case "trains":
-      return (protocol as any).supportsTrains === true;
-    case "sensors":
-      return (protocol as any).supportsSensors === true;
-    default:
-      console.error("Unsupported protocol capability");
-      return false;
-  }
+  const metadata = protocolMetadataMap[protocol];
+  return metadata.capabilities.some((x) => x === capability);
 }
 
 /**
@@ -36,7 +28,8 @@ export function protocolSupportedCapabilities(
  * the protocol object actually implements ITrainProtocol.
  */
 export function isTrainCapableProtocol(
-  protocol: BaseProtocol,
-): protocol is BaseProtocol & ITrainProtocol {
-  return (protocol as any).supportsTrains === true;
+  protocol: ConnectionProtocol,
+): protocol is ConnectionProtocol & ITrainProtocol {
+  const metadata = protocolMetadataMap[protocol];
+  return metadata.capabilities.some((x) => x === "trains");
 }
