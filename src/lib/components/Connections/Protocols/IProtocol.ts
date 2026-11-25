@@ -12,4 +12,10 @@ export interface ITrainProtocol {
   readonly supportsTrains: true;
   eStop(connection: Connection): void;
   setMotion(train: Train, connection: Connection, motion: TrainMotion): void;
+  setFunction(
+    train: Train,
+    connection: Connection,
+    value: string,
+    state: boolean,
+  ): void;
 }

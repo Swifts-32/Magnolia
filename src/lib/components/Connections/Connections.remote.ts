@@ -1,5 +1,4 @@
-import { command, form, query, requested } from "$app/server";
-import { ConnectionProtocol } from "#lib/components/Connections/Protocols/protocolConstants.js";
+import { command, form, query } from "$app/server";
 import { App } from "#lib/server/App.server.js";
 import { db } from "#lib/server/db/index.js";
 import { ConnectionTable } from "#lib/server/db/schema/connection.js";
@@ -7,6 +6,7 @@ import { error } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { uuid, z } from "zod/v4";
 import { HardwareSchema } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
+import { ConnectionProtocol } from "./Protocols/protocolTypes";
 
 // Get a connection using the connection Id
 export const getConnection = query(

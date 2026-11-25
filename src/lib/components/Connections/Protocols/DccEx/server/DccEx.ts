@@ -17,6 +17,15 @@ export class DccEx extends BaseProtocol implements ITrainProtocol {
     super(connectionId);
   }
 
+  public setFunction(
+    train: Train,
+    connection: Connection,
+    value: string,
+    state: boolean,
+  ): void {
+    connection.write(Buffer.from(`<F ${train.address} ${value} ${state}>`));
+  }
+
   public eStop(connection: Connection): void {
     connection.write(Buffer.from(`<!>`));
   }
