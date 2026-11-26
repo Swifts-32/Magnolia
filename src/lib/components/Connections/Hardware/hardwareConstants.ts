@@ -1,6 +1,6 @@
 import { z } from "zod/v4";
 
-export const connectionTypeList = ["Serial", "Emulator", "WebServer"] as const;
+export const connectionTypeList = ["Serial", "WebServer"] as const;
 export const ConnectionHardwareList = z.enum(connectionTypeList);
 export type ConnectionHardwareList = z.infer<typeof ConnectionHardwareList>;
 
@@ -10,8 +10,6 @@ export function getConnectionHardwareName(
   switch (hardwareType) {
     case "Serial":
       return "Serial";
-    case "Emulator":
-      return "Emulator";
     case "WebServer":
       return "Web Server";
 
@@ -32,14 +30,9 @@ const WebServerHardwareSchema = z.object({
   headers: z.record(z.string(), z.string()).optional(),
 });
 
-const EmulatorHardwareSchema = z.object({
-  type: z.literal("Emulator"),
-});
-
 export const HardwareSchema = z.discriminatedUnion("type", [
   SerialHardwareSchema,
   WebServerHardwareSchema,
-  EmulatorHardwareSchema,
 ]);
 
 export type ConnectionHardware = z.infer<typeof HardwareSchema>;

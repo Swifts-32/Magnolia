@@ -11,7 +11,7 @@ export interface ProtocolMetadata {
 export const protocolMetadataMap = {
   DccEx: {
     protocolName: "DCC-EX",
-    allowedHardware: ["Serial", "Emulator"],
+    allowedHardware: ["Serial"],
     capabilities: ["trains"],
   },
   Lcc: {
