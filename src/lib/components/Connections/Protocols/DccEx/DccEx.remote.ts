@@ -1,91 +1,111 @@
-import { command, query } from "$app/server";
+import { query } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
 import { App } from "#lib/server/App.server.js";
 import { DccEx } from "./server/DccEx";
+import type { BaseProtocol } from "../BaseProtocol";
 
-export const refreshDccExInfo = command(z.uuid(), async (connectionId) => {
-  const connection = await App.getConnection(connectionId);
+/**
+ * Converts a protocol instance and a data selector into a standardized live async generator,
+ * with optional background polling.
+ */
+async function* streamProtocolData<T>(
+  protocol: BaseProtocol,
+  selector: () => T,
+  options?: {
+    pollIntervalMs?: number;
+    onPoll?: () => void;
+  },
+): AsyncGenerator<T, void, unknown> {
+  let version = 0;
+  let wake: (() => void) | null = null;
 
-  if (!connection) {
-    error(500, "Connection not found");
+  const notify = () => {
+    version++;
+    if (wake) {
+      const resolve = wake;
+      wake = null;
+      queueMicrotask(resolve);
+    }
+  };
+
+  const unsubscribe = protocol.onUpdate(notify);
+
+  // Set up background polling interval if provided
+  let timer: NodeJS.Timeout | undefined;
+  if (options?.pollIntervalMs && options?.onPoll) {
+    timer = setInterval(() => {
+      options.onPoll!();
+    }, options.pollIntervalMs);
   }
 
-  if (!(connection.protocol instanceof DccEx)) {
-    error(500, "Connection is not an instance of DccEx");
+  let lastProcessedVersion = version;
+
+  try {
+    while (true) {
+      while (version === lastProcessedVersion) {
+        await new Promise<void>((resolve) => {
+          wake = resolve;
+        });
+      }
+
+      lastProcessedVersion = version;
+      yield selector();
+    }
+  } finally {
+    // Ensure timer and listeners are cleaned up when the client disconnects
+    if (timer) clearInterval(timer);
+    unsubscribe();
   }
+}
+export const getDccExInfo = query.live(
+  z.uuid(),
+  async function* (connectionId) {
+    const connection = await App.getConnection(connectionId);
+    if (!connection || !connection.protocol) {
+      error(500, "Connection not found");
+    }
 
-  await connection.write(Buffer.from("<s>"));
-  await connection.write(Buffer.from("<#>"));
-});
+    if (!(connection.protocol instanceof DccEx)) {
+      error(500, "Connection is not a DCC-EX protocol");
+    }
 
-export const getDccExInfo = query(z.uuid(), async (connectionId) => {
-  const connection = await App.getConnection(connectionId);
+    const dccEx = connection.protocol;
 
-  if (!connection) {
-    error(500, "Connection not found");
-  }
+    // Request fresh hardware info
+    connection.write(Buffer.from("<s>"));
+    connection.write(Buffer.from("<#>"));
 
-  if (!(connection.protocol instanceof DccEx)) {
-    error(500, "Connection is not an instance of DccEx");
-  }
-
-  return connection.protocol.info;
-});
+    yield* streamProtocolData(dccEx, () => dccEx.info);
+  },
+);
 
 export const getTracksStatus = query.live(
   z.uuid(),
   async function* (connectionId) {
     const connection = await App.getConnection(connectionId);
-
-    if (!connection) {
+    if (!connection || !connection.protocol) {
       error(500, "Connection not found");
     }
 
     if (!(connection.protocol instanceof DccEx)) {
-      error(500, "DccEx connection is not an instance of DccEx");
+      error(500, "DccEx connection is not a DCC-EX protocol");
     }
 
     const dccEx = connection.protocol;
 
-    // Request the current track state from the command station.
+    // Initial fetch on connection load
     connection.write(Buffer.from("<=>", "utf8"));
+    connection.write(Buffer.from("<JI>", "utf8"));
+    connection.write(Buffer.from("<JG>", "utf8"));
 
-    // Send the current state immediately.
-    yield [...dccEx.trackStatus];
-
-    let version = 0;
-    let wake: (() => void) | null = null;
-
-    const notify = () => {
-      version++;
-
-      if (wake) {
-        const resolve = wake;
-        wake = null;
-
-        queueMicrotask(resolve);
-      }
-    };
-
-    const unsubscribe = dccEx.onUpdate(notify);
-
-    let lastProcessedVersion = version;
-
-    try {
-      while (true) {
-        while (version === lastProcessedVersion) {
-          await new Promise<void>((resolve) => {
-            wake = resolve;
-          });
-        }
-
-        lastProcessedVersion = version;
-
-        yield [...dccEx.trackStatus];
-      }
-    } finally {
-      unsubscribe();
-    }
+    // Stream updates with a 2-second background poll
+    yield* streamProtocolData(dccEx, () => [...dccEx.trackStatus], {
+      pollIntervalMs: 2000,
+      onPoll: () => {
+        connection.write(Buffer.from("<=>", "utf8"));
+        connection.write(Buffer.from("<JI>", "utf8"));
+      },
+    });
   },
 );

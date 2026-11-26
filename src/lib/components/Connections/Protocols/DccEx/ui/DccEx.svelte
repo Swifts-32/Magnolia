@@ -6,7 +6,10 @@
   } from "#lib/components/Connections/Connections.remote.js";
   import TrackManager from "./TrackManager.svelte";
   import Terminal from "#lib/components/Terminal/Terminal.svelte";
-  import { getDccExInfo, refreshDccExInfo } from "../DccEx.remote";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { getDccExInfo } from "../DccEx.remote";
+  import Button from "#lib/components/ui/button/button.svelte";
+  import { RefreshCcw } from "@lucide/svelte";
 
   interface Props {
     connectionId: string;
@@ -24,7 +27,6 @@
   onMount(() => {
     let active = true;
     connectionLogs.reconnect();
-    refreshDccExInfo(connectionId);
 
     terminal?.addLog(
       "System initialized. Listening for DCC-EX events...",
@@ -77,31 +79,44 @@
     </button>
   {/snippet}
 
-  {#await getDccExInfo(connectionId) then info}
-    <div>
-      <p>Version: {info?.version}</p>
-      <p>Build Number: {info?.buildNumber}</p>
-      <p>Max Cabs: {info?.maxCabs}</p>
-      <p>Processor: {info?.microprocessorType}</p>
-      <p>Motor Driver: {info?.motorControllerType}</p>
-    </div>
-  {/await}
+  <div class="flex flex-wrap gap-4">
+    <Terminal
+      bind:this={terminal}
+      name="DCC-EX Serial Log - {statusText}"
+      minimized={false}
+      placeholder="Send command (e.g. <1> or <t 1 3 128 1>)"
+      write={(data) =>
+        writeStringToConnection({ command: data, id: connectionId })}
+    />
 
-  <div>
-    <div class="space-y-6 mx-auto">
-      <Terminal
-        bind:this={terminal}
-        name="DCC-EX Serial Log - {statusText}"
-        minimized={true}
-        placeholder="Send command (e.g. <1> or <t 1 3 128 1>)"
-        write={(data) =>
-          writeStringToConnection({ command: data, id: connectionId })}
-      />
+    <TrackManager
+      {connectionId}
+      addLog={(log, type) => terminal?.addLog(log, type)}
+    />
 
-      <TrackManager
-        {connectionId}
-        addLog={(log, type) => terminal?.addLog(log, type)}
-      />
-    </div>
+    <Card.Root class="max-w-fit">
+      <Card.Header class="flex flex-row justify-between items-center gap-4">
+        <Card.Title>Command Station Info</Card.Title>
+
+        <Button
+          size="icon"
+          onclick={() => {
+            getDccExInfo(connectionId).reconnect();
+          }}
+          ><RefreshCcw />
+        </Button>
+      </Card.Header>
+      <Card.Content>
+        {#await getDccExInfo(connectionId) then info}
+          <div>
+            <p>Version: {info?.version}</p>
+            <p>Build Number: {info?.buildNumber}</p>
+            <p>Max Cabs: {info?.maxCabs}</p>
+            <p>Processor: {info?.microprocessorType}</p>
+            <p>Motor Driver: {info?.motorControllerType}</p>
+          </div>
+        {/await}
+      </Card.Content>
+    </Card.Root>
   </div>
 </svelte:boundary>

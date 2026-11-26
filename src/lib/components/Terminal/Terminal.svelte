@@ -178,20 +178,10 @@
         {/each}
       </div>
 
-      <div class="flex p-3 bg-neutral-900 border-t border-neutral-800 gap-2">
-        <div class="relative flex-1">
-          <span
-            class="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-cyan-500 font-bold pointer-events-none select-none"
-          >
-            &gt;
-          </span>
-          <Input
-            bind:value
-            onkeydown={handleKeyDown}
-            {placeholder}
-            class="h-10 pl-8 font-mono bg-neutral-950 border-neutral-800 text-emerald-400 focus:ring-1 focus:ring-emerald-500/30 focus:border-emerald-500 focus-visible:ring-0 placeholder:text-neutral-700"
-          />
-        </div>
+      <div
+        class="flex p-3 bg-neutral-900 border-t min-w-100 border-neutral-800 gap-2"
+      >
+        <Input bind:value onkeydown={handleKeyDown} {placeholder} />
         <Button onclick={handleSend}>Send</Button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import type EventEmitter from "events";
 import { App } from "#lib/server/App.server.js";
 import { BaseProtocol } from "../../BaseProtocol";
+import type { ConnectionProtocol } from "../../protocolTypes";
 
 export interface LccNode {
   id: string;
@@ -17,6 +18,8 @@ export interface LccNode {
 }
 
 export class Lcc extends BaseProtocol {
+  public protocolType: ConnectionProtocol = "Lcc";
+
   private events: EventEmitter | null = null;
 
   // SLIP state

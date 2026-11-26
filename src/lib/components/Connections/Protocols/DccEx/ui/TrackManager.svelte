@@ -15,6 +15,7 @@
   import type { LogType } from "#lib/components/Terminal/Terminal.svelte";
   import { onMount } from "svelte";
   import { DccExTrackStatesList } from "../DccExTypes";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     connectionId: string;
@@ -166,7 +167,17 @@
             )}
             <Table.Row>
               <Table.Cell>
-                {#if track.power === "ON"}
+                {#if track.state === "NONE"}
+                  <Button
+                    disabled
+                    size="icon"
+                    onclick={() => {
+                      toast.error("This track is set to NONE.");
+                    }}
+                  >
+                    <SquareExclamationPoint />
+                  </Button>
+                {:else if track.power === "ON"}
                   <Button
                     variant="destructive"
                     size="icon"
@@ -228,6 +239,14 @@
                       if (val) {
                         edit.mode = val;
                         edit.isDirty = true;
+
+                        if (
+                          (val === "DC" || val === "DC_INV" || val === "DCX") &&
+                          !edit.cab
+                        ) {
+                          edit.cab = "3";
+                        }
+
                         handleUpdateTrack(track.trackletter);
                       }
                     }}

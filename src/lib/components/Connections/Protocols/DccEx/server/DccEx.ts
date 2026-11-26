@@ -1,18 +1,28 @@
-import { DccExLocoManager } from "./modules/DccExLoco";
+import {
+  handleLocoBroadcast as processLocoCommand,
+  type DccExLoco,
+} from "./modules/DccExLocoManager";
 import type { ITrainProtocol } from "../../IProtocol";
 import type { TrackStatusEntry } from "../DccExTypes";
-import { TrackManager } from "./modules/DccExTrackManager";
+import {
+  processCurrentCommand,
+  processPowerCommand,
+  processTrackManagerCommand,
+} from "./modules/DccExTrackManager";
 import type { TrainMotion } from "#lib/components/Trains/Trains.ts";
 import type { Train } from "#lib/server/db/schema/trains.ts";
 import type { Connection } from "#lib/components/Connections/Connection.server.ts";
 import { BaseProtocol } from "../../BaseProtocol";
-import { DccExInfoManager, type DccExInfo } from "./modules/DccExInfoManager";
+import {
+  processCommand as processInfoCommand,
+  type DccExInfo,
+} from "./modules/DccExInfoManager";
+import type { ConnectionProtocol } from "../../protocolTypes";
 
 export class DccEx extends BaseProtocol implements ITrainProtocol {
-  public locoManager: DccExLocoManager = new DccExLocoManager();
+  public protocolType: ConnectionProtocol = "DccEx";
+  public locos = new Map<number, DccExLoco>();
   public trackStatus: TrackStatusEntry[] = [];
-  public infoManager: DccExInfoManager = new DccExInfoManager();
-
   public info: DccExInfo | undefined;
 
   constructor(connectionId: string) {
@@ -46,17 +56,22 @@ export class DccEx extends BaseProtocol implements ITrainProtocol {
     let updated = false;
 
     if (text.startsWith("<l")) {
-      this.locoManager.handleLocoBroadcast(text);
+      const loco = processLocoCommand(text);
+      if (loco) {
+        this.locos.set(loco.cab, loco);
+        updated = true;
+      }
+    } else if (text.startsWith("<=")) {
+      this.trackStatus = processTrackManagerCommand(text, this.trackStatus);
       updated = true;
-    } else if (
-      text.startsWith("<=") ||
-      text.startsWith("<p") ||
-      text.startsWith("<j")
-    ) {
-      this.trackStatus = TrackManager.processCommand(text, this.trackStatus);
+    } else if (text.startsWith("<p")) {
+      this.trackStatus = processPowerCommand(text, this.trackStatus);
+      updated = true;
+    } else if (text.startsWith("<j")) {
+      this.trackStatus = processCurrentCommand(text, this.trackStatus);
       updated = true;
     } else if (text.startsWith("<i") || text.startsWith("<#")) {
-      this.info = this.infoManager.processCommand(text, this.info);
+      this.info = processInfoCommand(text, this.info);
       updated = true;
     }
 

@@ -1,5 +1,8 @@
+import type { ConnectionProtocol } from "./protocolTypes";
+
 export abstract class BaseProtocol {
   public connectionId: string;
+  public abstract readonly protocolType: ConnectionProtocol;
 
   private updateListeners: (() => void)[] = [];
   private _onParsedOutput: ((data: string) => void) | null = null;

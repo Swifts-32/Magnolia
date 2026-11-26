@@ -1,11 +1,11 @@
-import { command, query } from "$app/server";
+import { command, query, requested } from "$app/server";
 import { db } from "#lib/server/db/index.js";
 import {
   TrainFunctionTable,
   TrainTable,
 } from "#lib/server/db/schema/trains.js";
 import { error } from "@sveltejs/kit";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod/v4";
 import { TrainFunction } from "./TrainFunctions";
 import { App } from "#lib/server/App.server.ts";
@@ -16,7 +16,9 @@ async function getTrainFunctionsFromDb(trainId: string) {
   const functs: TrainFunction[] = await db
     .select()
     .from(TrainFunctionTable)
-    .where(eq(TrainFunctionTable.trainId, trainId));
+    .where(eq(TrainFunctionTable.trainId, trainId))
+    .orderBy(asc(TrainFunctionTable.position));
+
   return functs;
 }
 
@@ -81,6 +83,7 @@ export const deleteTrainFunction = command(z.uuid(), async (id) => {
 // Create a default function with the train Id
 export const createDefaultTrainFunction = command(z.uuid(), async (trainId) => {
   const functions = await getTrainFunctionsFromDb(trainId);
+
   // Select a function value (numerical) that is not already in use
   let i = 0;
   while (functions.some((fn) => fn.value === `F${i}`)) {
@@ -103,7 +106,7 @@ export const toggleTrainFunction = command(
   }),
   async ({ id, state }) => {
     const funct = await getTrainFunctionFromDb(id);
-    const train = await getTrainFromFunction(id);
+    const train = await getTrainFromFunction(funct.trainId);
     const connection = await App.getConnection(train.connectionUuid ?? "");
     if (!connection || !connection.protocol)
       error(500, "Toggle train function failed: Connection not found");
@@ -115,23 +118,24 @@ export const toggleTrainFunction = command(
       );
     }
 
+    console.log(`Setting function ${funct.name} to ${state}`);
+
     await db
       .update(TrainFunctionTable)
       .set({
         state,
       })
-      .where(eq(TrainFunctionTable.id, id))
-      .returning();
+      .where(eq(TrainFunctionTable.id, id));
 
     connection.protocol.setFunction(train, connection, funct.value, state);
 
-    getTrainFunctions(train.uuid).refresh();
+    getTrainFunctions(funct.trainId).refresh();
   },
 );
 
 export const selectTrainFunction = command(z.uuid(), async (id) => {
   const funct = await getTrainFunctionFromDb(id);
-  const train = await getTrainFromFunction(id);
+  const train = await getTrainFromFunction(funct.trainId);
   const connection = await App.getConnection(train.connectionUuid ?? "");
   if (!connection || !connection.protocol)
     error(500, "Select train function failed: Connection not found");
@@ -146,8 +150,6 @@ export const selectTrainFunction = command(z.uuid(), async (id) => {
   connection.protocol.setFunction(train, connection, funct.value, true);
   await new Promise((resolve) => setTimeout(resolve, 500));
   connection.protocol.setFunction(train, connection, funct.value, false);
-
-  getTrainFunctions(train.uuid).refresh();
 });
 
 export const addTrainFunction = command(

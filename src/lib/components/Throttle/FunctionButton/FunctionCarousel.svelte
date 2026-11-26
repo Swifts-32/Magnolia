@@ -65,8 +65,8 @@
       {#each chunkedFunctions as chunk}
         <Carousel.Item class="w-auto!	shrink-0">
           <div class="grid grid-cols-2 auto-rows-min gap-2 w-fit">
-            {#each chunk as trainFunction}
-              <FunctionButton functId={trainFunction.id} {disabled} />
+            {#each chunk as trainFunction (trainFunction.id)}
+              <FunctionButton funct={trainFunction} {disabled} />
             {/each}
           </div>
         </Carousel.Item>
@@ -91,31 +91,4 @@
       </div>
     {/if}
   </Carousel.Root>
-  <!-- {:else if chunkedFunctions.length == 1 && chunkedFunctions[0].length > 0}
-		<div class="w-32 max-w-fit h-full">
-			{#each chunkedFunctions as chunk, chunkIndex}
-				<div class="grid grid-cols-2 auto-rows-min gap-2 p-0 w-full h-full">
-					{#each chunk, index}
-						<FunctionButton
-							{disabled}
-							bind:trainFunction={
-								() => chunkedFunctions[chunkIndex]?.[index],
-								(funct) => (chunkedFunctions[chunkIndex][index] = funct)
-							}
-						/>
-					{/each}
-				</div>
-			{/each}
-		</div>
-	{:else}
-		<button
-			class="w-32 text-lg flex flex-col justify-center items-center"
-			onclick={() => {
-				goto(`/layouts/${page.params.id}/settings/trains`);
-			}}
-		>
-			<Plus size={32} />
-			<p>Add a Function</p>
-		</button>
-	{/if} -->
 {/await}

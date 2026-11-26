@@ -3,8 +3,11 @@ import { db } from "#lib/server/db/index.ts";
 import { and, eq } from "drizzle-orm";
 import type { SunbeamBlockStatus } from "#lib/components/Connections/Protocols/Sunbeam/SunbeamTypes.ts";
 import { BaseProtocol } from "../../BaseProtocol";
+import type { ConnectionProtocol } from "../../protocolTypes";
 
 export class Sunbeam extends BaseProtocol {
+  public protocolType: ConnectionProtocol = "Sunbeam";
+
   constructor(connectionId: string) {
     super(connectionId);
   }

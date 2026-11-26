@@ -125,6 +125,14 @@ export class Connection {
   public async write(data: Buffer) {
     if (!this.hardware)
       return console.error("Failed to write as hardware undefined");
-    await this.hardware.write(data);
+    if (!this.hardware.isConnected)
+      return console.error(
+        "Failed to write to hardware: Hardware is not connected",
+      );
+    try {
+      await this.hardware.write(data);
+    } catch (err) {
+      console.error(`Failed to write to hardware: ${err}`);
+    }
   }
 }

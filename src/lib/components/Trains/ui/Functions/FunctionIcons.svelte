@@ -6,14 +6,14 @@
     size: number;
     selectedIcon: TrainFunctionIcons;
     orientation?: "horizontal" | "vertical";
-    text?: boolean;
+    text?: string;
   }
 
   let {
     size,
     selectedIcon,
     orientation = "horizontal",
-    text = true,
+    text,
   }: Props = $props();
 </script>
 
@@ -35,6 +35,6 @@
   {/if}
 
   {#if text}
-    <p class="text-md">{selectedIcon}</p>
+    <p class="text-md">{text}</p>
   {/if}
 </div>
