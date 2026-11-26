@@ -6,10 +6,14 @@ import type { TrainMotion } from "#lib/components/Trains/Trains.ts";
 import type { Train } from "#lib/server/db/schema/trains.ts";
 import type { Connection } from "#lib/components/Connections/Connection.server.ts";
 import { BaseProtocol } from "../../BaseProtocol";
+import { DccExInfoManager, type DccExInfo } from "./modules/DccExInfoManager";
 
 export class DccEx extends BaseProtocol implements ITrainProtocol {
   public locoManager: DccExLocoManager = new DccExLocoManager();
   public trackStatus: TrackStatusEntry[] = [];
+  public infoManager: DccExInfoManager = new DccExInfoManager();
+
+  public info: DccExInfo | undefined;
 
   constructor(connectionId: string) {
     super(connectionId);
@@ -41,7 +45,6 @@ export class DccEx extends BaseProtocol implements ITrainProtocol {
 
     let updated = false;
 
-    // Extract prefix type (e.g., matching text like "<=", "<p", "<l", "<jI")
     if (text.startsWith("<l")) {
       this.locoManager.handleLocoBroadcast(text);
       updated = true;
@@ -51,6 +54,9 @@ export class DccEx extends BaseProtocol implements ITrainProtocol {
       text.startsWith("<j")
     ) {
       this.trackStatus = TrackManager.processCommand(text, this.trackStatus);
+      updated = true;
+    } else if (text.startsWith("<i") || text.startsWith("<#")) {
+      this.info = this.infoManager.processCommand(text, this.info);
       updated = true;
     }
 

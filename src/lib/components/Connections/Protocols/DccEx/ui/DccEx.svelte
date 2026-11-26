@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-
   import {
     streamConnectionLogs,
     writeStringToConnection,
   } from "#lib/components/Connections/Connections.remote.js";
   import TrackManager from "./TrackManager.svelte";
   import Terminal from "#lib/components/Terminal/Terminal.svelte";
+  import { getDccExInfo, refreshDccExInfo } from "../DccEx.remote";
 
   interface Props {
     connectionId: string;
@@ -24,6 +24,7 @@
   onMount(() => {
     let active = true;
     connectionLogs.reconnect();
+    refreshDccExInfo(connectionId);
 
     terminal?.addLog(
       "System initialized. Listening for DCC-EX events...",
@@ -76,19 +77,31 @@
     </button>
   {/snippet}
 
-  <div class="space-y-6 mx-auto">
-    <Terminal
-      bind:this={terminal}
-      name="DCC-EX Serial Log - {statusText}"
-      minimized={true}
-      placeholder="Send command (e.g. <1> or <t 1 3 128 1>)"
-      write={(data) =>
-        writeStringToConnection({ command: data, id: connectionId })}
-    />
+  {#await getDccExInfo(connectionId) then info}
+    <div>
+      <p>Version: {info?.version}</p>
+      <p>Build Number: {info?.buildNumber}</p>
+      <p>Max Cabs: {info?.maxCabs}</p>
+      <p>Processor: {info?.microprocessorType}</p>
+      <p>Motor Driver: {info?.motorControllerType}</p>
+    </div>
+  {/await}
 
-    <TrackManager
-      {connectionId}
-      addLog={(log, type) => terminal?.addLog(log, type)}
-    />
+  <div>
+    <div class="space-y-6 mx-auto">
+      <Terminal
+        bind:this={terminal}
+        name="DCC-EX Serial Log - {statusText}"
+        minimized={true}
+        placeholder="Send command (e.g. <1> or <t 1 3 128 1>)"
+        write={(data) =>
+          writeStringToConnection({ command: data, id: connectionId })}
+      />
+
+      <TrackManager
+        {connectionId}
+        addLog={(log, type) => terminal?.addLog(log, type)}
+      />
+    </div>
   </div>
 </svelte:boundary>

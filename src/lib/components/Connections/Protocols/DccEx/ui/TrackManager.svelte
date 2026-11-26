@@ -2,7 +2,7 @@
   import * as Card from "#lib/components/ui/card/index.js";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
-  import { getTracksStatus } from "./DccEx.remote";
+  import { getTracksStatus } from "../DccEx.remote";
   import Button from "#lib/components/ui/button/button.svelte";
   import {
     Power,
@@ -14,7 +14,7 @@
   import Input from "#lib/components/ui/input/input.svelte";
   import type { LogType } from "#lib/components/Terminal/Terminal.svelte";
   import { onMount } from "svelte";
-  import { DccExTrackStatesList } from "./DccExTypes";
+  import { DccExTrackStatesList } from "../DccExTypes";
 
   interface Props {
     connectionId: string;

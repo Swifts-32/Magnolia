@@ -7,7 +7,7 @@
     getConnection,
   } from "#lib/components/Connections/Connections.remote.js";
   import { Separator } from "#lib/components/ui/separator/index.js";
-  import DccEx from "#lib/components/Connections/Protocols/DccEx/DccEx.svelte";
+  import DccEx from "#lib/components/Connections/Protocols/DccEx/ui/DccEx.svelte";
   import Lcc from "#lib/components/Connections/Protocols/Lcc/Lcc.svelte";
   import Sunbeam from "#lib/components/Connections/Protocols/Sunbeam/Sunbeam.svelte";
 

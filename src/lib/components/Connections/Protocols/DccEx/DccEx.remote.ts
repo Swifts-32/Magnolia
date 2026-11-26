@@ -1,9 +1,37 @@
-import { query } from "$app/server";
+import { command, query } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { z } from "zod/v4";
-
 import { App } from "#lib/server/App.server.js";
 import { DccEx } from "./server/DccEx";
+
+export const refreshDccExInfo = command(z.uuid(), async (connectionId) => {
+  const connection = await App.getConnection(connectionId);
+
+  if (!connection) {
+    error(500, "Connection not found");
+  }
+
+  if (!(connection.protocol instanceof DccEx)) {
+    error(500, "Connection is not an instance of DccEx");
+  }
+
+  await connection.write(Buffer.from("<s>"));
+  await connection.write(Buffer.from("<#>"));
+});
+
+export const getDccExInfo = query(z.uuid(), async (connectionId) => {
+  const connection = await App.getConnection(connectionId);
+
+  if (!connection) {
+    error(500, "Connection not found");
+  }
+
+  if (!(connection.protocol instanceof DccEx)) {
+    error(500, "Connection is not an instance of DccEx");
+  }
+
+  return connection.protocol.info;
+});
 
 export const getTracksStatus = query.live(
   z.uuid(),

@@ -5,7 +5,6 @@ import { DccEx } from "./Protocols/DccEx/server/DccEx";
 import { ConnectionTable } from "../../server/db/schema/connection";
 import { SerialConnection } from "./Hardware/server/Serial/SerialConnection.server";
 import type { IHardware } from "./Hardware/server/IHardware";
-import { EmulatorConnection } from "./Hardware/server/Emulator/Emulator.server";
 import { AsyncEventQueue } from "../../server/eventQueue";
 import { Sunbeam } from "./Protocols/Sunbeam/server/Sunbeam";
 import type { ConnectionHardware } from "#lib/components/Connections/Hardware/hardwareConstants.ts";
@@ -75,10 +74,6 @@ export class Connection {
           hardware.headers,
         );
         break;
-
-      case "Emulator":
-        this.hardware = new EmulatorConnection();
-
       default:
         break;
     }
