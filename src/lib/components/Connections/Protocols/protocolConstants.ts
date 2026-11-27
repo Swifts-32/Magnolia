@@ -31,5 +31,5 @@ export function isTrainCapableProtocol(
 
   // Automatically scales to any new protocol defined in metadataMap
   const metadata = protocolMetadataMap[protocol.protocolType];
-  return metadata?.capabilities?.includes("trains") ?? false;
+  return metadata.capabilities.some((x) => x === "trains");
 }

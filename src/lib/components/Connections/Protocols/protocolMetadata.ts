@@ -17,7 +17,7 @@ export const protocolMetadataMap = {
   Lcc: {
     protocolName: "LCC",
     allowedHardware: ["Serial"],
-    capabilities: ["sensors"],
+    capabilities: [],
   },
   Sunbeam: {
     protocolName: "Sunbeam",
